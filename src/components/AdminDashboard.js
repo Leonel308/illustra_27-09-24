@@ -1,0 +1,101 @@
+import React, { useEffect, useState } from 'react';
+import { db } from '../firebaseConfig';
+import { collection, getDocs, updateDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import '../Styles/AdminDashboard.css';
+import axios from 'axios';
+
+const AdminDashboard = () => {
+  const [withdrawalRequests, setWithdrawalRequests] = useState([]);
+
+  useEffect(() => {
+    const fetchWithdrawalRequests = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'withdrawalRequests'));
+        const requests = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setWithdrawalRequests(requests);
+      } catch (error) {
+        console.error('Error fetching withdrawal requests:', error);
+      }
+    };
+
+    fetchWithdrawalRequests();
+  }, []);
+
+  const handleApprove = async (requestId) => {
+    try {
+      const requestRef = doc(db, 'withdrawalRequests', requestId);
+      const requestDoc = await getDoc(requestRef); // Obtener el documento de la solicitud
+      const requestData = requestDoc.data();
+
+      // Obtener el accessToken del usuario
+      const userRef = doc(db, 'users', requestData.userId);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+      
+      // Crear el pago utilizando tu endpoint de Firebase Functions
+      const paymentResponse = await axios.post('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createPayment', {
+        amount: requestData.amount,
+        description: 'Retiro de fondos',
+        payerEmail: userData.email
+      });
+
+      if (paymentResponse.data.init_point) {
+        // Redirigir a la página de Mercado Pago con el enlace proporcionado
+        window.location.href = paymentResponse.data.init_point;
+
+        // Actualizar el estado de la solicitud a 'approved'
+        await updateDoc(requestRef, { status: 'approved' });
+        // Eliminar la solicitud de retiro de la base de datos
+        await deleteDoc(requestRef);
+        // Actualizar el estado en la UI
+        setWithdrawalRequests(withdrawalRequests.filter(request => request.id !== requestId));
+        alert('Solicitud aprobada y procesada');
+      } else {
+        throw new Error('Error en la creación del pago');
+      }
+    } catch (error) {
+      console.error('Error approving request:', error);
+      alert('Error al aprobar la solicitud. Por favor, intente de nuevo.');
+    }
+  };
+
+  const handleDeny = async (requestId) => {
+    try {
+      const requestRef = doc(db, 'withdrawalRequests', requestId);
+      const requestDoc = await getDoc(requestRef); // Obtener el documento de la solicitud
+      const requestData = requestDoc.data();
+
+      // Restablecer el balance del usuario
+      const userRef = doc(db, 'users', requestData.userId);
+      await updateDoc(userRef, { balance: requestData.amount });
+
+      // Eliminar la solicitud de retiro de la base de datos
+      await deleteDoc(requestRef);
+
+      // Actualizar el estado en la UI
+      setWithdrawalRequests(withdrawalRequests.filter(request => request.id !== requestId));
+
+      alert('Solicitud denegada');
+    } catch (error) {
+      console.error('Error denying request:', error);
+      alert('Error al denegar la solicitud');
+    }
+  };
+
+  return (
+    <div className="admin-dashboard">
+      <h1>Dashboard de Admin</h1>
+      {withdrawalRequests.map(request => (
+        <div key={request.id} className="withdrawal-request">
+          <img src={request.userPhotoURL} alt={request.username} className="user-photo" />
+          <span>{request.username}</span>
+          <span>${request.amount.toLocaleString('es-AR')}</span>
+          <button onClick={() => handleApprove(request.id)}>Aprobar</button>
+          <button onClick={() => handleDeny(request.id)}>Denegar</button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default AdminDashboard;

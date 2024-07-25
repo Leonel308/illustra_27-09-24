@@ -1,0 +1,126 @@
+.header {
+  width: 100%;
+  background-color: #5a189a;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px;  /* Ajuste de padding */
+  box-sizing: border-box; /* Asegurar que el padding no sobrepase el 100% de ancho */
+}
+
+.header-title {
+  font-size: 24px;
+  cursor: pointer;
+  margin: 0; /* Asegurarse de que no haya margen adicional */
+  color: #fff !important; /* Forzar color blanco */
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.header-profile-pic {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.header-username {
+  cursor: pointer;
+  color: #fff; /* Color blanco para el nombre de usuario */
+}
+
+.header-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: #fff;
+  color: #000;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+  width: 200px; /* Alargar más el dropdown */
+}
+
+.header-user:hover .header-dropdown,
+.header-user .header-dropdown:hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.header-dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #333; /* Color del texto normal */
+  display: block;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 5px;
+}
+
+.header-dropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #000; /* Color del texto al pasar el mouse */
+}
+
+.logout-button {
+  border: none;
+  background-color: #e74c3c; /* Color rojo */
+  color: #fff; /* Cambiar color del texto a blanco */
+  cursor: pointer;
+  padding: 10px;
+  width: 100%; /* Asegurarse de que ocupa el 100% del ancho */
+  text-align: left;
+  transition: color 0.3s, background-color 0.3s;
+}
+
+.logout-button:hover {
+  background-color: #c0392b; /* Color rojo más oscuro al hacer hover */
+  color: #fff; /* Cambiar el texto a blanco al hacer hover */
+}
+
+.header-buttons {
+  display: flex;
+}
+
+.header-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  background-color: #fff;
+  color: #5a189a;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.header-button:hover {
+  background-color: #f0f0f0;
+}
+
+.create-post-button, .explore-posts-button {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  margin-right: 15px; /* Añadir más margen a la derecha */
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.create-post-button:hover, .explore-posts-button:hover {
+  background-color: #5a0bac;
+}

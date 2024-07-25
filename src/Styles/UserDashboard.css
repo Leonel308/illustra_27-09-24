@@ -1,0 +1,49 @@
+.user-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+}
+
+.user-dashboard h1 {
+  font-size: 2em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.user-dashboard p {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.user-dashboard .balance {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.user-dashboard button {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+}
+
+.user-dashboard button:hover {
+  background-color: #218838;
+}
+
+.user-dashboard .error {
+  color: red;
+  margin-top: 20px;
+}
+
+.user-dashboard .info {
+  color: gray;
+  font-style: italic;
+  margin-top: 20px;
+}

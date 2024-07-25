@@ -1,0 +1,228 @@
+/* Estilo para la barra de búsqueda */
+.home-search-container {
+  text-align: center; /* Centra el contenido */
+  padding: 20px 0;
+}
+
+.search-categories {
+  display: flex;
+  justify-content: center;
+  gap: 40px; /* Ajusta el valor del gap según lo necesario */
+  margin-bottom: 20px; /* Añade margen inferior */
+}
+
+.category-link {
+  cursor: pointer;
+  color: #6a0dad;
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.category-link:hover {
+  background-color: #6a0dad;
+  color: white;
+}
+
+.home-search {
+  padding: 10px;
+  width: 800px; /* Ancho de la barra de búsqueda */
+  border: 1px solid #ddd;
+  border-radius: 25px; /* Borde redondeado */
+  margin-bottom: 20px; /* Margen inferior */
+  font-size: 16px; /* Tamaño de fuente */
+  outline: none; /* Quita el contorno al enfocar */
+}
+
+.home-search::placeholder {
+  color: #999; /* Color del texto de marcador de posición */
+}
+
+.home-search:focus {
+  border-color: #6a0dad; /* Color del borde al enfocar */
+}
+
+/* Estilo para los resultados de búsqueda */
+.search-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin: 10px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  width: 800px; /* Ancho de los resultados */
+}
+
+.search-result-item:hover {
+  transform: translateY(-5px);
+  background-color: #f0f0f5;
+}
+
+.search-result-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.search-result-info {
+  flex: 1; /* Asegura que ocupe todo el espacio disponible */
+}
+
+.search-result-info h3 {
+  color: #6a0dad;
+  margin: 0;
+  font-size: 18px;
+}
+
+.search-result-info p {
+  margin: 5px 0 0;
+  color: #333;
+  font-size: 14px;
+}
+
+/* General Styles */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Estilos para la caja de bienvenida en la página principal */
+.home-welcome-box {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 800px;
+  margin: 20px auto; /* Centrar el cuadro */
+}
+
+.home-welcome-box h2 {
+  color: #6a0dad;
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.home-welcome-box h3 {
+  color: #6a0dad;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.home-welcome-box p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.home-welcome-box a {
+  color: #6a0dad;
+  text-decoration: none;
+}
+
+.home-welcome-box a:hover {
+  text-decoration: underline;
+}
+
+/* Estilos para el texto de explorar publicaciones */
+.explore-posts-text {
+  cursor: pointer;
+  color: #6a0dad;
+  font-size: 24px;
+  margin: 6px 0; /* Reducir el margen en un 70% */
+  text-align: center;
+}
+
+.explore-posts-text:hover {
+  text-decoration: underline;
+}
+
+/* Estilos para los artistas destacados */
+.featured-artists {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+}
+
+.featured-artist {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 10px;
+  padding: 15px;
+  text-align: center;
+  width: 200px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.featured-artist:hover {
+  transform: translateY(-5px);
+  background-color: #f0f0f5;
+}
+
+.featured-artist img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.featured-artist h3 {
+  color: #6a0dad;
+  margin: 10px 0;
+}
+
+.featured-artist p {
+  margin: 0;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+/* Estilos para el pie de página */
+.footer {
+  background-color: #6a0dad;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
+
+/* Estilos para el contenedor de carga */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #6a0dad;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
