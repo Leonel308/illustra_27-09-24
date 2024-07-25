@@ -57,7 +57,7 @@ const UserDashboard = () => {
   return (
     <div className="user-dashboard">
       <h1>Dashboard de Usuario</h1>
-      <p className="balance">Saldo: ${user ? user.balance.toFixed(2) : 'Cargando...'}</p>
+      <p className="balance">Saldo: ${user ? user.balance.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'Cargando...'}</p>
       <button onClick={handleWithdrawalRequest}>Retirar</button>
       {error && <p className="error">{error}</p>}
       <p className="info">Los retiros pueden tardar hasta 24 horas</p>

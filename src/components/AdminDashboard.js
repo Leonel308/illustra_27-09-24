@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, updateDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import '../Styles/AdminDashboard.css';
 import axios from 'axios';
 
@@ -8,17 +8,14 @@ const AdminDashboard = () => {
   const [withdrawalRequests, setWithdrawalRequests] = useState([]);
 
   useEffect(() => {
-    const fetchWithdrawalRequests = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'withdrawalRequests'));
-        const requests = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setWithdrawalRequests(requests);
-      } catch (error) {
-        console.error('Error fetching withdrawal requests:', error);
-      }
-    };
+    const unsubscribe = onSnapshot(collection(db, 'withdrawalRequests'), (snapshot) => {
+      const requests = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(request => request.amount > 0); // Filtrar las solicitudes con monto mayor a 0
+      setWithdrawalRequests(requests);
+    });
 
-    fetchWithdrawalRequests();
+    return () => unsubscribe();
   }, []);
 
   const handleApprove = async (requestId) => {
