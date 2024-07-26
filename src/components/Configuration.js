@@ -11,8 +11,6 @@ import Spinner from './Spinner';
 const Configuration = () => {
   const { user } = useContext(UserContext);
   const [newUsername, setNewUsername] = useState('');
-  const [newPaymentMethodUSD, setNewPaymentMethodUSD] = useState('');
-  const [newPaymentMethodARS, setNewPaymentMethodARS] = useState('');
   const [donationAmounts, setDonationAmounts] = useState([1000, 5000, 10000, 20000]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -126,8 +124,6 @@ const Configuration = () => {
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
-        paymentMethodUSD: newPaymentMethodUSD,
-        paymentMethodARS: newPaymentMethodARS,
         donationAmounts: donationAmounts.filter(amount => amount)
       });
       setSuccess('Configuración guardada con éxito.');
@@ -136,13 +132,6 @@ const Configuration = () => {
       console.error('Error guardando la configuración:', error);
       setError('Error guardando la configuración.');
       setSuccess('');
-    }
-  };
-
-  const handleCVUChange = (e) => {
-    const value = e.target.value.replace(/\s/g, '');
-    if (/^\d*$/.test(value) && value.length <= 22) {
-      setNewPaymentMethodARS(value);
     }
   };
 
@@ -177,21 +166,7 @@ const Configuration = () => {
       
       <div className="configuration-section">
         <h3>Método de pago</h3>
-        <label>Añadir método de pago en dólares</label>
-        <input 
-          type="text" 
-          placeholder="Añadir método de pago en dólares"
-          value={newPaymentMethodUSD}
-          onChange={(e) => setNewPaymentMethodUSD(e.target.value)}
-        />
-        <label>Ingrese el CVU/CBU para recibir tu dinero</label>
-        <input 
-          type="text" 
-          placeholder="Ingrese el CVU/CBU para recibir tu dinero"
-          value={newPaymentMethodARS}
-          onChange={handleCVUChange}
-          maxLength={22}
-        />
+        <label>Mercado Pago</label>
         <MercadoPagoButton />
       </div>
       

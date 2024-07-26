@@ -93,6 +93,13 @@ const Home = () => {
         <div className="home-welcome-box">
           <h2>Bienvenido a Illustra</h2>
           <h3>Explora a los artistas más vistos y encuentra inspiración en cada esquina</h3>
+          <div className="who-we-are">
+            <h4>¿Quiénes somos?</h4>
+            <p>
+              Illustra es una página web con una comunidad donde podrás contratar servicios de artistas y también <span className="highlight">ofrecer tus propios servicios</span>! 
+              También, puedes compartir y promocionar tus ilustraciones en nuestro apartado de feed, recuerda que se divide en <span className="highlight">SFW</span> y <span className="highlight">NSFW</span>!
+            </p>
+          </div>
           {user ? (
             <p>¡Explora a los artistas más vistos!</p>
           ) : (

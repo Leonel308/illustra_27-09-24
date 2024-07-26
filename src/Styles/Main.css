@@ -137,6 +137,19 @@ body {
   text-decoration: underline;
 }
 
+/* Estilos para la sección ¿Quiénes somos? */
+.who-we-are {
+  text-align: left; /* Alinea el texto a la izquierda */
+}
+
+.who-we-are h4 {
+  color: #6a0dad;
+}
+
+.who-we-are .highlight {
+  color: #6a0dad;
+}
+
 /* Estilos para el texto de explorar publicaciones */
 .explore-posts-text {
   cursor: pointer;

@@ -24,6 +24,9 @@ const AdminDashboard = () => {
       const requestDoc = await getDoc(requestRef); // Obtener el documento de la solicitud
       const requestData = requestDoc.data();
 
+      // Aplicar comisión del 10%
+      const amountWithCommission = requestData.amount * 0.9;
+
       // Obtener el accessToken del usuario
       const userRef = doc(db, 'users', requestData.userId);
       const userDoc = await getDoc(userRef);
@@ -31,7 +34,7 @@ const AdminDashboard = () => {
       
       // Crear el pago utilizando tu endpoint de Firebase Functions
       const paymentResponse = await axios.post('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createPayment', {
-        amount: requestData.amount,
+        amount: amountWithCommission,
         description: 'Retiro de fondos',
         payerEmail: userData.email
       });
@@ -86,7 +89,7 @@ const AdminDashboard = () => {
         <div key={request.id} className="withdrawal-request">
           <img src={request.userPhotoURL} alt={request.username} className="user-photo" />
           <span>{request.username}</span>
-          <span>${request.amount.toLocaleString('es-AR')}</span>
+          <span>${(request.amount * 0.9).toLocaleString('es-AR')}</span> {/* Muestra el monto con la comisión aplicada */}
           <button onClick={() => handleApprove(request.id)}>Aprobar</button>
           <button onClick={() => handleDeny(request.id)}>Denegar</button>
         </div>

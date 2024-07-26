@@ -187,5 +187,42 @@ app.post('/approvePayment', async (req, res) => {
   }
 });
 
+// Función para manejar notificaciones de Mercado Pago (webhook)
+app.post('/paymentNotification', async (req, res) => {
+  const { type, data } = req.body;
+
+  if (type === 'payment') {
+    try {
+      const paymentId = data.id;
+      const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+      });
+
+      const paymentStatus = paymentResponse.data.status;
+      const userId = paymentResponse.data.payer.id; // Ajusta esto según tu estructura
+      const amount = paymentResponse.data.transaction_amount;
+
+      if (paymentStatus === 'approved') {
+        const withdrawalRequestRef = admin.firestore().collection('withdrawalRequests').doc(userId);
+        await withdrawalRequestRef.update({ status: 'approved' });
+        await withdrawalRequestRef.delete();
+
+        // Actualizar el balance del usuario en Firestore
+        const userRef = admin.firestore().collection('users').doc(userId);
+        await userRef.update({
+          balance: admin.firestore.FieldValue.increment(-amount)
+        });
+      }
+
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error handling webhook:', error);
+      res.status(500).send('Error handling webhook');
+    }
+  } else {
+    res.sendStatus(200);
+  }
+});
+
 // Exportar la aplicación Express como una función de Firebase
 exports.api = functions.https.onRequest(app);
