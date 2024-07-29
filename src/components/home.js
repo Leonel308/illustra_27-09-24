@@ -12,6 +12,7 @@ const Home = () => {
   const [featuredUsers, setFeaturedUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,13 +28,12 @@ const Home = () => {
         fetchFeaturedUsers();
       } else {
         setUser(null);
-        navigate('/login', { replace: true });
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const fetchFeaturedUsers = async () => {
     try {
@@ -41,7 +41,7 @@ const Home = () => {
       const usersSnapshot = await getDocs(usersCollection);
       const usersList = usersSnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(user => user.photoURL && user.bio); // Filtra los usuarios sin foto de perfil o biografía
+        .filter(user => user.photoURL && user.bio);
       const shuffledUsers = usersList.sort(() => 0.5 - Math.random());
       const limitedUsers = shuffledUsers.slice(0, 10);
 
@@ -53,12 +53,12 @@ const Home = () => {
   };
 
   const handleSearchChange = async (e) => {
-    const queryText = e.target.value.trim(); // Eliminar espacios en blanco al inicio y final
+    const queryText = e.target.value.trim();
     setSearchQuery(queryText);
 
     if (queryText) {
       try {
-        const q = query(collection(db, 'users'), where('username', '>=', queryText), where('username', '<=', queryText + '\uf8ff'));
+        const q = query(collection(db, 'users'), where('username_lower', '>=', queryText.toLowerCase()), where('username_lower', '<=', queryText.toLowerCase() + '\uf8ff'));
         const querySnapshot = await getDocs(q);
         const results = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setSearchResults(results);
@@ -71,7 +71,27 @@ const Home = () => {
   };
 
   const truncateBio = (bio) => {
-    return bio.length > 120 ? bio.substring(0, 120) + '...' : bio; // Cambiado a 120 caracteres
+    return bio.length > 120 ? bio.substring(0, 120) + '...' : bio;
+  };
+
+  const handlePopupClose = () => {
+    setShowPopup(false);
+  };
+
+  const handleSfwClick = () => {
+    if (!user) {
+      setShowPopup(true);
+    } else {
+      navigate('/explore-posts');
+    }
+  };
+
+  const handleNsfwClick = () => {
+    if (!user) {
+      setShowPopup(true);
+    } else {
+      navigate('/explore-posts-mature');
+    }
   };
 
   if (loading) {
@@ -85,36 +105,23 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <div className="home-search-container">
-        <div className="search-categories">
-          <Link to="/explore-posts" className="category-link">Publicaciones SFW</Link>
-          <Link to="/explore-posts-mature" className="category-link">Publicaciones NSFW</Link> {/* Cambié la ruta aquí */}
+      <div className="home-welcome-box">
+        <h2>¡Descubre Illustra!</h2>
+        <div className="publications-links">
+          <div className="category-link" onClick={handleSfwClick}>Publicaciones SFW</div>
+          <div className="category-link" onClick={handleNsfwClick}>Publicaciones NSFW</div>
         </div>
-        <div className="home-welcome-box">
-          <h2>Bienvenido a Illustra</h2>
-          <h3>Explora a los artistas más vistos y encuentra inspiración en cada esquina</h3>
-          <div className="who-we-are">
-            <h4>¿Quiénes somos?</h4>
-            <p>
-              Illustra es una página web con una comunidad donde podrás contratar servicios de artistas y también <span className="highlight">ofrecer tus propios servicios</span>! 
-              También, puedes compartir y promocionar tus ilustraciones en nuestro apartado de feed, recuerda que se divide en <span className="highlight">SFW</span> y <span className="highlight">NSFW</span>!
-            </p>
-          </div>
-          {user ? (
-            <p>¡Explora a los artistas más vistos!</p>
-          ) : (
-            <p>Únete a nuestra comunidad de ilustradores digitales. Por favor, <Link to="/register">regístrate</Link> o <Link to="/login">inicia sesión</Link> para continuar.</p>
-          )}
+        <p>Illustra es una plataforma que conecta artistas y clientes. Contrata servicios de artistas y ofrece tus propios servicios. ¡Comparte y promociona tus ilustraciones!</p>
+        <div className="home-search">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
         </div>
-        <input
-          type="text"
-          placeholder="Buscar..."
-          className="home-search"
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
         {searchResults.length > 0 && (
-          <div className="search-results">
+          <div className="search-dropdown">
             {searchResults.map((result, index) => (
               <div key={index} className="search-result-item" onClick={() => navigate(`/profile/${result.id}`)}>
                 <img src={result.photoURL || defaultProfilePic} alt={result.username} />
@@ -126,28 +133,67 @@ const Home = () => {
             ))}
           </div>
         )}
-      </div>
-      <main className="home-main">
-        <div className="explore-posts-text" onClick={() => navigate('/explore-posts')}>
-          ¡Explorar publicaciones!
-        </div>
-        {user && (
-          <div className="featured-artists">
-            {featuredUsers.map((featuredUser, index) => (
-              <div key={index} className="featured-artist" onClick={() => navigate(`/profile/${featuredUser.id}`)}>
-                <img src={featuredUser.photoURL || "https://via.placeholder.com/200"} alt={featuredUser.username} />
-                <div className="featured-artist-info">
-                  <h3>{featuredUser.username}</h3>
-                  <p>{truncateBio(featuredUser.bio)}</p>
-                </div>
-              </div>
-            ))}
+        {!user && (
+          <div className="create-account-box" onClick={() => navigate('/register')}>
+            <h3>Crea tu cuenta</h3>
+            <p>Regístrate y personaliza tu perfil para comenzar a mostrar tu talento al mundo.</p>
           </div>
         )}
-      </main>
+      </div>
+
+      <div className="how-it-works">
+        <h2>¿Cómo funciona Illustra?</h2>
+        <div className="steps-container">
+          <div className="step">
+            <h3>Crea tu cuenta</h3>
+            <p>Regístrate y personaliza tu perfil para comenzar a mostrar tu talento al mundo.</p>
+            <img src="/createAccount.png" alt="Crear cuenta" className="step-icon" />
+          </div>
+          <div className="step">
+            <h3>Crea contenido</h3>
+            <p>Comparte tus ilustraciones y proyectos. Publica en redes sociales para que más personas vean tu trabajo.</p>
+            <img src="/pen.png" alt="Crear contenido" className="step-icon" />
+          </div>
+          <div className="step">
+            <h3>Genera ingresos</h3>
+            <p>Ofrece tus comisiones como ilustrador a todos los usuarios. Demuestra tu talento y conviértelo en ingresos.</p>
+            <img src="/money.png" alt="Genera ingresos" className="step-icon" />
+          </div>
+          <div className="step">
+            <h3>Contrata a expertos</h3>
+            <p>Contrata a nuestros talentosos ilustradores para dar vida a tus ideas y proyectos con sus habilidades excepcionales.</p>
+            <img src="/handshake.png" alt="Contrata expertos" className="step-icon" />
+          </div>
+        </div>
+        <h3>Descubre increíbles ilustradores de nuestra comunidad</h3>
+        <div className="users-grid">
+          {featuredUsers.map((featuredUser, index) => (
+            <div key={index} className="user-card" onClick={() => navigate(`/profile/${featuredUser.id}`)}>
+              <img src={featuredUser.photoURL || defaultProfilePic} alt={featuredUser.username} />
+              <h3>{featuredUser.username}</h3>
+              <p>{truncateBio(featuredUser.bio)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <footer className="footer">
-        <p>© 2024 Illustra. All rights reserved.</p>
+        <p>© 2024 Illustra. Todos los derechos reservados.</p>
       </footer>
+
+      {showPopup && (
+        <div className="popup-container">
+          <div className="popup">
+            <h3>Advertencia</h3>
+            <p>Necesitas estar registrado para acceder a esta sección.</p>
+            <div className="popup-buttons">
+              <button onClick={() => navigate('/register')}>Registrarse</button>
+              <button onClick={() => navigate('/login')}>Log in</button>
+            </div>
+            <button className="close-button" onClick={handlePopupClose}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

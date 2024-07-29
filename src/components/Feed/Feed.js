@@ -1,4 +1,3 @@
-// src/components/Feed/Feed.js
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
@@ -23,8 +22,8 @@ const Feed = ({ collectionName }) => {
         const postsList = await Promise.all(
           postsSnapshot.docs.map(async (postDoc) => {
             const postData = postDoc.data();
-            if (!postData.userID) {
-              console.error('No userID found in post', postDoc.id);
+            if (!postData.userID || !postData.title || !postData.description || !postData.imageURL) {
+              console.error('Invalid post data found', postDoc.id);
               return null;
             }
             const userDocRef = doc(db, 'users', postData.userID);
@@ -94,15 +93,15 @@ const Feed = ({ collectionName }) => {
       <h1>Explora a Otros Artistas</h1>
       <div className="posts-grid">
         {posts.map(post => (
-          <div key={post.id} className="post-card">
-            <img src={post.imageURL} alt={post.title} className="post-image" onClick={() => handlePostClick(post.id)} />
+          <div key={post.id} className="post-card" onClick={() => handlePostClick(post.id)}>
+            <img src={post.imageURL} alt={post.title} className="post-image" />
             <div className="post-details">
               <img src={post.userPhotoURL} alt={post.username} className="user-photo" />
               <div className="post-info">
                 <span className="user-name">{post.username}</span>
                 <h3 className="post-title">{post.title}</h3>
                 {user?.role === 'admin' && (
-                  <button className="delete-post-button" onClick={() => handleDeletePost(post.id)}>Eliminar</button>
+                  <button className="delete-post-button" onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}>Eliminar</button>
                 )}
               </div>
             </div>
