@@ -48,19 +48,19 @@ h1 {
 
 .post-details {
   padding: 10px;
-  display: flex;
-  align-items: center;
-}
-
-.user-photo {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
 }
 
 .post-info {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.user-photo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
 
 .user-name {
@@ -72,7 +72,10 @@ h1 {
 .post-title {
   color: #6a0dad; /* Violet color */
   margin: 5px 0 0;
-  font-size: 1.1em;
+  font-size: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .delete-post-button {
@@ -83,6 +86,9 @@ h1 {
   padding: 5px 10px;
   cursor: pointer;
   margin-top: 10px;
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 
 .delete-post-button:hover {

@@ -38,7 +38,7 @@ const Feed = ({ collectionName }) => {
               ...postData,
               username: userData.username || 'Unknown User',
               userPhotoURL: userData.photoURL || defaultProfilePic,
-              title: postData.title.substring(0, 30) // Limita el título a 30 caracteres
+              title: postData.title.substring(0, 40) // Limita el título a 40 caracteres
             };
           })
         );
@@ -96,14 +96,14 @@ const Feed = ({ collectionName }) => {
           <div key={post.id} className="post-card" onClick={() => handlePostClick(post.id)}>
             <img src={post.imageURL} alt={post.title} className="post-image" />
             <div className="post-details">
-              <img src={post.userPhotoURL} alt={post.username} className="user-photo" />
               <div className="post-info">
+                <img src={post.userPhotoURL} alt={post.username} className="user-photo" />
                 <span className="user-name">{post.username}</span>
-                <h3 className="post-title">{post.title}</h3>
-                {user?.role === 'admin' && (
-                  <button className="delete-post-button" onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}>Eliminar</button>
-                )}
               </div>
+              <h3 className="post-title">{post.title}</h3>
+              {user?.role === 'admin' && (
+                <button className="delete-post-button" onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}>Eliminar</button>
+              )}
             </div>
           </div>
         ))}
