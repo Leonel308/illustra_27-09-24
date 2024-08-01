@@ -69,7 +69,11 @@ const Feed = ({ collectionName }) => {
   };
 
   if (loading) {
-    return <div className="loading">Cargando...</div>;
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+      </div>
+    );
   }
 
   if (error) {

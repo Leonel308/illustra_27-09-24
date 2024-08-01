@@ -1,11 +1,12 @@
 .post-details-page {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     padding: 20px;
 }
 
-.post-details-main {
-    width: 65%;
+.content-area {
+    width: 70%;
 }
 
 .post-details-container {
@@ -13,25 +14,22 @@
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.post-image-container {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    text-align: center;
+    margin-bottom: 20px;
+    overflow: hidden;
 }
 
 .post-image {
     width: 100%;
-    height: auto;
-    max-height: 400px;
-    object-fit: cover;
+    max-height: 600px;
+    object-fit: contain;
     border-radius: 10px;
 }
 
 .post-content {
     margin-top: 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .post-author {
@@ -60,14 +58,59 @@
 .post-description {
     margin-top: 10px;
     color: #333;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
-.sidebar {
-    width: 30%;
+.comments-section {
     padding: 20px;
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.comment {
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.add-comment textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.add-comment button {
+    background-color: #6a0dad;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-comment button:hover {
+    background-color: #5a0cad;
+}
+
+.sidebar {
+    width: 25%;
+    margin-left: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .recommended-post {
@@ -79,6 +122,9 @@
     padding: 10px;
     border-radius: 10px;
     transition: background-color 0.3s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .recommended-post:hover {
@@ -121,36 +167,23 @@
     margin: 0;
 }
 
-.comments-section {
-    width: 100%;
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.comment {
-    margin-bottom: 10px;
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #6a0dad;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
 }
 
-.add-comment textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-.add-comment button {
-    background-color: #6a0dad;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.add-comment button:hover {
-    background-color: #5a0cad;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

@@ -98,7 +98,7 @@ const PostDetails = () => {
   };
 
   if (loading) {
-    return <div className="loading">Cargando...</div>;
+    return <div className="loading-container"><div className="spinner"></div></div>;
   }
 
   if (error) {
@@ -111,11 +111,9 @@ const PostDetails = () => {
 
   return (
     <div className="post-details-page">
-      <div className="post-details-main">
+      <div className="content-area">
         <div className="post-details-container">
-          <div className="post-image-container">
-            <img src={post.imageURL} alt={post.title} className="post-image" />
-          </div>
+          <img src={post.imageURL} alt={post.title} className="post-image" />
           <div className="post-content">
             <div className="post-author">
               <img src={post.userPhotoURL} alt={post.username} className="user-photo" />
