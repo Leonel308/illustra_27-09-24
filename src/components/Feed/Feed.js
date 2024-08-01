@@ -94,7 +94,9 @@ const Feed = ({ collectionName }) => {
       <div className="posts-grid">
         {posts.map(post => (
           <div key={post.id} className="post-card" onClick={() => handlePostClick(post.id)}>
-            <img src={post.imageURL} alt={post.title} className="post-image" />
+            <div className="post-image-container">
+              <img src={post.imageURL} alt={post.title} className="post-image" />
+            </div>
             <div className="post-details">
               <div className="post-info">
                 <img src={post.userPhotoURL} alt={post.username} className="user-photo" />
