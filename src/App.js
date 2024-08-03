@@ -19,7 +19,10 @@ import PendingPage from './PaymentsStatus/Pending';
 import CallbackPage from './components/CallbackPage';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
-import PostDetails from './components/Feed/PostsDetails'; // Asegúrate de importar PostDetails
+import PostDetails from './components/Feed/PostsDetails';
+import Workbench from './components/Workbench';
+import ServiceRequest from './components/ServiceRequest';
+import Notifications from './components/Notifications';
 import { UserProvider } from './context/UserContext';
 import Layout from './components/Layout';
 
@@ -48,7 +51,10 @@ function App() {
           <Route path="/mercadopago/callback" element={<Layout><CallbackPage /></Layout>} />
           <Route path="/dashboard" element={<Layout><UserDashboard /></Layout>} />
           <Route path="/admin-dashboard" element={<Layout><AdminDashboard /></Layout>} />
-          <Route path="/post/:postId" element={<Layout><PostDetails /></Layout>} /> {/* Nueva ruta */}
+          <Route path="/post/:postId" element={<Layout><PostDetails /></Layout>} />
+          <Route path="/workbench" element={<Layout><Workbench /></Layout>} />
+          <Route path="/service-request/:userId/:serviceId" element={<Layout><ServiceRequest /></Layout>} />
+          <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
         </Routes>
       </Router>
     </UserProvider>

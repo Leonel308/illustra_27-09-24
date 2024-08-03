@@ -1,0 +1,78 @@
+.notifications-container {
+  width: 100%;
+  max-width: 280px; /* Ajuste del ancho para que se vea mejor */
+  max-height: 350px; /* Ajuste de la altura máxima */
+  overflow-y: auto; /* Añadir scroll si el contenido sobrepasa la altura */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px 15px; /* Ajustar padding interno */
+}
+
+.notifications-container h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #6a0dad;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0; /* Reducir padding entre elementos */
+  border-bottom: 1px solid #ddd;
+}
+
+.notification-item:hover {
+  background-color: #f0f0f0;
+}
+
+.notification-item p {
+  margin: 0;
+  font-size: 12px; /* Tamaño de fuente más pequeño */
+  color: #333;
+  flex-grow: 1;
+  margin-right: 8px; /* Añadir margen a la derecha del texto */
+}
+
+.notification-item small {
+  color: #888;
+  font-size: 10px; /* Tamaño de fuente más pequeño */
+  text-align: right;
+  white-space: nowrap; /* Evitar que se rompa en varias líneas */
+}
+
+.mark-as-read {
+  background-color: #6a0dad;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 2px 6px; /* Reducir el padding */
+  cursor: pointer;
+  font-size: 12px; /* Mantener el tamaño de la fuente */
+  transition: background-color 0.3s ease;
+  margin-left: 8px; /* Mantener el margen a la izquierda */
+  width: 40px; /* Ajustar el ancho del botón */
+  text-align: center; /* Centrar el texto */
+}
+
+.mark-as-read:hover {
+  background-color: #5a008b;
+}
+
+.no-notifications {
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+  padding: 10px;
+}

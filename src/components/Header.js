@@ -1,9 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
 import UserContext from '../context/UserContext';
-import { logout, db } from '../firebaseConfig'; // Asegúrate de importar db de firebaseConfig
-import { doc, getDoc } from 'firebase/firestore';
+import { logout, db } from '../firebaseConfig';
+import Notifications from './Notifications';
 import '../Styles/Header.css';
+import notificationEmpty from '../assets/notificationEmpty.png';
+import notificationAlert from '../assets/notificationAlert.png';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
@@ -12,9 +15,16 @@ const Header = () => {
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [balance, setBalance] = useState(0.00);
+  const [isArtist, setIsArtist] = useState(false);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const [hasNotifications, setHasNotifications] = useState(false);
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
+  };
+
+  const toggleNotifications = () => {
+    setNotificationsVisible(!notificationsVisible);
   };
 
   const handleLogout = async () => {
@@ -27,23 +37,35 @@ const Header = () => {
   };
 
   useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchUserData = async () => {
       if (user) {
         try {
           const userRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            setBalance(userData.balance || 0.00); // Actualiza el balance en el estado local
+            setBalance(userData.balance || 0.00);
+            setIsArtist(userData.isArtist || false);
           }
         } catch (error) {
-          console.error('Error fetching user balance:', error);
+          console.error('Error fetching user data:', error);
         }
       }
     };
 
-    fetchBalance();
-  }, [user]); // Ejecuta el efecto cuando el usuario cambia
+    fetchUserData();
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      const notificationsRef = collection(db, 'users', user.uid, 'Notifications');
+      const unsubscribe = onSnapshot(notificationsRef, (snapshot) => {
+        setHasNotifications(!snapshot.empty);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [user]);
 
   return (
     <header className="header">
@@ -53,6 +75,20 @@ const Header = () => {
         {user ? (
           <>
             <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>Crear Publicación</button>
+            
+            <div className="header-notifications" onClick={toggleNotifications}>
+              <img 
+                src={hasNotifications ? notificationAlert : notificationEmpty} 
+                alt="Notificaciones" 
+                className="header-notifications-icon" 
+              />
+              {notificationsVisible && (
+                <div className="header-notifications-dropdown">
+                  <Notifications />
+                </div>
+              )}
+            </div>
+
             <div className="header-user" onClick={toggleDropdown}>
               <img src={user.photoURL || defaultProfilePic} alt="Profile" className="header-profile-pic" />
               <span className="header-username">{user.username}</span>
@@ -60,6 +96,9 @@ const Header = () => {
                 <div className="header-dropdown">
                   <div className="header-dropdown-item">Saldo: {balance.toFixed(2)}$</div>
                   <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>
+                  {isArtist && (
+                    <Link to="/workbench" className="header-dropdown-item">Mesa de Trabajo</Link>
+                  )}
                   {user.role === 'admin' ? (
                     <Link to="/admin-dashboard" className="header-dropdown-item">Admin Dashboard</Link>
                   ) : (

@@ -1,21 +1,38 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, collection, addDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
 import '../../Styles/ProfileStyles/ProfileServices.css';
 
-const ProfileServices = ({ services = [], isOwner, setServices }) => {
+const ProfileServices = ({ isOwner }) => {
+  const { userId } = useParams();
   const { user } = useContext(UserContext);
+  const [services, setServices] = useState([]);
   const [serviceTitle, setServiceTitle] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
   const [servicePrice, setServicePrice] = useState('');
   const [serviceImage, setServiceImage] = useState(null);
+  const [estimatedHours, setEstimatedHours] = useState(1); // Estado para las horas estimadas
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const servicesRef = collection(db, 'users', userId, 'Services');
+      const servicesSnapshot = await getDocs(servicesRef);
+      const servicesList = servicesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setServices(servicesList);
+    };
+
+    fetchServices();
+  }, [userId]);
 
   const handleServiceImageChange = (e) => {
     setServiceImage(e.target.files[0]);
@@ -30,7 +47,7 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
 
   const handleDescriptionChange = (e) => {
     const value = e.target.value;
-    if (value.length <= 240) {
+    if (value.length <= 240) {  // Limitar a 240 caracteres
       setServiceDescription(value);
     }
   };
@@ -57,19 +74,20 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
         const newService = {
           title: serviceTitle,
           description: serviceDescription,
-          price: formatPrice(servicePrice),
-          imageUrl: serviceImageUrl
+          price: parseInt(servicePrice),
+          imageUrl: serviceImageUrl,
+          estimatedHours, // Agregar las horas estimadas al nuevo servicio
         };
 
-        await updateDoc(doc(db, 'users', user.uid), {
-          services: arrayUnion(newService)
-        });
+        const serviceRef = collection(db, 'users', user.uid, 'Services');
+        await addDoc(serviceRef, newService);
 
         setServices((prevServices) => [...prevServices, newService]);
         setServiceTitle('');
         setServiceDescription('');
         setServicePrice('');
         setServiceImage(null);
+        setEstimatedHours(1); // Resetear el valor de las horas estimadas
         setError('');
         setShowForm(false); // Ocultar el formulario después de agregar el servicio
       } catch (error) {
@@ -87,15 +105,13 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
     if (user) {
       setLoading(true);
       try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          services: arrayRemove(service)
-        });
+        const serviceRef = doc(db, 'users', user.uid, 'Services', service.id);
+        await deleteDoc(serviceRef);
 
         const serviceImageRef = ref(storage, `services/${user.uid}/${service.imageUrl.split('%2F')[2].split('?')[0]}`);
         await deleteObject(serviceImageRef);
 
-        setServices((prevServices) => prevServices.filter(s => s !== service));
+        setServices((prevServices) => prevServices.filter(s => s.id !== service.id));
         setError('');
       } catch (error) {
         console.error('Error al eliminar el servicio:', error);
@@ -126,6 +142,7 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
                 value={serviceDescription} 
                 onChange={handleDescriptionChange} 
                 placeholder="Descripción del Servicio" 
+                maxLength={240} // Limitar a 240 caracteres en la interfaz
               />
               <p className="char-counter">{serviceDescription.length}/240</p>
               <input 
@@ -139,6 +156,18 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
                 accept="image/*" 
                 onChange={handleServiceImageChange} 
               />
+
+              {/* Nueva barra de selección de horas estimadas */}
+              <label htmlFor="estimated-hours">Horas estimadas para completar el servicio: {estimatedHours}</label>
+              <input
+                type="range"
+                id="estimated-hours"
+                min="1"
+                max="72" // Ejemplo, permite hasta 72 horas (3 días)
+                value={estimatedHours}
+                onChange={(e) => setEstimatedHours(e.target.value)}
+              />
+
               <button onClick={handleAddService} disabled={loading}>
                 {loading ? 'Agregando...' : 'Agregar Servicio'}
               </button>
@@ -148,14 +177,15 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
         </>
       )}
       <div className="services-list">
-        {services.map((service, index) => (
-          <div key={index} className="service-item">
+        {services.map((service) => (
+          <div key={service.id} className="service-item">
             <img src={service.imageUrl} alt={service.title} />
             <h4>{service.title}</h4>
             <p>{service.description}</p>
-            <p>{service.price}</p>
+            <p className="price">{formatPrice(service.price)}</p>
+            <p>Horas estimadas: {service.estimatedHours} horas</p> {/* Mostrar las horas estimadas */}
             <div className="service-actions">
-              <button onClick={() => navigate(`/hire-service/${user.uid}/${index}`)}>Contratar</button>
+              <button onClick={() => navigate(`/service-request/${userId}/${service.id}`)}>Contratar</button>
               {isOwner && (
                 <button 
                   className="delete-button" 
