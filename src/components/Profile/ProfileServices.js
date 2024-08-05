@@ -14,7 +14,7 @@ const ProfileServices = ({ isOwner }) => {
   const [serviceDescription, setServiceDescription] = useState('');
   const [servicePrice, setServicePrice] = useState('');
   const [serviceImage, setServiceImage] = useState(null);
-  const [estimatedHours, setEstimatedHours] = useState(1); // Estado para las horas estimadas
+  const [estimatedHours, setEstimatedHours] = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -47,7 +47,7 @@ const ProfileServices = ({ isOwner }) => {
 
   const handleDescriptionChange = (e) => {
     const value = e.target.value;
-    if (value.length <= 240) {  // Limitar a 240 caracteres
+    if (value.length <= 240) {
       setServiceDescription(value);
     }
   };
@@ -76,7 +76,7 @@ const ProfileServices = ({ isOwner }) => {
           description: serviceDescription,
           price: parseInt(servicePrice),
           imageUrl: serviceImageUrl,
-          estimatedHours, // Agregar las horas estimadas al nuevo servicio
+          estimatedHours,
         };
 
         const serviceRef = collection(db, 'users', user.uid, 'Services');
@@ -87,9 +87,9 @@ const ProfileServices = ({ isOwner }) => {
         setServiceDescription('');
         setServicePrice('');
         setServiceImage(null);
-        setEstimatedHours(1); // Resetear el valor de las horas estimadas
+        setEstimatedHours(1);
         setError('');
-        setShowForm(false); // Ocultar el formulario después de agregar el servicio
+        setShowForm(false);
       } catch (error) {
         console.error('Error al agregar el servicio:', error);
         setError('Error al agregar el servicio. Por favor, inténtelo de nuevo.');
@@ -142,7 +142,7 @@ const ProfileServices = ({ isOwner }) => {
                 value={serviceDescription} 
                 onChange={handleDescriptionChange} 
                 placeholder="Descripción del Servicio" 
-                maxLength={240} // Limitar a 240 caracteres en la interfaz
+                maxLength={240}
               />
               <p className="char-counter">{serviceDescription.length}/240</p>
               <input 
@@ -157,13 +157,12 @@ const ProfileServices = ({ isOwner }) => {
                 onChange={handleServiceImageChange} 
               />
 
-              {/* Nueva barra de selección de horas estimadas */}
               <label htmlFor="estimated-hours">Horas estimadas para completar el servicio: {estimatedHours}</label>
               <input
                 type="range"
                 id="estimated-hours"
                 min="1"
-                max="72" // Ejemplo, permite hasta 72 horas (3 días)
+                max="72"
                 value={estimatedHours}
                 onChange={(e) => setEstimatedHours(e.target.value)}
               />
@@ -183,9 +182,12 @@ const ProfileServices = ({ isOwner }) => {
             <h4>{service.title}</h4>
             <p>{service.description}</p>
             <p className="price">{formatPrice(service.price)}</p>
-            <p>Horas estimadas: {service.estimatedHours} horas</p> {/* Mostrar las horas estimadas */}
+            <p>Horas estimadas: {service.estimatedHours} horas</p>
             <div className="service-actions">
-              <button onClick={() => navigate(`/service-request/${userId}/${service.id}`)}>Contratar</button>
+              {/* Verificar si el usuario está viendo su propio perfil */}
+              {user.uid !== userId && (
+                <button onClick={() => navigate(`/service-request/${userId}/${service.id}`)}>Contratar</button>
+              )}
               {isOwner && (
                 <button 
                   className="delete-button" 

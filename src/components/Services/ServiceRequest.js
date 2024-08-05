@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db, storage } from '../firebaseConfig';
+import { db, storage } from '../../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, addDoc, getDoc, setDoc, collection } from 'firebase/firestore';
-import '../Styles/ServiceRequest.css';
-import UserContext from '../context/UserContext';
+import '../../Styles/ServiceRequest.css';
+import UserContext from '../../context/UserContext';
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext); // Obtenemos el usuario actual desde el contexto
@@ -17,24 +17,24 @@ const ServiceRequest = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchServiceDetails = async () => {
-    try {
-      const serviceRef = doc(db, 'users', userId, 'Services', serviceId);
-      const serviceDoc = await getDoc(serviceRef);
-      if (serviceDoc.exists()) {
-        const serviceData = serviceDoc.data();
-        setServiceTitle(serviceData.title);
-        setServicePrice(serviceData.price);
-      } else {
-        setError('El documento no existe.');
-      }
-    } catch (error) {
-      console.error('Error fetching service details:', error);
-      setError('Hubo un error al obtener los detalles del servicio.');
-    }
-  };
-
   useEffect(() => {
+    const fetchServiceDetails = async () => {
+      try {
+        const serviceRef = doc(db, 'users', userId, 'Services', serviceId);
+        const serviceDoc = await getDoc(serviceRef);
+        if (serviceDoc.exists()) {
+          const serviceData = serviceDoc.data();
+          setServiceTitle(serviceData.title);
+          setServicePrice(serviceData.price);
+        } else {
+          setError('El documento no existe.');
+        }
+      } catch (error) {
+        console.error('Error fetching service details:', error);
+        setError('Hubo un error al obtener los detalles del servicio.');
+      }
+    };
+
     if (serviceId && userId) {
       fetchServiceDetails();
     }
@@ -89,19 +89,9 @@ const ServiceRequest = () => {
 
       const docRef = await addDoc(serviceRequestRef, newRequest);
 
-      // Actualizar la mesa de trabajo del ilustrador
-      const illustratorWorkbenchRef = doc(db, 'users', userId, 'Workbench', docRef.id);
-      await setDoc(illustratorWorkbenchRef, {
-        serviceId: docRef.id,
-        serviceTitle: serviceTitle,
-        servicePrice: servicePrice,
-        status: 'pending',
-        createdAt: new Date(),
-      });
-
-      // Actualizar la mesa de trabajo del cliente
-      const clientWorkbenchRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
-      await setDoc(clientWorkbenchRef, {
+      // Actualizar la mesa de trabajo del cliente (ServiceHired)
+      const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
+      await setDoc(clientServiceHiredRef, {
         illustratorId: userId,
         serviceTitle: serviceTitle,
         servicePrice: servicePrice,

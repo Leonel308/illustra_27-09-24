@@ -70,3 +70,12 @@
 .workbench-item button:last-child:hover {
   background-color: #c0392b;
 }
+
+.workbench-container .workbench-item .view-details-button {
+  background-color: #27ae60;
+  margin-top: 10px;
+}
+
+.workbench-container .workbench-item .view-details-button:hover {
+  background-color: #1e8449;
+}

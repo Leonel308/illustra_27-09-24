@@ -21,8 +21,10 @@ import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import PostDetails from './components/Feed/PostsDetails';
 import Workbench from './components/Workbench';
-import ServiceRequest from './components/ServiceRequest';
+import ServiceRequest from './components/Services/ServiceRequest';
 import Notifications from './components/Notifications';
+import ServiceDetailsWorker from './components/Services/ServiceDetailsWorker';
+import ServiceDetailsUser from './components/Services/ServiceDetailsUser';
 import { UserProvider } from './context/UserContext';
 import Layout from './components/Layout';
 
@@ -55,6 +57,8 @@ function App() {
           <Route path="/workbench" element={<Layout><Workbench /></Layout>} />
           <Route path="/service-request/:userId/:serviceId" element={<Layout><ServiceRequest /></Layout>} />
           <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
+          <Route path="/service-details-worker/:requestId/:clientId" element={<Layout><ServiceDetailsWorker /></Layout>} /> {/* Ruta para el Worker */}
+          <Route path="/service-details-user/:requestId/:clientId" element={<Layout><ServiceDetailsUser /></Layout>} /> {/* Ruta para el User */}
         </Routes>
       </Router>
     </UserProvider>
