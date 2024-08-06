@@ -108,7 +108,7 @@ app.get('/mercadoPagoToken', async (req, res) => {
     });
 
     res.set('Access-Control-Allow-Origin', 'https://illustra-6ca8a.web.app');
-    res.json(response.data); // Enviar la respuesta como JSON
+    res.json(response.data);
   } catch (error) {
     console.error("Error al obtener tokens de Mercado Pago:", error.response ? error.response.data : error.message);
     res.status(500).send("Error al obtener tokens de Mercado Pago");
@@ -174,7 +174,8 @@ app.post('/approvePayment', async (req, res) => {
     if (paymentResponse.data && paymentResponse.data.status === "approved") {
       // Actualizar el balance del usuario en Firestore
       await userRef.update({
-        balance: admin.firestore.FieldValue.increment(-amount)
+        balance: admin.firestore.FieldValue.increment(-amount),
+        pendingBalance: admin.firestore.FieldValue.increment(-amount)
       });
 
       res.send("Payment approved and processed");
@@ -199,7 +200,7 @@ app.post('/paymentNotification', async (req, res) => {
       });
 
       const paymentStatus = paymentResponse.data.status;
-      const userId = paymentResponse.data.payer.id; // Ajusta esto según tu estructura
+      const userId = paymentResponse.data.payer.id;
       const amount = paymentResponse.data.transaction_amount;
 
       if (paymentStatus === 'approved') {
@@ -210,7 +211,8 @@ app.post('/paymentNotification', async (req, res) => {
         // Actualizar el balance del usuario en Firestore
         const userRef = admin.firestore().collection('users').doc(userId);
         await userRef.update({
-          balance: admin.firestore.FieldValue.increment(-amount)
+          balance: admin.firestore.FieldValue.increment(-amount),
+          pendingBalance: admin.firestore.FieldValue.increment(-amount)
         });
       }
 
@@ -221,6 +223,37 @@ app.post('/paymentNotification', async (req, res) => {
     }
   } else {
     res.sendStatus(200);
+  }
+});
+
+// Función para actualizar el pendingBalance cuando se deniega una solicitud o se transfiere al ilustrador
+app.post('/updatePendingBalance', async (req, res) => {
+  const { userId, amount, action } = req.body;
+
+  if (!userId || !amount || !action) {
+    return res.status(400).send("Missing required fields: userId, amount, action");
+  }
+
+  try {
+    const userRef = admin.firestore().collection('users').doc(userId);
+    
+    if (action === 'refund') {
+      // Devolver saldo al balance y reducir el pendingBalance
+      await userRef.update({
+        balance: admin.firestore.FieldValue.increment(amount),
+        pendingBalance: admin.firestore.FieldValue.increment(-amount)
+      });
+    } else if (action === 'transfer') {
+      // Reducir el pendingBalance (ya que se transfiere al ilustrador)
+      await userRef.update({
+        pendingBalance: admin.firestore.FieldValue.increment(-amount)
+      });
+    }
+
+    res.send("Pending balance updated successfully");
+  } catch (error) {
+    console.error("Error updating pending balance:", error);
+    res.status(500).send("Error updating pending balance");
   }
 });
 

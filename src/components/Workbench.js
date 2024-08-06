@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc, getDoc } from 'firebase/firestore'; // Make sure to import `getDoc`
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../context/UserContext';
 import '../Styles/Workbench.css';
@@ -30,22 +30,39 @@ const Workbench = () => {
     fetchRequests();
   }, [user]);
 
-  const handleAccept = async (requestId, clientId) => {
+  const handleAccept = async (requestId, clientId, servicePrice) => {
     try {
-      // Actualizar el estado de la solicitud a "in progress" en la colección del ilustrador
+      // Update the status to "in progress" in the illustrator's collection
       await updateDoc(doc(db, 'users', user.uid, 'ServiceRequests', requestId), {
         status: 'in progress',
       });
 
-      // Actualizar el estado de la solicitud a "in progress" en la colección del contratante
+      // Update the status to "in progress" in the client's collection
       await updateDoc(doc(db, 'users', clientId, 'ServiceHired', requestId), {
         status: 'in progress',
       });
 
-      // Actualizar la interfaz del ilustrador
+      // Update the interface for the illustrator
       setReceivedRequests(receivedRequests.map(request =>
         request.id === requestId ? { ...request, status: 'in progress' } : request
       ));
+
+      // Move funds from pendingBalance to the illustrator's balance
+      const clientRef = doc(db, 'users', clientId);
+      const clientDoc = await getDoc(clientRef);
+      const clientData = clientDoc.data();
+
+      await updateDoc(clientRef, {
+        pendingBalance: clientData.pendingBalance - servicePrice,
+      });
+
+      const illustratorRef = doc(db, 'users', user.uid);
+      const illustratorDoc = await getDoc(illustratorRef);
+      const illustratorData = illustratorDoc.data();
+
+      await updateDoc(illustratorRef, {
+        balance: illustratorData.balance + servicePrice,
+      });
 
       alert('Solicitud aceptada. Estado actualizado a "in progress".');
     } catch (error) {
@@ -54,17 +71,17 @@ const Workbench = () => {
     }
   };
 
-  const handleDeny = async (requestId, clientId, serviceTitle) => {
+  const handleDeny = async (requestId, clientId, serviceTitle, servicePrice) => {
     try {
-      // Eliminar la solicitud de la base de datos
+      // Delete the request from the illustrator's collection
       await deleteDoc(doc(db, 'users', user.uid, 'ServiceRequests', requestId));
       setReceivedRequests(receivedRequests.filter(request => request.id !== requestId));
 
-      // Eliminar la solicitud de la colección ServiceHired del cliente
+      // Delete the request from the client's ServiceHired collection
       await deleteDoc(doc(db, 'users', clientId, 'ServiceHired', requestId));
       setHiredRequests(hiredRequests.filter(request => request.id !== requestId));
 
-      // Enviar notificación al cliente
+      // Send notification to the client
       const notificationsRef = collection(db, 'users', clientId, 'Notifications');
       await addDoc(notificationsRef, {
         message: `Tu solicitud para el servicio "${serviceTitle}" ha sido denegada.`,
@@ -72,7 +89,17 @@ const Workbench = () => {
         read: false,
       });
 
-      alert('Solicitud denegada y notificación enviada al cliente.');
+      // Refund the balance to the client
+      const clientRef = doc(db, 'users', clientId);
+      const clientDoc = await getDoc(clientRef);
+      const clientData = clientDoc.data();
+
+      await updateDoc(clientRef, {
+        balance: clientData.balance + servicePrice,
+        pendingBalance: clientData.pendingBalance - servicePrice,
+      });
+
+      alert('Solicitud denegada, saldo devuelto y notificación enviada al cliente.');
     } catch (error) {
       console.error('Error al denegar la solicitud:', error);
       alert('Hubo un error al denegar la solicitud. Intenta nuevamente.');
@@ -123,8 +150,8 @@ const Workbench = () => {
                 </button>
               ) : (
                 <>
-                  <button onClick={() => handleAccept(request.id, request.clientId)}>Aceptar</button>
-                  <button onClick={() => handleDeny(request.id, request.clientId, request.serviceTitle)}>Denegar</button>
+                  <button onClick={() => handleAccept(request.id, request.clientId, request.servicePrice)}>Aceptar</button>
+                  <button onClick={() => handleDeny(request.id, request.clientId, request.serviceTitle, request.servicePrice)}>Denegar</button>
                 </>
               )}
             </div>

@@ -63,14 +63,15 @@ const ServiceRequest = () => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         if (userData.balance >= servicePrice) {
-          // Deduct balance and proceed with service request
+          // Deduct balance, create payment record and proceed with service request
           await setDoc(userRef, { balance: userData.balance - servicePrice }, { merge: true });
+          await createPaymentRecord('wallet', servicePrice);
           await submitServiceRequest();
         } else {
-          alert('Saldo insuficiente en la billetera.');
+          setError('Saldo insuficiente en la billetera.');
         }
       } else {
-        alert('Error al verificar el saldo.');
+        setError('Error al verificar el saldo.');
       }
     } else if (method === 'mercadoPago') {
       // Implement Mercado Pago payment logic
@@ -80,17 +81,43 @@ const ServiceRequest = () => {
 
   const handleMercadoPagoPayment = async () => {
     // Implement the Mercado Pago payment logic here
-    // Reuse the donation button code to initiate the payment process
+    await createPaymentRecord('mercadoPago', servicePrice);
+    await submitServiceRequest();
+  };
+
+  const createPaymentRecord = async (method, amount) => {
+    try {
+      const paymentData = {
+        amount,
+        illustratorID: userId,
+        paymentMethod: method,
+        serviceID: serviceId,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const paymentRef = collection(db, 'users', currentUser.uid, 'Payments');
+      await addDoc(paymentRef, paymentData);
+    } catch (error) {
+      console.error('Error al crear el registro de pago:', error);
+      setError('Hubo un error al crear el registro de pago.');
+    }
   };
 
   const submitServiceRequest = async () => {
-    if (!description || files.length === 0) {
-      alert('Por favor, complete la descripción y adjunte al menos un archivo.');
+    if (!description) {
+      setError('Por favor, complete la descripción.');
+      return;
+    }
+
+    if (files.length === 0) {
+      setError('Por favor, adjunte al menos un archivo.');
       return;
     }
 
     if (!currentUser) {
-      alert('Debes estar logueado para hacer una solicitud.');
+      setError('Debes estar logueado para hacer una solicitud.');
       return;
     }
 
@@ -151,7 +178,11 @@ const ServiceRequest = () => {
   };
 
   const handleSubmit = () => {
-    setShowPaymentModal(true);
+    if (!description || files.length === 0) {
+      setError('Por favor, complete la descripción y adjunte al menos un archivo.');
+    } else {
+      setShowPaymentModal(true);
+    }
   };
 
   return (
