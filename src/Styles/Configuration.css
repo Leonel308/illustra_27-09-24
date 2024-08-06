@@ -1,150 +1,150 @@
 /* Configuration.css */
 
 body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Arial', sans-serif;
-}
-
-.configuration-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.configuration-header {
-  text-align: center;
-  color: #4a148c;
-  margin-bottom: 20px;
-}
-
-.configuration-section {
-  flex: 1;
-  margin-bottom: 20px;
-}
-
-.configuration-section h3 {
-  color: #4a148c;
-  margin-bottom: 10px;
-}
-
-.configuration-section label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #333;
-}
-
-.configuration-section input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.configuration-section input[disabled] {
-  background-color: #e0e0e0;
-  cursor: not-allowed;
-}
-
-.configuration-section button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background-color: #4a148c;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 10px;
-  transition: background-color 0.3s;
-}
-
-.configuration-section button:hover {
-  background-color: #6a1b9a;
-}
-
-.configuration-section .forgot-password-button {
-  background-color: #d32f2f;
-}
-
-.configuration-section .forgot-password-button:hover {
-  background-color: #e53935;
-}
-
-.configuration-section .donation-amount {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.configuration-section .donation-amount input {
-  flex: 1;
-}
-
-.configuration-section .delete-button {
-  margin-left: 10px;
-  padding: 5px;
-  width: 30px;
-  height: 30px;
-  background-color: #d32f2f;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-}
-
-.configuration-section .delete-button:hover {
-  background-color: #e53935;
-  transform: scale(1.1);
-}
-
-.configuration-section .info-message,
-.configuration-section .warning-message,
-.configuration-section .error-message,
-.configuration-section .success-message {
-  margin-top: 10px;
-  font-size: 14px;
-  text-align: center;
-}
-
-.configuration-section .info-message {
-  color: #0288d1;
-}
-
-.configuration-section .warning-message {
-  color: #fbc02d;
-}
-
-.configuration-section .error-message {
-  color: #d32f2f;
-}
-
-.configuration-section .success-message {
-  color: #388e3c;
-}
-
-.save-button {
-  background-color: #388e3c;
-  margin-top: auto;
-}
-
-.save-button:hover {
-  background-color: #43a047;
-}
-
-.disabled-button {
-  background-color: #e0e0e0;
-  color: #a0a0a0;
-  font-style: italic;
-  cursor: not-allowed;
-}
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .configuration-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .configuration-header {
+    text-align: center;
+    color: #4a148c;
+    margin-bottom: 20px;
+  }
+  
+  .configuration-section {
+    flex: 1;
+    margin-bottom: 20px;
+  }
+  
+  .configuration-section h3 {
+    color: #4a148c;
+    margin-bottom: 10px;
+  }
+  
+  .configuration-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .configuration-section input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .configuration-section input[disabled] {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+  }
+  
+  .configuration-section button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #4a148c;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  .configuration-section button:hover {
+    background-color: #6a1b9a;
+  }
+  
+  .configuration-section .forgot-password-button {
+    background-color: #d32f2f;
+  }
+  
+  .configuration-section .forgot-password-button:hover {
+    background-color: #e53935;
+  }
+  
+  .configuration-section .donation-amount {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .configuration-section .donation-amount input {
+    flex: 1;
+  }
+  
+  .configuration-section .delete-button {
+    margin-left: 10px;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    background-color: #d32f2f;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .configuration-section .delete-button:hover {
+    background-color: #e53935;
+    transform: scale(1.1);
+  }
+  
+  .configuration-section .info-message,
+  .configuration-section .warning-message,
+  .configuration-section .error-message,
+  .configuration-section .success-message {
+    margin-top: 10px;
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .configuration-section .info-message {
+    color: #0288d1;
+  }
+  
+  .configuration-section .warning-message {
+    color: #fbc02d;
+  }
+  
+  .configuration-section .error-message {
+    color: #d32f2f;
+  }
+  
+  .configuration-section .success-message {
+    color: #388e3c;
+  }
+  
+  .save-button {
+    background-color: #388e3c;
+    margin-top: auto;
+  }
+  
+  .save-button:hover {
+    background-color: #43a047;
+  }
+  
+  .disabled-button {
+    background-color: #e0e0e0;
+    color: #a0a0a0;
+    font-style: italic;
+    cursor: not-allowed;
+  }

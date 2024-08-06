@@ -140,35 +140,36 @@ const ServiceDetailsWorker = () => {
   }
 
   if (error || fetchError) {
-    return <p className="error-message">{error || fetchError}</p>;
+    return <p className="service-details-worker-error-message">{error || fetchError}</p>;
   }
 
   if (!user) {
-    return <p className="error-message">No se ha iniciado sesión.</p>;
+    return <p className="service-details-worker-error-message">No se ha iniciado sesión.</p>;
   }
 
   return (
-    <div className="service-details-container">
-      <h2>Detalles del Servicio para Trabajador</h2>
+    <div className="service-details-worker-container">
+      <h2 className="service-details-worker-header">Detalles del Servicio para Trabajador</h2>
       {serviceDetails ? (
-        <div className="service-details-content">
-          <div className="service-details-info">
-            <p className="price">Precio: ${serviceDetails.servicePrice}</p>
+        <div className="service-details-worker-content">
+          <div className="service-details-worker-info">
+            <p className="service-details-worker-price">Precio: ${serviceDetails.servicePrice}</p>
             <h3>Título: {serviceDetails.serviceTitle}</h3>
             <h4>Descripción:</h4>
             <p>{serviceDetails.description}</p>
           </div>
-          <div className="service-details-image">
+          <div className="service-details-worker-image">
             <h4>Imágenes Subidas por el Cliente</h4>
-            <div className="images-container">
+            <div className="service-details-worker-images-container">
               {serviceDetails.files && serviceDetails.files.map((file, index) => (
                 <img key={index} src={file} alt={`Cliente imagen ${index + 1}`} />
               ))}
             </div>
           </div>
-          <div className="service-details-info">
+          <div className="service-details-worker-info">
             <h4>Comentario del Trabajo</h4>
             <textarea
+              className="service-details-worker-textarea"
               placeholder="Describe el trabajo realizado..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -176,15 +177,29 @@ const ServiceDetailsWorker = () => {
               rows={5}
             />
           </div>
-          <div className="service-details-info">
+          <div className="service-details-worker-info">
             <h4>Subir Trabajo Completado</h4>
-            <input type="file" multiple accept="image/*" onChange={handleFilesChange} />
+            <input 
+              className="service-details-worker-file-input"
+              type="file" 
+              multiple 
+              accept="image/*" 
+              onChange={handleFilesChange} 
+            />
           </div>
-          <div className="button-group">
-            <button onClick={handleSubmit} disabled={submitLoading}>
+          <div className="service-details-worker-button-group">
+            <button 
+              className="service-details-worker-button" 
+              onClick={handleSubmit} 
+              disabled={submitLoading}
+            >
               {submitLoading ? 'Enviando...' : 'Entregar Trabajo'}
             </button>
-            <button onClick={handleCancel} disabled={cancelLoading} className="cancel-button">
+            <button 
+              className="service-details-worker-button service-details-worker-cancel-button" 
+              onClick={handleCancel} 
+              disabled={cancelLoading}
+            >
               {cancelLoading ? 'Cancelando...' : 'Cancelar Pedido'}
             </button>
           </div>

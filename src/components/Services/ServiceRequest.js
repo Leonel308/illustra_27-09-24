@@ -2,9 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, addDoc, getDoc, setDoc, collection, updateDoc } from 'firebase/firestore'; // Asegúrate de importar updateDoc
+import { doc, addDoc, getDoc, setDoc, collection, updateDoc } from 'firebase/firestore';
 import '../../Styles/ServiceRequest.css';
 import UserContext from '../../context/UserContext';
+import PaymentMethodModal from './PaymentMethodModal'; // Importar el modal
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext);
@@ -16,6 +17,7 @@ const ServiceRequest = () => {
   const [servicePrice, setServicePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // Estado para mostrar el modal de método de pago
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -50,7 +52,17 @@ const ServiceRequest = () => {
     }
   };
 
-  const submitServiceRequest = async () => {
+  const handlePaymentMethodSelection = async (method) => {
+    setShowPaymentModal(false); // Cerrar el modal después de seleccionar un método de pago
+
+    if (method === 'wallet') {
+      await submitServiceRequest('wallet');
+    } else if (method === 'mercadoPago') {
+      await submitServiceRequest('mercadoPago');
+    }
+  };
+
+  const submitServiceRequest = async (paymentMethod) => {
     if (!description) {
       setError('Por favor, complete la descripción.');
       return;
@@ -99,7 +111,7 @@ const ServiceRequest = () => {
       const paymentRef = await addDoc(collection(db, 'users', currentUserId, 'Payments'), {
         amount: servicePrice,
         illustratorID: userId,
-        paymentMethod: 'wallet',
+        paymentMethod: paymentMethod,
         serviceID: docRef.id, // Aquí guardamos el ID del servicio
         status: 'pending',
         createdAt: new Date(),
@@ -109,15 +121,17 @@ const ServiceRequest = () => {
       // Actualizar el paymentId en la solicitud de servicio
       await updateDoc(docRef, { paymentId: paymentRef.id });
 
-      // Actualizar el balance y el pendingBalance del usuario
-      const userRef = doc(db, 'users', currentUserId);
-      const userDoc = await getDoc(userRef);
-      const userData = userDoc.data();
+      // Actualizar el balance y el pendingBalance del usuario si se paga con wallet
+      if (paymentMethod === 'wallet') {
+        const userRef = doc(db, 'users', currentUserId);
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
 
-      await updateDoc(userRef, {
-        balance: userData.balance - servicePrice,
-        pendingBalance: (userData.pendingBalance || 0) + servicePrice,
-      });
+        await updateDoc(userRef, {
+          balance: userData.balance - servicePrice,
+          pendingBalance: (userData.pendingBalance || 0) + servicePrice,
+        });
+      }
 
       // Guardar la solicitud en ServiceHired con serviceID
       const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
@@ -148,6 +162,14 @@ const ServiceRequest = () => {
     }
   };
 
+  const handleSubmit = () => {
+    if (!description || files.length === 0) {
+      setError('Por favor, complete la descripción y adjunte al menos un archivo.');
+    } else {
+      setShowPaymentModal(true); // Mostrar el modal de método de pago
+    }
+  };
+
   return (
     <div className="service-request-container">
       <h2>Solicitar Servicio</h2>
@@ -168,9 +190,18 @@ const ServiceRequest = () => {
         />
         {files.length > 0 && <p>{files.length} archivo(s) seleccionados</p>}
       </div>
-      <button onClick={submitServiceRequest} disabled={loading}>
+      <button onClick={handleSubmit} disabled={loading}>
         {loading ? 'Enviando...' : 'Enviar Solicitud'}
       </button>
+
+      {/* Mostrar el modal de método de pago */}
+      {showPaymentModal && (
+        <PaymentMethodModal
+          show={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSelect={handlePaymentMethodSelection}
+        />
+      )}
     </div>
   );
 };

@@ -1,4 +1,5 @@
-.service-details-container {
+/* Contenedor principal del componente ServiceDetailsWorker */
+.service-details-worker-container {
     background-color: #ffffff;
     padding: 20px;
     border-radius: 12px;
@@ -7,61 +8,62 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
+.service-details-worker-header {
     color: #6a0dad;
     font-size: 26px;
     text-align: center;
     margin-bottom: 20px;
 }
 
-.service-details-content {
+.service-details-worker-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-.service-details-info {
+.service-details-worker-info {
     grid-column: span 2;
+    margin-bottom: 20px; /* Añadir espacio entre bloques */
 }
 
-.service-details-info h3 {
+.service-details-worker-info h3 {
     color: #333;
     font-size: 22px;
     margin-bottom: 10px;
 }
 
-.service-details-info p {
+.service-details-worker-info p {
     color: #555;
     font-size: 16px;
     margin-bottom: 15px;
 }
 
-.price {
+.service-details-worker-price {
     color: #999;
     font-style: italic;
     font-size: 20px;
     margin-bottom: 15px;
 }
 
-.service-details-image {
+.service-details-worker-image {
     grid-column: span 2;
     text-align: center;
 }
 
-.service-details-image h4 {
+.service-details-worker-image h4 {
     margin-bottom: 10px;
     color: #333;
     font-size: 18px;
 }
 
-.images-container {
+.service-details-worker-images-container {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
 }
 
-.images-container img {
+.service-details-worker-images-container img {
     max-width: 200px;
     max-height: 200px;
     object-fit: cover;
@@ -71,22 +73,31 @@ h2 {
     cursor: pointer;
 }
 
-.images-container img:hover {
+.service-details-worker-images-container img:hover {
     transform: scale(1.1);
 }
 
-textarea {
+.service-details-worker-textarea {
     width: 100%;
     padding: 15px;
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 8px;
     margin-bottom: 20px;
-    resize: none;
+    resize: vertical; /* Permitir solo ajuste vertical */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9; /* Fondo más claro para resaltar */
+    transition: border-color 0.3s, background-color 0.3s;
+    min-height: 100px; /* Establecer una altura mínima */
+    line-height: 1.5; /* Aumentar el espacio entre líneas para mejorar la legibilidad */
 }
 
-.service-details-container input[type="file"] {
+.service-details-worker-textarea:focus {
+    border-color: #6a0dad; /* Cambiar color del borde al enfocar */
+    background-color: #ffffff; /* Fondo blanco al enfocar */
+}
+
+.service-details-worker-file-input {
     display: block;
     margin: 10px auto 20px;
     padding: 8px;
@@ -100,18 +111,18 @@ textarea {
     transition: border-color 0.3s;
 }
 
-.service-details-container input[type="file"]:hover {
+.service-details-worker-file-input:hover {
     border-color: #5a008b;
 }
 
-.button-group {
+.service-details-worker-button-group {
     grid-column: span 2;
     display: flex;
     justify-content: space-between;
     gap: 10px;
 }
 
-button {
+.service-details-worker-button {
     flex: 1;
     padding: 15px;
     font-size: 18px;
@@ -123,19 +134,19 @@ button {
     transition: background-color 0.3s;
 }
 
-button:hover {
+.service-details-worker-button:hover {
     background-color: #5a008b;
 }
 
-.cancel-button {
+.service-details-worker-cancel-button {
     background-color: #e74c3c;
 }
 
-.cancel-button:hover {
+.service-details-worker-cancel-button:hover {
     background-color: #c0392b;
 }
 
-.error-message {
+.service-details-worker-error-message {
     color: #e74c3c;
     font-size: 14px;
     margin-bottom: 20px;
@@ -143,7 +154,7 @@ button:hover {
 }
 
 /* Lightbox container */
-.lightbox {
+.service-details-worker-lightbox {
     position: fixed;
     top: 0;
     left: 0;
@@ -160,20 +171,20 @@ button:hover {
 }
 
 /* Visible state */
-.lightbox.active {
+.service-details-worker-lightbox.active {
     opacity: 1;
     pointer-events: auto;
 }
 
 /* Image inside the lightbox */
-.lightbox img {
+.service-details-worker-lightbox img {
     max-width: 90%;
     max-height: 90%;
     border-radius: 8px;
 }
 
 /* Close button */
-.lightbox-close {
+.service-details-worker-lightbox-close {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -183,6 +194,6 @@ button:hover {
     transition: color 0.3s ease;
 }
 
-.lightbox-close:hover {
+.service-details-worker-lightbox-close:hover {
     color: #ccc;
 }
