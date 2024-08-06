@@ -1,11 +1,100 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { db } from '../../firebaseConfig';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import UserContext from '../../context/UserContext';
+import '../../Styles/ServiceDetailsUser.css';
 
 const ServiceDetailsUser = () => {
+  const { user } = useContext(UserContext);
+  const { requestId, illustratorId } = useParams();
+  const navigate = useNavigate();
+  const [serviceDetails, setServiceDetails] = useState(null);
+  const [fetchError, setFetchError] = useState('');
+
+  useEffect(() => {
+    const fetchServiceDetails = async () => {
+      if (user) {
+        try {
+          const serviceRef = doc(db, 'users', user.uid, 'ServiceHired', requestId);
+          const serviceDoc = await getDoc(serviceRef);
+
+          if (serviceDoc.exists()) {
+            setServiceDetails(serviceDoc.data());
+          } else {
+            setFetchError('No se encontraron los detalles del servicio.');
+          }
+        } catch (error) {
+          console.error('Error al obtener los detalles del servicio:', error);
+          setFetchError('Hubo un error al obtener los detalles del servicio.');
+        }
+      }
+    };
+
+    fetchServiceDetails();
+  }, [user, requestId]);
+
+  const handleAcceptDelivery = async () => {
+    if (!window.confirm('¿Estás seguro de que deseas aceptar la entrega de este servicio?')) {
+      return;
+    }
+
+    try {
+      const illustratorRef = doc(db, 'users', illustratorId);
+      const illustratorDoc = await getDoc(illustratorRef);
+      const illustratorData = illustratorDoc.data();
+
+      const clientRef = doc(db, 'users', user.uid);
+      const clientDoc = await getDoc(clientRef);
+      const clientData = clientDoc.data();
+
+      // Transfer pendingBalance to illustrator's balance
+      await updateDoc(illustratorRef, {
+        balance: illustratorData.balance + serviceDetails.servicePrice,
+      });
+
+      await updateDoc(clientRef, {
+        pendingBalance: clientData.pendingBalance - serviceDetails.servicePrice,
+      });
+
+      alert('Entrega aceptada. Los fondos han sido transferidos.');
+      navigate(`/workbench`);
+    } catch (error) {
+      console.error('Error al aceptar la entrega:', error);
+      setFetchError('Hubo un error al aceptar la entrega. Inténtelo de nuevo.');
+    }
+  };
+
+  if (fetchError) {
+    return <p className="error-message">{fetchError}</p>;
+  }
 
   return (
-    <div>
+    <div className="service-details-container">
       <h2>Detalles del Servicio para Usuario</h2>
-      {/* Aquí irían las funcionalidades para el usuario */}
+      {serviceDetails ? (
+        <div className="service-details-content">
+          <div className="service-details-info">
+            <p className="price">Precio: ${serviceDetails.servicePrice}</p>
+            <h3>Título: {serviceDetails.serviceTitle}</h3>
+            <h4>Descripción:</h4>
+            <p>{serviceDetails.description}</p>
+          </div>
+          <div className="service-details-image">
+            <h4>Imágenes Completadas por el Trabajador</h4>
+            <div className="images-container">
+              {serviceDetails.completedImages && serviceDetails.completedImages.map((file, index) => (
+                <img key={index} src={file} alt={`Trabajo imagen ${index + 1}`} />
+              ))}
+            </div>
+          </div>
+          <button onClick={handleAcceptDelivery} className="accept-button">
+            Aceptar Entrega
+          </button>
+        </div>
+      ) : (
+        <p>Cargando detalles del servicio...</p>
+      )}
     </div>
   );
 };

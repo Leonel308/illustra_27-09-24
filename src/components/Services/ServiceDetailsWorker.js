@@ -74,12 +74,12 @@ const ServiceDetailsWorker = () => {
 
       const notificationsRef = collection(db, 'users', clientId, 'Notifications');
       await addDoc(notificationsRef, {
-        message: `El servicio "${serviceDetails.serviceTitle}" ha sido completado.`,
+        message: `El servicio "${serviceDetails.serviceTitle}" ha sido completado y está pendiente de tu confirmación.`,
         timestamp: new Date(),
         read: false,
       });
 
-      alert('Trabajo entregado con éxito.');
+      alert('Trabajo entregado con éxito. Esperando confirmación del cliente.');
       navigate(`/workbench`);
     } catch (error) {
       console.error('Error al subir el trabajo:', error);
@@ -109,7 +109,23 @@ const ServiceDetailsWorker = () => {
         read: false,
       });
 
-      alert('El pedido ha sido cancelado.');
+      // Actualizar el estado del pago a 'cancelled'
+      const paymentRef = doc(db, 'users', clientId, 'Payments', serviceDetails.paymentId);
+      await updateDoc(paymentRef, {
+        status: 'cancelled',
+      });
+
+      // Devolver el dinero al balance del cliente
+      const clientRef = doc(db, 'users', clientId);
+      const clientDoc = await getDoc(clientRef);
+      const clientData = clientDoc.data();
+
+      await updateDoc(clientRef, {
+        balance: clientData.balance + serviceDetails.servicePrice,
+        pendingBalance: clientData.pendingBalance - serviceDetails.servicePrice,
+      });
+
+      alert('El pedido ha sido cancelado y el saldo ha sido devuelto.');
       navigate(`/workbench`);
     } catch (error) {
       console.error('Error al cancelar el pedido:', error);

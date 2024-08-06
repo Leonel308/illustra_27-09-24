@@ -2,10 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, addDoc, getDoc, setDoc, collection } from 'firebase/firestore';
+import { doc, addDoc, getDoc, setDoc, collection, updateDoc } from 'firebase/firestore'; // Asegúrate de importar updateDoc
 import '../../Styles/ServiceRequest.css';
 import UserContext from '../../context/UserContext';
-import PaymentMethodModal from './PaymentMethodModal'; // Importing the modal
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext);
@@ -17,7 +16,6 @@ const ServiceRequest = () => {
   const [servicePrice, setServicePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // State for payment modal
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -49,59 +47,6 @@ const ServiceRequest = () => {
       setFiles(selectedFiles.slice(0, 6));
     } else {
       setFiles(selectedFiles);
-    }
-  };
-
-  const handlePaymentMethodSelection = async (method) => {
-    setShowPaymentModal(false);
-
-    if (method === 'wallet') {
-      // Implement wallet payment logic
-      const userRef = doc(db, 'users', currentUser.uid);
-      const userDoc = await getDoc(userRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.balance >= servicePrice) {
-          // Deduct balance, create payment record and proceed with service request
-          await setDoc(userRef, { balance: userData.balance - servicePrice }, { merge: true });
-          await createPaymentRecord('wallet', servicePrice);
-          await submitServiceRequest();
-        } else {
-          setError('Saldo insuficiente en la billetera.');
-        }
-      } else {
-        setError('Error al verificar el saldo.');
-      }
-    } else if (method === 'mercadoPago') {
-      // Implement Mercado Pago payment logic
-      await handleMercadoPagoPayment();
-    }
-  };
-
-  const handleMercadoPagoPayment = async () => {
-    // Implement the Mercado Pago payment logic here
-    await createPaymentRecord('mercadoPago', servicePrice);
-    await submitServiceRequest();
-  };
-
-  const createPaymentRecord = async (method, amount) => {
-    try {
-      const paymentData = {
-        amount,
-        illustratorID: userId,
-        paymentMethod: method,
-        serviceID: serviceId,
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const paymentRef = collection(db, 'users', currentUser.uid, 'Payments');
-      await addDoc(paymentRef, paymentData);
-    } catch (error) {
-      console.error('Error al crear el registro de pago:', error);
-      setError('Hubo un error al crear el registro de pago.');
     }
   };
 
@@ -145,11 +90,36 @@ const ServiceRequest = () => {
         createdAt: new Date(),
         status: 'pending',
         clientId: currentUserId,
+        paymentId: '', // Este campo se actualizará después de crear el documento en Payments
       };
 
       const docRef = await addDoc(serviceRequestRef, newRequest);
 
-      // Update the client's workbench (ServiceHired)
+      // Crear un registro de pago en la subcolección Payments del usuario
+      const paymentRef = await addDoc(collection(db, 'users', currentUserId, 'Payments'), {
+        amount: servicePrice,
+        illustratorID: userId,
+        paymentMethod: 'wallet',
+        serviceID: docRef.id, // Aquí guardamos el ID del servicio
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Actualizar el paymentId en la solicitud de servicio
+      await updateDoc(docRef, { paymentId: paymentRef.id });
+
+      // Actualizar el balance y el pendingBalance del usuario
+      const userRef = doc(db, 'users', currentUserId);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+
+      await updateDoc(userRef, {
+        balance: userData.balance - servicePrice,
+        pendingBalance: (userData.pendingBalance || 0) + servicePrice,
+      });
+
+      // Guardar la solicitud en ServiceHired con serviceID
       const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
       await setDoc(clientServiceHiredRef, {
         illustratorId: userId,
@@ -157,9 +127,10 @@ const ServiceRequest = () => {
         servicePrice: servicePrice,
         status: 'pending',
         createdAt: new Date(),
+        serviceID: docRef.id, // Guardar el serviceID en ServiceHired
       });
 
-      // Send notification to the illustrator
+      // Enviar notificación al ilustrador
       const notificationsRef = collection(db, 'users', userId, 'Notifications');
       await addDoc(notificationsRef, {
         message: `Has recibido una nueva solicitud de servicio para "${serviceTitle}".`,
@@ -174,14 +145,6 @@ const ServiceRequest = () => {
       setError('Hubo un error al enviar la solicitud. Por favor, inténtelo de nuevo.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (!description || files.length === 0) {
-      setError('Por favor, complete la descripción y adjunte al menos un archivo.');
-    } else {
-      setShowPaymentModal(true);
     }
   };
 
@@ -205,18 +168,9 @@ const ServiceRequest = () => {
         />
         {files.length > 0 && <p>{files.length} archivo(s) seleccionados</p>}
       </div>
-      <button onClick={handleSubmit} disabled={loading}>
+      <button onClick={submitServiceRequest} disabled={loading}>
         {loading ? 'Enviando...' : 'Enviar Solicitud'}
       </button>
-
-      {/* Show payment method modal */}
-      {showPaymentModal && (
-        <PaymentMethodModal
-          show={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          onSelect={handlePaymentMethodSelection}
-        />
-      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection } from 'firebase/firestore';
 import UserContext from '../context/UserContext';
 import { logout, db } from '../firebaseConfig';
 import Notifications from './Notifications';
@@ -37,23 +37,19 @@ const Header = () => {
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (user) {
-        try {
-          const userRef = doc(db, 'users', user.uid);
-          const userDoc = await getDoc(userRef);
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setBalance(userData.balance || 0.00);
-            setIsArtist(userData.isArtist || false);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      }
-    };
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
 
-    fetchUserData();
+      const unsubscribe = onSnapshot(userRef, (doc) => {
+        if (doc.exists()) {
+          const userData = doc.data();
+          setBalance(userData.balance || 0.00);
+          setIsArtist(userData.isArtist || false);
+        }
+      });
+
+      return () => unsubscribe();
+    }
   }, [user]);
 
   useEffect(() => {
