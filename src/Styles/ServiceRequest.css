@@ -1,5 +1,3 @@
-/* ServiceRequest.css */
-
 .service-request-container {
   max-width: 600px;
   margin: 50px auto;
@@ -107,23 +105,86 @@
 
 @media (max-width: 768px) {
   .service-request-container {
-      padding: 15px;
+    padding: 15px;
   }
 
   .service-request-container h2 {
-      font-size: 22px;
+    font-size: 22px;
   }
 
   .service-request-container h3 {
-      font-size: 18px;
+    font-size: 18px;
   }
 
   .service-request-container p {
-      font-size: 16px;
+    font-size: 16px;
   }
 
   .service-request-container button {
-      padding: 12px;
-      font-size: 16px;
+    padding: 12px;
+    font-size: 16px;
   }
+}
+
+/* Estilos adicionales para el modal de método de pago */
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.payment-modal {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.payment-options button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.mercado-pago-button {
+  background-color: #00a650;
+  color: #fff;
+}
+
+.mercado-pago-button:hover {
+  background-color: #008f4e;
+}
+
+.wallet-button {
+  background-color: #6a0dad;
+  color: #fff;
+}
+
+.wallet-button:hover {
+  background-color: #5a008b;
+}
+
+.close-button {
+  background-color: #e74c3c;
+  color: #fff;
+  margin-top: 20px;
+}
+
+.close-button:hover {
+  background-color: #c0392b;
 }

@@ -5,10 +5,11 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, addDoc, getDoc, setDoc, collection } from 'firebase/firestore';
 import '../../Styles/ServiceRequest.css';
 import UserContext from '../../context/UserContext';
+import PaymentMethodModal from './PaymentMethodModal'; // Importing the modal
 
 const ServiceRequest = () => {
-  const { user: currentUser } = useContext(UserContext); // Obtenemos el usuario actual desde el contexto
-  const { serviceId, userId } = useParams(); // userId es el ID del ilustrador
+  const { user: currentUser } = useContext(UserContext);
+  const { serviceId, userId } = useParams();
   const navigate = useNavigate();
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState([]);
@@ -16,6 +17,7 @@ const ServiceRequest = () => {
   const [servicePrice, setServicePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // State for payment modal
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -50,7 +52,38 @@ const ServiceRequest = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handlePaymentMethodSelection = async (method) => {
+    setShowPaymentModal(false);
+
+    if (method === 'wallet') {
+      // Implement wallet payment logic
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.balance >= servicePrice) {
+          // Deduct balance and proceed with service request
+          await setDoc(userRef, { balance: userData.balance - servicePrice }, { merge: true });
+          await submitServiceRequest();
+        } else {
+          alert('Saldo insuficiente en la billetera.');
+        }
+      } else {
+        alert('Error al verificar el saldo.');
+      }
+    } else if (method === 'mercadoPago') {
+      // Implement Mercado Pago payment logic
+      await handleMercadoPagoPayment();
+    }
+  };
+
+  const handleMercadoPagoPayment = async () => {
+    // Implement the Mercado Pago payment logic here
+    // Reuse the donation button code to initiate the payment process
+  };
+
+  const submitServiceRequest = async () => {
     if (!description || files.length === 0) {
       alert('Por favor, complete la descripción y adjunte al menos un archivo.');
       return;
@@ -66,7 +99,7 @@ const ServiceRequest = () => {
 
     try {
       const currentUserId = currentUser.uid;
-      const serviceRequestRef = collection(db, 'users', userId, 'ServiceRequests'); // Se envía al ilustrador
+      const serviceRequestRef = collection(db, 'users', userId, 'ServiceRequests');
 
       const uploadedFiles = await Promise.all(
         files.map(async (file) => {
@@ -89,7 +122,7 @@ const ServiceRequest = () => {
 
       const docRef = await addDoc(serviceRequestRef, newRequest);
 
-      // Actualizar la mesa de trabajo del cliente (ServiceHired)
+      // Update the client's workbench (ServiceHired)
       const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
       await setDoc(clientServiceHiredRef, {
         illustratorId: userId,
@@ -99,7 +132,7 @@ const ServiceRequest = () => {
         createdAt: new Date(),
       });
 
-      // Enviar notificación al ilustrador
+      // Send notification to the illustrator
       const notificationsRef = collection(db, 'users', userId, 'Notifications');
       await addDoc(notificationsRef, {
         message: `Has recibido una nueva solicitud de servicio para "${serviceTitle}".`,
@@ -115,6 +148,10 @@ const ServiceRequest = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = () => {
+    setShowPaymentModal(true);
   };
 
   return (
@@ -140,6 +177,15 @@ const ServiceRequest = () => {
       <button onClick={handleSubmit} disabled={loading}>
         {loading ? 'Enviando...' : 'Enviar Solicitud'}
       </button>
+
+      {/* Show payment method modal */}
+      {showPaymentModal && (
+        <PaymentMethodModal
+          show={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSelect={handlePaymentMethodSelection}
+        />
+      )}
     </div>
   );
 };

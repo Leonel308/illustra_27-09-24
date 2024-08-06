@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
-import { doc, getDoc, updateDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, collection, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
 import '../../Styles/ServiceDetailsWorker.css';
@@ -14,6 +14,7 @@ const ServiceDetailsWorker = () => {
   const [completedImages, setCompletedImages] = useState([]);
   const [comment, setComment] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
@@ -55,18 +56,22 @@ const ServiceDetailsWorker = () => {
         completedImages.map(async (file) => {
           const fileRef = ref(storage, `completed-services/${user.uid}/${file.name}`);
           await uploadBytes(fileRef, file);
-          const fileUrl = await getDownloadURL(fileRef);
-          return fileUrl;
+          return await getDownloadURL(fileRef);
         })
       );
 
       const serviceRef = doc(db, 'users', user.uid, 'ServiceRequests', requestId);
-      await updateDoc(serviceRef, { completedImages: uploadedFiles, status: 'delivered', comment });
-
       const clientServiceRef = doc(db, 'users', clientId, 'ServiceHired', requestId);
-      await updateDoc(clientServiceRef, { completedImages: uploadedFiles, status: 'delivered', comment });
 
-      // Enviar notificación al cliente
+      const updateData = {
+        completedImages: uploadedFiles,
+        status: 'delivered',
+        comment,
+      };
+
+      await updateDoc(serviceRef, updateData);
+      await updateDoc(clientServiceRef, updateData);
+
       const notificationsRef = collection(db, 'users', clientId, 'Notifications');
       await addDoc(notificationsRef, {
         message: `El servicio "${serviceDetails.serviceTitle}" ha sido completado.`,
@@ -84,8 +89,38 @@ const ServiceDetailsWorker = () => {
     }
   };
 
+  const handleCancel = async () => {
+    if (!window.confirm('¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      const serviceRef = doc(db, 'users', user.uid, 'ServiceRequests', requestId);
+      const clientServiceRef = doc(db, 'users', clientId, 'ServiceHired', requestId);
+
+      await deleteDoc(serviceRef);
+      await deleteDoc(clientServiceRef);
+
+      const notificationsRef = collection(db, 'users', clientId, 'Notifications');
+      await addDoc(notificationsRef, {
+        message: `El servicio "${serviceDetails.serviceTitle}" ha sido cancelado por el trabajador.`,
+        timestamp: new Date(),
+        read: false,
+      });
+
+      alert('El pedido ha sido cancelado.');
+      navigate(`/workbench`);
+    } catch (error) {
+      console.error('Error al cancelar el pedido:', error);
+      setFetchError('Hubo un error al cancelar el pedido. Inténtelo de nuevo.');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   if (loading) {
-    return <p>Cargando...</p>; // O un spinner de carga si lo prefieres
+    return <p>Cargando...</p>;
   }
 
   if (error || fetchError) {
@@ -129,9 +164,14 @@ const ServiceDetailsWorker = () => {
             <h4>Subir Trabajo Completado</h4>
             <input type="file" multiple accept="image/*" onChange={handleFilesChange} />
           </div>
-          <button onClick={handleSubmit} disabled={submitLoading}>
-            {submitLoading ? 'Enviando...' : 'Entregar Trabajo'}
-          </button>
+          <div className="button-group">
+            <button onClick={handleSubmit} disabled={submitLoading}>
+              {submitLoading ? 'Enviando...' : 'Entregar Trabajo'}
+            </button>
+            <button onClick={handleCancel} disabled={cancelLoading} className="cancel-button">
+              {cancelLoading ? 'Cancelando...' : 'Cancelar Pedido'}
+            </button>
+          </div>
         </div>
       ) : (
         <p>Cargando detalles del servicio...</p>
