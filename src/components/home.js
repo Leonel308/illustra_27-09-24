@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
-import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import '../Styles/Home.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
@@ -124,7 +124,10 @@ const Home = () => {
             <img src="/handshake.png" alt="Contrata expertos" className="step-icon" />
           </div>
         </div>
-        <h3>Descubre increíbles ilustradores de nuestra comunidad</h3>
+        <div className="featured-header">
+          <h3>Destacados</h3>
+          <button className="view-all-button" onClick={() => navigate('/all-users')}>Ver todo</button>
+        </div>
         <div className="users-grid">
           {featuredUsers.map((featuredUser, index) => (
             <div key={index} className="user-card" onClick={() => navigate(`/profile/${featuredUser.id}`)}>
