@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import '../../Styles/ProfileStyles/profile.css';
 import UserContext from '../../context/UserContext';
 import ProfileBanner from './ProfileBanner';
 import ProfilePicture from './ProfilePicture';
@@ -13,6 +12,8 @@ import ProfileFeed from './ProfileFeed';
 import ProfileFriends from './ProfileFriends';
 import ProfileServices from './ProfileServices';
 import DonateButton from '../DonateButton'; // Asegúrate de importar correctamente
+import './Profile.css';
+
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 

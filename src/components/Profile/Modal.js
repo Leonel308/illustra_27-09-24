@@ -1,13 +1,22 @@
 import React from 'react';
-import '../../Styles/ProfileStyles/Modal.css';  // Asegúrate de que la ruta de importación es correcta
+import './Modal.css';
 
-const Modal = ({ imageUrl, onClose }) => {
-  if (!imageUrl) return null;
+const Modal = ({ show, onClose, children, title }) => {
+  if (!show) {
+    return null;
+  }
 
   return (
-    <div className="modal" onClick={onClose}>
-      <span className="close" onClick={onClose}>&times;</span>
-      <img src={imageUrl} alt="Enlarged portfolio item" className="modal-content" />
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{title}</h2>
+          <span className="close" onClick={onClose}>&times;</span>
+        </div>
+        <div className="modal-body">
+          {children}
+        </div>
+      </div>
     </div>
   );
 };

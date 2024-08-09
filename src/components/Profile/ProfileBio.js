@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import UserContext from '../../context/UserContext';
-import '../../Styles/ProfileStyles/ProfileBio.css';
+import './ProfileBio.css';
 
 const ProfileBio = ({ bio, isOwner, setBio, setError }) => {
   const { user } = useContext(UserContext);

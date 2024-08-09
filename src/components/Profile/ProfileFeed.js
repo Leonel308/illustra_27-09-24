@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebaseConfig';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import '../../Styles/ProfileStyles/ProfileFeed.css';
+import './ProfileFeed.css';
 
 const ProfileFeed = ({ userId }) => {
   const [activities, setActivities] = useState([]);

@@ -4,7 +4,7 @@ import { db, storage } from '../../firebaseConfig';
 import { doc, collection, addDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
-import '../../Styles/ProfileStyles/ProfileServices.css';
+import './ProfileServices.css';
 
 const ProfileServices = ({ isOwner }) => {
   const { userId } = useParams();

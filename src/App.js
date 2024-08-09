@@ -4,7 +4,6 @@ import Home from './components/home';
 import Login from './components/login';
 import Register from './components/register';
 import Profile from './components/Profile/Profile';
-import ProfilePortfolio from './components/Profile/ProfilePortfolio';
 import CreatePost from './components/CreatePost';
 import ExplorePosts from './components/ExplorePosts';
 import ExplorePostsMature from './components/ExplorePostsMature';
@@ -40,7 +39,6 @@ function App() {
           <Route path="/" element={<Layout><Home /></Layout>} />
           <Route path="/home" element={<Layout><Home /></Layout>} />
           <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
-          <Route path="/profile/:userId/portfolio" element={<Layout><ProfilePortfolio /></Layout>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/create-post" element={<Layout><CreatePost /></Layout>} />
           <Route path="/explore-posts" element={<Layout><ExplorePosts /></Layout>} />
@@ -60,7 +58,7 @@ function App() {
           <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
           <Route path="/service-details-worker/:requestId/:clientId" element={<Layout><ServiceDetailsWorker /></Layout>} />
           <Route path="/service-details-user/:requestId/:clientId" element={<Layout><ServiceDetailsUser /></Layout>} />
-          <Route path="/all-users" element={<Layout><AllUsersPage /></Layout>} /> {/* Nueva ruta para ver todos los usuarios */}
+          <Route path="/all-users" element={<Layout><AllUsersPage /></Layout>} /> {/* Ruta para ver todos los usuarios */}
         </Routes>
       </Router>
     </UserProvider>
