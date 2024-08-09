@@ -109,13 +109,11 @@ const ServiceDetailsWorker = () => {
         read: false,
       });
 
-      // Actualizar el estado del pago a 'cancelled'
       const paymentRef = doc(db, 'users', clientId, 'Payments', serviceDetails.paymentId);
       await updateDoc(paymentRef, {
         status: 'cancelled',
       });
 
-      // Devolver el dinero al balance del cliente
       const clientRef = doc(db, 'users', clientId);
       const clientDoc = await getDoc(clientRef);
       const clientData = clientDoc.data();

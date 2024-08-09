@@ -1,31 +1,23 @@
-/* src/Styles/Feed.css */
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Arial', sans-serif;
-}
-
 .feed-container {
   padding: 10px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-h1 {
+.feed-title {
   text-align: center;
   color: #333;
   margin-bottom: 10px;
 }
 
-.posts-grid {
+.feed-posts-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
 }
 
-.post-card {
+.feed-post-card {
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -38,24 +30,30 @@ h1 {
   justify-content: space-between;
 }
 
-.post-card:hover {
+.feed-post-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.post-image-container {
+.feed-post-image-container {
   width: 100%;
-  height: 150px;
+  height: 0;
+  padding-bottom: 75%; /* Mantiene la proporción de aspecto 1:1 */
+  position: relative;
   overflow: hidden;
 }
 
-.post-image {
+.feed-post-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 100%;
-  height: 100%;
+  height: auto;
+  transform: translate(-50%, -50%);
   object-fit: cover;
 }
 
-.post-details {
+.feed-post-details {
   padding: 5px;
   display: flex;
   flex-direction: column;
@@ -63,35 +61,35 @@ h1 {
   flex-grow: 1;
 }
 
-.post-info {
+.feed-post-info {
   display: flex;
   align-items: center;
   margin-bottom: 5px;
 }
 
-.user-photo {
+.feed-user-photo {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   margin-right: 5px;
 }
 
-.user-name {
+.feed-user-name {
   color: gray;
   font-style: italic;
   margin: 0;
 }
 
-.post-title {
+.feed-post-title {
   color: #6a0dad;
   margin: 5px 0;
-  font-size: 0.9em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 1em;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: initial;
 }
 
-.delete-post-button {
+.feed-delete-post-button {
   background-color: red;
   color: white;
   border: none;
@@ -99,21 +97,21 @@ h1 {
   padding: 5px;
   cursor: pointer;
   text-align: center;
-  margin-top: auto; /* Hace que el botón empuje el contenido hacia arriba */
+  margin-top: auto;
 }
 
-.delete-post-button:hover {
+.feed-delete-post-button:hover {
   background-color: darkred;
 }
 
-.loading-container {
+.feed-loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
 
-.spinner {
+.feed-spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
   border-top: 4px solid #6a0dad;
   border-radius: 50%;

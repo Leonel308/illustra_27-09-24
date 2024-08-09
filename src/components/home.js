@@ -4,15 +4,12 @@ import { auth, db } from '../firebaseConfig';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import '../Styles/Home.css';
 
-
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
 const Home = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [featuredUsers, setFeaturedUsers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
 
@@ -50,24 +47,6 @@ const Home = () => {
       setFeaturedUsers(limitedUsers);
     } catch (error) {
       console.error("Error fetching users: ", error);
-    }
-  };
-
-  const handleSearchChange = async (e) => {
-    const queryText = e.target.value.trim();
-    setSearchQuery(queryText);
-
-    if (queryText) {
-      try {
-        const q = query(collection(db, 'users'), where('username_lower', '>=', queryText.toLowerCase()), where('username_lower', '<=', queryText.toLowerCase() + '\uf8ff'));
-        const querySnapshot = await getDocs(q);
-        const results = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setSearchResults(results);
-      } catch (error) {
-        console.error("Error searching users: ", error);
-      }
-    } else {
-      setSearchResults([]);
     }
   };
 
@@ -113,27 +92,6 @@ const Home = () => {
           <div className="category-link" onClick={handleNsfwClick}>Publicaciones NSFW</div>
         </div>
         <p>Illustra es una plataforma que conecta artistas y clientes. Contrata servicios de artistas y ofrece tus propios servicios. ¡Comparte y promociona tus ilustraciones!</p>
-        <div className="home-search">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-        {searchResults.length > 0 && (
-          <div className="search-dropdown">
-            {searchResults.map((result, index) => (
-              <div key={index} className="search-result-item" onClick={() => navigate(`/profile/${result.id}`)}>
-                <img src={result.photoURL || defaultProfilePic} alt={result.username} />
-                <div className="search-result-info">
-                  <h3>{result.username}</h3>
-                  <p>{truncateBio(result.bio)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
         {!user && (
           <div className="create-account-box" onClick={() => navigate('/register')}>
             <h3>Crea tu cuenta</h3>

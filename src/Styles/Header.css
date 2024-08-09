@@ -1,3 +1,4 @@
+/* Header Styles */
 .header {
   width: 100%;
   background-color: #5a189a;
@@ -13,7 +14,22 @@
   font-size: 24px;
   cursor: pointer;
   margin: 0;
-  color: #fff !important;
+  color: #fff;
+  flex-shrink: 0; /* Mantiene el tamaño del título fijo */
+}
+
+.header-search-bar {
+  flex-grow: 1; /* Hace que la barra de búsqueda ocupe todo el espacio disponible */
+  margin: 0 20px; /* Espaciado entre el título y los botones */
+  position: relative;
+}
+
+.header-search-bar input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  font-size: 16px;
 }
 
 .header-nav {
@@ -186,4 +202,46 @@
   color: #888;
   font-size: 12px;
   text-align: right;
+}
+
+/* Estilos para los resultados de búsqueda */
+.header-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  color: #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1;
+  margin-top: 5px;
+}
+
+.header-search-result-item {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.header-search-result-item:hover {
+  background-color: #f0f0f0;
+}
+
+.header-search-result-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.header-search-result-info h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
 }

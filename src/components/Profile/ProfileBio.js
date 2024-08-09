@@ -33,12 +33,26 @@ const ProfileBio = ({ bio, isOwner, setBio, setError }) => {
       <div className="bio">
         {isOwner && editingBio ? (
           <>
-            <textarea value={bio} onChange={handleBioChange} placeholder="Escribe tu biografía..." maxLength={190} />
+            <textarea 
+              value={bio} 
+              onChange={handleBioChange} 
+              placeholder="Escribe tu biografía..." 
+              maxLength={460} 
+              style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }} 
+            />
             <button onClick={handleSaveBio}>Guardar</button>
           </>
         ) : (
           <>
-            <p>{bio || "Escribe tu biografía..."}</p>
+            <p style={{ 
+              color: bio ? "#000" : "gray", 
+              fontStyle: bio ? "normal" : "italic",
+              whiteSpace: "normal", 
+              wordWrap: "break-word", 
+              overflowWrap: "break-word" 
+            }}>
+              {bio || "Sin biografía"}
+            </p>
             {isOwner && <button onClick={handleEditBio}>Editar</button>}
           </>
         )}

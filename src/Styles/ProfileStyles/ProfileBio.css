@@ -1,10 +1,13 @@
 .bio-container {
-  margin-top: 5px; /* Reducir el margen superior */
+  margin-top: 5px;
   text-align: center;
 }
 
 .bio {
-  margin: 5px 0; /* Reducir el margen */
+  margin: 5px 0;
+  white-space: normal; /* Allow normal wrapping */
+  word-wrap: break-word; /* Break long words */
+  overflow-wrap: break-word; /* Ensure content doesn't overflow */
 }
 
 .bio textarea {
@@ -13,10 +16,13 @@
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
+  white-space: normal; /* Allow normal wrapping */
+  word-wrap: break-word; /* Break long words */
+  overflow-wrap: break-word; /* Ensure content doesn't overflow */
 }
 
 .bio button {
-  margin-top: 5px; /* Reducir el margen superior */
+  margin-top: 5px;
   padding: 5px 10px;
   background-color: #6200ea;
   color: white;

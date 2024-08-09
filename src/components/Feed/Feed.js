@@ -70,8 +70,8 @@ const Feed = ({ collectionName }) => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
+      <div className="feed-loading-container">
+        <div className="feed-spinner"></div>
       </div>
     );
   }
@@ -79,7 +79,7 @@ const Feed = ({ collectionName }) => {
   if (error) {
     return (
       <div className="feed-container">
-        <div className="error-message">{error}</div>
+        <div className="feed-error-message">{error}</div>
       </div>
     );
   }
@@ -87,28 +87,27 @@ const Feed = ({ collectionName }) => {
   if (posts.length === 0) {
     return (
       <div className="feed-container">
-        <div className="no-posts-message">No hay publicaciones para mostrar</div>
+        <div className="feed-no-posts-message">No hay publicaciones para mostrar</div>
       </div>
     );
   }
 
   return (
     <div className="feed-container">
-      <h1>Explora a Otros Artistas</h1>
-      <div className="posts-grid">
+      <div className="feed-posts-grid">
         {posts.map(post => (
-          <div key={post.id} className="post-card" onClick={() => handlePostClick(post.id)}>
-            <div className="post-image-container">
-              <img src={post.imageURL} alt={post.title} className="post-image" />
+          <div key={post.id} className="feed-post-card" onClick={() => handlePostClick(post.id)}>
+            <div className="feed-post-image-container">
+              <img src={post.imageURL} alt={post.title} className="feed-post-image" />
             </div>
-            <div className="post-details">
-              <div className="post-info">
-                <img src={post.userPhotoURL} alt={post.username} className="user-photo" />
-                <span className="user-name">{post.username}</span>
+            <div className="feed-post-details">
+              <div className="feed-post-info">
+                <img src={post.userPhotoURL} alt={post.username} className="feed-user-photo" />
+                <span className="feed-user-name">{post.username}</span>
               </div>
-              <h3 className="post-title">{post.title}</h3>
+              <h3 className="feed-post-title">{post.title}</h3>
               {user?.role === 'admin' && (
-                <button className="delete-post-button" onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}>Eliminar</button>
+                <button className="feed-delete-post-button" onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}>Eliminar</button>
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { doc, onSnapshot, collection } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 import UserContext from '../context/UserContext';
 import { logout, db } from '../firebaseConfig';
 import Notifications from './Notifications';
@@ -11,13 +11,15 @@ import notificationAlert from '../assets/notificationAlert.png';
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
 const Header = () => {
-  const { user, setUser } = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [balance, setBalance] = useState(0.00);
   const [isArtist, setIsArtist] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -63,15 +65,63 @@ const Header = () => {
     }
   }, [user]);
 
+  const handleSearchChange = async (e) => {
+    const queryText = e.target.value.trim();
+    setSearchQuery(queryText);
+
+    if (queryText) {
+      try {
+        const q = query(
+          collection(db, 'users'),
+          where('username_lower', '>=', queryText.toLowerCase()),
+          where('username_lower', '<=', queryText.toLowerCase() + '\uf8ff')
+        );
+        const querySnapshot = await getDocs(q);
+        const results = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Error searching users: ', error);
+      }
+    } else {
+      setSearchResults([]);
+    }
+  };
+
   return (
     <header className="header">
       <h1 className="header-title" onClick={() => navigate('/')}>ILLUSTRA</h1>
+      <div className="header-search-bar">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
+        {searchResults.length > 0 && (
+          <div className="header-search-dropdown">
+            {searchResults.map((result, index) => (
+              <div
+                key={index}
+                className="header-search-result-item"
+                onClick={() => navigate(`/profile/${result.id}`)}
+              >
+                <img src={result.photoURL || defaultProfilePic} alt={result.username} />
+                <div className="header-search-result-info">
+                  <h3>{result.username}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <div className="header-nav">
         <Link className="header-button" to="/explore-posts">Explorar</Link>
         {user ? (
           <>
             <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>Crear Publicación</button>
-            
             <div className="header-notifications" onClick={toggleNotifications}>
               <img 
                 src={hasNotifications ? notificationAlert : notificationEmpty} 
@@ -84,7 +134,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
             <div className="header-user" onClick={toggleDropdown}>
               <img src={user.photoURL || defaultProfilePic} alt="Profile" className="header-profile-pic" />
               <span className="header-username">{user.username}</span>
@@ -102,7 +151,6 @@ const Header = () => {
                   )}
                   <Link to="/configuration" className="header-dropdown-item">Configuración</Link>
                   <Link to="/donations" className="header-dropdown-item">Donaciones</Link>
-                  <Link to="/explore-posts" className="header-dropdown-item">Explorar</Link>
                   <button onClick={handleLogout} className="header-dropdown-item logout-button">Log out</button>
                 </div>
               )}

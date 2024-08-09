@@ -20,7 +20,12 @@ const ExplorePosts = () => {
     );
   }
 
-  return <Feed collectionName="PostsCollection" />;
+  return (
+    <div>
+      <h1 className="explore-title">Explora a Otros Artistas</h1> {/* Título añadido */}
+      <Feed collectionName="PostsCollection" />
+    </div>
+  );
 };
 
 export default ExplorePosts;

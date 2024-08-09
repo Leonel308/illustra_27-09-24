@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import '../Styles/register.css';
 
@@ -17,6 +17,7 @@ const Register = () => {
     const [customGender, setCustomGender] = useState(''); 
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);  // Estado de carga
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,6 +27,15 @@ const Register = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const checkVerification = onAuthStateChanged(auth, (user) => {
+            if (user && user.emailVerified) {
+                navigate('/'); // Redirige al usuario a la página principal después de la verificación
+            }
+        });
+        return () => checkVerification();
+    }, [navigate]);
+
     const handleRegister = async (event) => {
         event.preventDefault();
         if (!acceptTerms) {
@@ -33,6 +43,7 @@ const Register = () => {
             return;
         }
         try {
+            setLoading(true);  // Inicia el estado de carga
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             await sendEmailVerification(user);
@@ -48,13 +59,18 @@ const Register = () => {
                 isArtist,
                 gender: gender === 'other' ? customGender : gender,
                 createdAt: new Date(),
-                balance: 0 // Añadir balance aquí
+                balance: 0, // Añadir balance aquí
+                pendingBalance: 0, // Añadir pendingBalance aquí
+                services: [], // Ejemplo de un campo adicional
+                notifications: [], // Ejemplo de un campo adicional
             });
             console.log('Usuario registrado y correo de verificación enviado');
-            navigate('/verify-email');
+            navigate('/verify-email');  // Redirige a la página de verificación de correo
         } catch (error) {
             console.error('Error al registrar el usuario:', error.message);
             setError(error.message);
+        } finally {
+            setLoading(false);  // Finaliza el estado de carga
         }
     };
 
@@ -89,7 +105,7 @@ const Register = () => {
                             checked={isArtist === false}
                             onChange={() => setIsArtist(false)}
                         />
-                        soy usuario
+                        soy usuario/a
                     </label>
                 </div>
                 {isArtist && (
@@ -175,7 +191,9 @@ const Register = () => {
                         Acepto los <a href="/terms-and-conditions" target="_blank">Términos y Condiciones</a>
                     </label>
                 </div>
-                <button type="submit">Register</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Registrando...' : 'Register'}
+                </button>
                 {error && <p className="error">{error}</p>}
             </form>
         </div>

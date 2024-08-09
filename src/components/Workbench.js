@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, addDoc, getDoc, doc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../context/UserContext';
 import '../Styles/Workbench.css';
@@ -17,11 +17,31 @@ const Workbench = () => {
       if (user) {
         const receivedRef = collection(db, 'users', user.uid, 'ServiceRequests');
         const receivedSnapshot = await getDocs(receivedRef);
-        setReceivedRequests(receivedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const requestsWithUsernames = await Promise.all(
+          receivedSnapshot.docs.map(async (docSnapshot) => {
+            const requestData = docSnapshot.data();
+            const clientRef = doc(db, 'users', requestData.clientId); // Importación corregida
+            const clientDoc = await getDoc(clientRef);
+            const clientUsername = clientDoc.exists() ? clientDoc.data().username : 'Usuario desconocido';
+            return { id: docSnapshot.id, ...requestData, clientUsername };
+          })
+        );
+        setReceivedRequests(requestsWithUsernames);
 
         const hiredRef = collection(db, 'users', user.uid, 'ServiceHired');
         const hiredSnapshot = await getDocs(hiredRef);
-        setHiredRequests(hiredSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const hiredWithUsernames = await Promise.all(
+          hiredSnapshot.docs.map(async (docSnapshot) => {
+            const requestData = docSnapshot.data();
+            const workerRef = doc(db, 'users', requestData.workerId); // Importación corregida
+            const workerDoc = await getDoc(workerRef);
+            const workerUsername = workerDoc.exists() ? workerDoc.data().username : 'Usuario desconocido';
+            return { id: docSnapshot.id, ...requestData, workerUsername };
+          })
+        );
+        setHiredRequests(hiredWithUsernames);
       }
     };
 
@@ -30,7 +50,6 @@ const Workbench = () => {
 
   const handleAccept = async (requestId, clientId) => {
     try {
-      // Update the status to "in progress" in both collections
       await updateDoc(doc(db, 'users', user.uid, 'ServiceRequests', requestId), {
         status: 'in progress',
       });
@@ -65,14 +84,12 @@ const Workbench = () => {
         read: false,
       });
 
-      // Actualizar el estado del pago a 'rejected'
       const paymentRef = doc(db, 'users', clientId, 'Payments', paymentId);
       await updateDoc(paymentRef, {
         status: 'rejected',
         updatedAt: new Date(),
       });
 
-      // Devolver el dinero al balance del cliente
       const clientRef = doc(db, 'users', clientId);
       const clientDoc = await getDoc(clientRef);
       const clientData = clientDoc.data();
@@ -122,6 +139,7 @@ const Workbench = () => {
             <div key={request.id} className="workbench-item">
               <h3>{request.serviceTitle}</h3>
               <p>{request.description}</p>
+              <p>Solicitado por: {request.clientUsername}</p>
               <p>Precio: ${request.servicePrice}</p>
               <p>Estado: {request.status}</p>
               {request.status === 'in progress' ? (
@@ -148,6 +166,7 @@ const Workbench = () => {
             <div key={request.id} className="workbench-item">
               <h3>{request.serviceTitle}</h3>
               <p>{request.description}</p>
+              <p>Proveedor del servicio: {request.workerUsername}</p>
               <p>Precio: ${request.servicePrice}</p>
               <p>Estado: {request.status}</p>
               <button

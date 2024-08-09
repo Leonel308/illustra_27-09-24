@@ -102,6 +102,7 @@ const ServiceRequest = () => {
         createdAt: new Date(),
         status: 'pending',
         clientId: currentUserId,
+        clientUsername: currentUser.username, // Almacenar el nombre de usuario del cliente
         paymentId: '', // Este campo se actualizará después de crear el documento en Payments
       };
 
