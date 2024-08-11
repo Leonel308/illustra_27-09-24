@@ -1,43 +1,21 @@
-import React, { useState, useContext, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
-import { doc, collection, addDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
-import './ProfileServices.css';
+import '../../Styles/ProfileStyles/ProfileServices.css';
 
-const ProfileServices = ({ isOwner }) => {
-  const { userId } = useParams();
+const ProfileServices = ({ services = [], isOwner, setServices }) => {
   const { user } = useContext(UserContext);
-  const [services, setServices] = useState([]);
   const [serviceTitle, setServiceTitle] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
   const [servicePrice, setServicePrice] = useState('');
   const [serviceImage, setServiceImage] = useState(null);
-  const [deliveryDays, setDeliveryDays] = useState('1');
   const [error, setError] = useState('');
-  const [addingService, setAddingService] = useState(false);
-  const [deletingService, setDeletingService] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const servicesRef = collection(db, 'users', userId, 'Services');
-        const servicesSnapshot = await getDocs(servicesRef);
-        const servicesList = servicesSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setServices(servicesList);
-      } catch (error) {
-        console.error('Error fetching services:', error);
-      }
-    };
-
-    fetchServices();
-  }, [userId]);
 
   const handleServiceImageChange = (e) => {
     setServiceImage(e.target.files[0]);
@@ -64,25 +42,13 @@ const ProfileServices = ({ isOwner }) => {
     }
   };
 
-  const handleDeliveryDaysChange = (e) => {
-    const value = e.target.value;
-    if (/^\d{0,3}$/.test(value)) {
-      setDeliveryDays(value);
-    }
-  };
-
   const formatPrice = (price) => {
     return `$${Number(price).toLocaleString()}`;
   };
 
-  const getFileNameFromUrl = (url) => {
-    const segments = url.split('%2F');
-    return segments[segments.length - 1].split('?')[0];
-  };
-
-  const handleAddService = useCallback(async () => {
+  const handleAddService = async () => {
     if (serviceTitle && serviceDescription && servicePrice && serviceImage && user) {
-      setAddingService(true);
+      setLoading(true);
       try {
         const serviceImageRef = ref(storage, `services/${user.uid}/${serviceImage.name}`);
         await uploadBytes(serviceImageRef, serviceImage);
@@ -91,53 +57,54 @@ const ProfileServices = ({ isOwner }) => {
         const newService = {
           title: serviceTitle,
           description: serviceDescription,
-          price: parseInt(servicePrice),
-          imageUrl: serviceImageUrl,
-          deliveryDays: parseInt(deliveryDays),
+          price: formatPrice(servicePrice),
+          imageUrl: serviceImageUrl
         };
 
-        const serviceRef = collection(db, 'users', user.uid, 'Services');
-        const addedDoc = await addDoc(serviceRef, newService);
+        await updateDoc(doc(db, 'users', user.uid), {
+          services: arrayUnion(newService)
+        });
 
-        setServices((prevServices) => [...prevServices, { id: addedDoc.id, ...newService }]);
+        setServices((prevServices) => [...prevServices, newService]);
         setServiceTitle('');
         setServiceDescription('');
         setServicePrice('');
         setServiceImage(null);
-        setDeliveryDays('1');
         setError('');
-        setShowForm(false);
+        setShowForm(false); // Ocultar el formulario después de agregar el servicio
       } catch (error) {
         console.error('Error al agregar el servicio:', error);
         setError('Error al agregar el servicio. Por favor, inténtelo de nuevo.');
       } finally {
-        setAddingService(false);
+        setLoading(false);
       }
     } else {
       setError('Por favor, complete todos los campos y cargue una imagen.');
     }
-  }, [serviceTitle, serviceDescription, servicePrice, serviceImage, user, deliveryDays]);
+  };
 
-  const handleDeleteService = useCallback(async (service) => {
+  const handleDeleteService = async (service) => {
     if (user) {
-      setDeletingService(true);
+      setLoading(true);
       try {
-        const serviceRef = doc(db, 'users', user.uid, 'Services', service.id);
-        await deleteDoc(serviceRef);
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          services: arrayRemove(service)
+        });
 
-        const serviceImageRef = ref(storage, `services/${user.uid}/${getFileNameFromUrl(service.imageUrl)}`);
+        const serviceImageRef = ref(storage, `services/${user.uid}/${service.imageUrl.split('%2F')[2].split('?')[0]}`);
         await deleteObject(serviceImageRef);
 
-        setServices((prevServices) => prevServices.filter(s => s.id !== service.id));
+        setServices((prevServices) => prevServices.filter(s => s !== service));
         setError('');
       } catch (error) {
         console.error('Error al eliminar el servicio:', error);
         setError('Error al eliminar el servicio. Por favor, inténtelo de nuevo.');
       } finally {
-        setDeletingService(false);
+        setLoading(false);
       }
     }
-  }, [user]);
+  };
 
   return (
     <div className="services-container">
@@ -159,7 +126,6 @@ const ProfileServices = ({ isOwner }) => {
                 value={serviceDescription} 
                 onChange={handleDescriptionChange} 
                 placeholder="Descripción del Servicio" 
-                maxLength={240}
               />
               <p className="char-counter">{serviceDescription.length}/240</p>
               <input 
@@ -173,19 +139,8 @@ const ProfileServices = ({ isOwner }) => {
                 accept="image/*" 
                 onChange={handleServiceImageChange} 
               />
-
-              <label htmlFor="delivery-days">Días de entrega:</label>
-              <input
-                type="number"
-                id="delivery-days"
-                value={deliveryDays}
-                onChange={handleDeliveryDaysChange}
-                max="999"
-                min="1"
-              />
-
-              <button onClick={handleAddService} disabled={addingService}>
-                {addingService ? 'Agregando...' : 'Agregar Servicio'}
+              <button onClick={handleAddService} disabled={loading}>
+                {loading ? 'Agregando...' : 'Agregar Servicio'}
               </button>
               {error && <p className="error">{error}</p>}
             </div>
@@ -193,25 +148,21 @@ const ProfileServices = ({ isOwner }) => {
         </>
       )}
       <div className="services-list">
-        {services.map((service) => (
-          <div key={service.id} className="service-item">
+        {services.map((service, index) => (
+          <div key={index} className="service-item">
             <img src={service.imageUrl} alt={service.title} />
             <h4>{service.title}</h4>
             <p>{service.description}</p>
-            <p className="price">{formatPrice(service.price)}</p>
-            <p>Días de entrega: {service.deliveryDays} días</p>
+            <p>{service.price}</p>
             <div className="service-actions">
-              {/* Verificar si el usuario está viendo su propio perfil */}
-              {user.uid !== userId && (
-                <button onClick={() => navigate(`/service-request/${userId}/${service.id}`)}>Contratar</button>
-              )}
+              <button onClick={() => navigate(`/hire-service/${user.uid}/${index}`)}>Contratar</button>
               {isOwner && (
                 <button 
                   className="delete-button" 
                   onClick={() => handleDeleteService(service)}
-                  disabled={deletingService}
+                  disabled={loading}
                 >
-                  {deletingService ? 'Eliminando...' : '-'}
+                  {loading ? 'Eliminando...' : '-'}
                 </button>
               )}
             </div>

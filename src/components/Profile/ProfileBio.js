@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import UserContext from '../../context/UserContext';
-import './ProfileBio.css';
+import '../../Styles/ProfileStyles/ProfileBio.css';
 
 const ProfileBio = ({ bio, isOwner, setBio, setError }) => {
   const { user } = useContext(UserContext);
@@ -33,26 +33,12 @@ const ProfileBio = ({ bio, isOwner, setBio, setError }) => {
       <div className="bio">
         {isOwner && editingBio ? (
           <>
-            <textarea 
-              value={bio} 
-              onChange={handleBioChange} 
-              placeholder="Escribe tu biografía..." 
-              maxLength={460} 
-              style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }} 
-            />
+            <textarea value={bio} onChange={handleBioChange} placeholder="Escribe tu biografía..." maxLength={190} />
             <button onClick={handleSaveBio}>Guardar</button>
           </>
         ) : (
           <>
-            <p style={{ 
-              color: bio ? "#000" : "gray", 
-              fontStyle: bio ? "normal" : "italic",
-              whiteSpace: "normal", 
-              wordWrap: "break-word", 
-              overflowWrap: "break-word" 
-            }}>
-              {bio || "Sin biografía"}
-            </p>
+            <p>{bio || "Escribe tu biografía..."}</p>
             {isOwner && <button onClick={handleEditBio}>Editar</button>}
           </>
         )}

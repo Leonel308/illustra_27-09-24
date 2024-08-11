@@ -6,6 +6,7 @@ import { doc, setDoc } from "firebase/firestore";
 import '../Styles/register.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
+const defaultBackgroundURL = "";  // URL por defecto para el fondo de perfil
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -53,6 +54,7 @@ const Register = () => {
                 username_lower: username.toLowerCase(),
                 email,
                 profilePic: defaultProfilePic,
+                backgroundURL: defaultBackgroundURL, // Añadir backgroundURL aquí
                 role: "User",
                 verified: false,
                 adultContent,

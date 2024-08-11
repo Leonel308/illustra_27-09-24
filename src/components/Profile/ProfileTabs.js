@@ -1,5 +1,5 @@
 import React from 'react';
-import './ProfileTabs.css';
+import '../../Styles/ProfileStyles/ProfileTabs.css';
 
 const ProfileTabs = ({ activeTab, setActiveTab }) => {
   return (

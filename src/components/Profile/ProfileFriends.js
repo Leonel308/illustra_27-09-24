@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebaseConfig';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import './ProfileFriends.css';
+import '../../Styles/ProfileStyles/ProfileFriends.css';
 
 const ProfileFriends = ({ userId }) => {
   const [friends, setFriends] = useState([]);

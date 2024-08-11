@@ -1,52 +1,26 @@
-.image-cropper-modal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px; /* Espacio adicional dentro del modal */
+.crop-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background-color: #333;
 }
 
-.save-button, .cancel-button {
-  margin-top: 20px;
-  color: white;
+.controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.controls button {
   padding: 10px 20px;
+  background-color: #6200ea;
+  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px; /* Ajusta el tamaño de la fuente para ambos botones */
+  transition: background-color 0.3s ease;
 }
 
-.save-button {
-  background-color: #4CAF50; /* Color de fondo verde para guardar */
-}
-
-.save-button:hover {
-  background-color: #45a049; /* Color más oscuro en hover */
-}
-
-.cancel-button {
-  background-color: #f44336; /* Color de fondo rojo para cancelar */
-  margin-left: 10px; /* Espacio entre los botones */
-}
-
-.cancel-button:hover {
-  background-color: #d32f2f; /* Color más oscuro en hover */
-}
-
-.cropper-container {
-  width: 100%; /* Asegura que el contenedor ocupe todo el ancho disponible */
-  max-height: 400px; /* Limita la altura del contenedor para no exceder el modal */
-  margin-top: 20px; /* Espacio entre la imagen y los botones */
-  overflow: hidden; /* Oculta cualquier desbordamiento */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para dar un efecto de elevación */
-  border-radius: 10px; /* Bordes redondeados */
-}
-
-input[type="file"] {
-  margin-top: 20px;
-}
-
-.button-container {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+.controls button:hover {
+  background-color: #531091;
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { auth, db, storage } from '../../firebaseConfig';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import './ProfilePortfolio.css';
+import '../../Styles/ProfileStyles/ProfilePortfolio.css';
 
 const ProfilePortfolio = ({ portfolio, isOwner, setPortfolio, setError }) => {
   const [file, setFile] = useState(null);
