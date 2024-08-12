@@ -4,7 +4,7 @@ import { updateDoc, doc } from 'firebase/firestore';
 import { storage, db } from '../../firebaseConfig';
 import UserContext from '../../context/UserContext';
 import ImageCropperModal from './ImageCropperModal';
-import '../../Styles/ProfileStyles/ProfileBackground.css';
+import './ProfileBackground.css';
 
 const ProfileBackground = ({ backgroundURL, isOwner, setBackgroundURL, setError }) => {
   const { user } = useContext(UserContext);

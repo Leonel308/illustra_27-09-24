@@ -2,6 +2,8 @@
   width: 100%;
   height: 200px;
   position: relative;
+  border-radius: 20px 20px 0 0; /* Redondear solo la parte superior */
+  overflow: hidden; /* Asegura que el contenido no se desborde */
 }
 
 .banner {
@@ -10,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-size: cover;
+  background-size: cover; /* Asegura que la imagen cubra todo el área del banner */
   background-position: center;
   position: relative;
   cursor: pointer; /* Asegurarse de que el cursor cambie a puntero para indicar que es clickeable */

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Cropper from 'react-easy-crop';
 import Modal from 'react-modal';
-import { getCroppedImg } from '../utils/cropImage'; // Asegúrate de importar la función correctamente
+import { getCroppedImg } from '../utils/cropImage';
 import './ImageCropperModal.css';
 
 const ImageCropperModal = ({ isOpen, onClose, onSave, imageSrc, aspect }) => {
@@ -15,7 +15,8 @@ const ImageCropperModal = ({ isOpen, onClose, onSave, imageSrc, aspect }) => {
 
   const handleSave = async () => {
     try {
-      const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+      // Aquí especificamos las dimensiones deseadas del banner recortado.
+      const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, 1600, 400);
       onSave(croppedImage);
     } catch (error) {
       console.error('Error cropping image: ', error);
@@ -23,7 +24,13 @@ const ImageCropperModal = ({ isOpen, onClose, onSave, imageSrc, aspect }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onClose} ariaHideApp={false}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      ariaHideApp={false}
+      overlayClassName="modal-overlay"
+      className="modal-content"
+    >
       <div className="crop-container">
         <Cropper
           image={imageSrc}

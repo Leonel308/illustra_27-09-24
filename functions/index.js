@@ -257,5 +257,41 @@ app.post('/updatePendingBalance', async (req, res) => {
   }
 });
 
+/* 
+ * Función programada para eliminar archivos no utilizados en Firebase Storage
+ * 
+ * Esta función se ejecuta cada 24 horas y revisa todos los archivos en el bucket de Firebase Storage.
+ * Si encuentra archivos que no están referenciados en la colección 'users' de Firestore después de 2 días,
+ * los elimina para liberar espacio.
+ */
+exports.cleanUpStorage = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+  const bucket = admin.storage().bucket();
+  const [files] = await bucket.getFiles();
+
+  const now = Date.now();
+  const twoDaysInMillis = 2 * 24 * 60 * 60 * 1000;
+
+  for (const file of files) {
+    const [metadata] = await file.getMetadata();
+    const lastModified = new Date(metadata.updated).getTime();
+
+    // Si el archivo no ha sido modificado en los últimos 2 días
+    if (now - lastModified > twoDaysInMillis) {
+      const filePath = file.name;
+
+      // Verifica si el archivo está referenciado en Firestore
+      const querySnapshot = await admin.firestore().collection('users').where('photoURL', '==', filePath).get();
+      const querySnapshot2 = await admin.firestore().collection('users').where('bannerURL', '==', filePath).get();
+
+      if (querySnapshot.empty && querySnapshot2.empty) {
+        await file.delete();
+        console.log(`Deleted ${filePath}`);
+      }
+    }
+  }
+
+  return null;
+});
+
 // Exportar la aplicación Express como una función de Firebase
 exports.api = functions.https.onRequest(app);

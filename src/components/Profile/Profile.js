@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db } from '../../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { db, storage } from '../../firebaseConfig';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../../Styles/ProfileStyles/profile.css';
 import UserContext from '../../context/UserContext';
 import ProfileBanner from './ProfileBanner';
@@ -13,6 +14,7 @@ import ProfileFeed from './ProfileFeed';
 import ProfileFriends from './ProfileFriends';
 import ProfileServices from './ProfileServices';
 import DonateButton from '../DonateButton';
+import ImageCropperModal from './ImageCropperModal';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
@@ -37,6 +39,8 @@ const Profile = () => {
   const [donationAmounts, setDonationAmounts] = useState([1000, 5000, 10000, 20000]);
   const [canReceiveDonations, setCanReceiveDonations] = useState(false);
   const [backgroundURL, setBackgroundURL] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -80,6 +84,35 @@ const Profile = () => {
 
   const handleCloseSponsorModal = () => {
     setShowSponsorModal(false);
+  };
+
+  const handleBackgroundChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setImageSrc(reader.result);
+        setShowModal(true);
+      };
+    }
+  };
+
+  const handleSaveCroppedImage = async (croppedFile) => {
+    if (croppedFile && user) {
+      try {
+        const backgroundRef = ref(storage, `backgrounds/${user.uid}`);
+        await uploadBytes(backgroundRef, croppedFile);
+        const newBackgroundURL = await getDownloadURL(backgroundRef);
+        setBackgroundURL(newBackgroundURL);
+        await updateDoc(doc(db, 'users', user.uid), { backgroundURL: newBackgroundURL });
+      } catch (error) {
+        console.error("Error uploading background: ", error);
+        setError('Error uploading background. Please try again.');
+      } finally {
+        setShowModal(false);
+      }
+    }
   };
 
   if (loading) {
@@ -139,6 +172,31 @@ const Profile = () => {
               ))}
             </div>
           </div>
+        )}
+
+        {isOwner && (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              id="backgroundInput"
+              className="background-input"
+              onChange={handleBackgroundChange}
+            />
+            <div className="background-update-button" onClick={() => document.getElementById('backgroundInput').click()}>
+              Actualizar Fondo
+            </div>
+          </>
+        )}
+
+        {showModal && (
+          <ImageCropperModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            onSave={handleSaveCroppedImage}
+            imageSrc={imageSrc}
+            aspect={16 / 9} // Relación de aspecto común para fondos (16:9)
+          />
         )}
 
         <ProfileBio
