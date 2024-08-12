@@ -12,7 +12,7 @@ import ProfilePortfolio from './ProfilePortfolio';
 import ProfileFeed from './ProfileFeed';
 import ProfileFriends from './ProfileFriends';
 import ProfileServices from './ProfileServices';
-import DonateButton from '../DonateButton'; // Asegúrate de importar correctamente
+import DonateButton from '../DonateButton';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
@@ -36,6 +36,7 @@ const Profile = () => {
   const [showSponsorModal, setShowSponsorModal] = useState(false);
   const [donationAmounts, setDonationAmounts] = useState([1000, 5000, 10000, 20000]);
   const [canReceiveDonations, setCanReceiveDonations] = useState(false);
+  const [backgroundURL, setBackgroundURL] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,6 +45,7 @@ const Profile = () => {
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
           const data = userDoc.data();
+          setBackgroundURL(data.backgroundURL || '');
           setBannerURL(data.bannerURL || '');
           setPhotoURL(data.photoURL || defaultProfilePic);
           setBio(data.bio || '');
@@ -95,6 +97,7 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
+      {backgroundURL && <div className="background-image" style={{ backgroundImage: `url(${backgroundURL})` }} />}
       <div className="profile-container">
         <ProfileBanner
           bannerURL={bannerURL}
