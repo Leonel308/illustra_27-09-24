@@ -11,11 +11,10 @@ import notificationAlert from '../assets/notificationAlert.png';
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
 const Header = () => {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [balance, setBalance] = useState(0.00);
-  const [isArtist, setIsArtist] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,7 +45,6 @@ const Header = () => {
         if (doc.exists()) {
           const userData = doc.data();
           setBalance(userData.balance || 0.00);
-          setIsArtist(userData.isArtist || false);
         }
       });
 
@@ -141,9 +139,6 @@ const Header = () => {
                 <div className="header-dropdown">
                   <div className="header-dropdown-item">Saldo: {balance.toFixed(2)}$</div>
                   <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>
-                  {isArtist && (
-                    <Link to="/workbench" className="header-dropdown-item">Mesa de Trabajo</Link>
-                  )}
                   {user.role === 'admin' ? (
                     <Link to="/admin-dashboard" className="header-dropdown-item">Admin Dashboard</Link>
                   ) : (

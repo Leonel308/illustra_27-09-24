@@ -1,269 +1,200 @@
-/* General Header Styles */
 .header {
+  position: fixed; /* Fijar el header en la parte superior */
+  top: 0;
+  left: 0;
   width: 100%;
-  background: linear-gradient(90deg, #ffffff, #ffffff); /* Gradiente suave */
+  background-color: #5a189a;
   color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 30px; /* Aumenta ligeramente el padding */
+  padding: 10px 40px;
   box-sizing: border-box;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
-  position: fixed;
-  top: 0;
-  z-index: 1000;
-  transition: background-color 0.3s ease; /* Transición suave para el cambio de fondo */
+  z-index: 1000; /* Asegurar que esté por encima de otros elementos */
 }
 
-/* Logo / Title */
 .header-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #6a0dad; /* Color violeta para el título */
-  letter-spacing: 1px;
+  font-size: 24px;
   cursor: pointer;
-  margin-right: 20px;
-  font-family: 'Georgia', serif; /* Fuente cursiva aplicada solo al título */
-  font-style: italic; /* Cursiva solo en el título */
-  text-transform: lowercase; /* Minúsculas solo en el título */
-  transition: color 0.3s ease;
+  margin: 0; /* Asegurarse de que no haya margen adicional */
+  color: #fff !important; /* Forzar color blanco */
 }
 
-.header-title:hover {
-  color: #db7cf3; /* Cambia a dorado en hover */
-}
-
-/* Search Bar */
 .header-search-bar {
   flex-grow: 1;
-  display: flex;
-  align-items: center;
-  position: relative;
+  max-width: 400px;
+  margin: 0 20px;
 }
 
 .header-search-bar input {
   width: 100%;
-  padding: 8px 15px; /* Padding para un input más compacto */
-  border-radius: 20px; /* Ajusta el borde redondeado */
-  border: 1px solid #ddd;
-  font-size: 14px; /* Tamaño de la fuente */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.header-search-bar input:focus {
-  border-color: #931cc2;
-  outline: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Search Dropdown */
 .header-search-dropdown {
   position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: #fff;
+  color: #000;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-  max-height: 250px; /* Altura máxima del dropdown */
-  overflow-y: auto;
-  margin-top: 5px;
+  z-index: 2;
+  width: 100%;
+  max-width: 400px;
 }
 
 .header-search-result-item {
-  padding: 8px; /* Padding */
   display: flex;
   align-items: center;
+  padding: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.header-search-result-item:hover {
-  background-color: #f0f0f0;
 }
 
 .header-search-result-item img {
-  width: 30px; /* Tamaño de la imagen */
-  height: 30px;
   border-radius: 50%;
-  margin-right: 8px;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
 }
 
 .header-search-result-info h3 {
   margin: 0;
-  font-size: 14px; /* Tamaño de la fuente */
+  font-size: 16px;
   color: #333;
 }
 
-/* Navigation Buttons */
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 8px; /* Espacio entre botones */
 }
 
-.header-button {
-  background-color: #ffffff;
-  color: #6a0dad;
-  padding: 8px 12px; /* Padding para botones */
-  border-radius: 20px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px; /* Tamaño de la fuente */
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-button:hover {
-  background-color: #f0f0f0;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
-}
-
-.explore-button {
-  background-color: #ffffff;
-  color: #6a0dad;
-  border: 1px solid #6a0dad;
-  padding: 8px 12px; /* Padding */
-  border-radius: 20px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px; /* Tamaño de la fuente */
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.explore-button:hover {
-  background-color: #f5f5f5;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
-}
-
-/* User Profile Section */
-.header-user {
-  display: flex;
-  align-items: center;
-  position: relative;
-  cursor: pointer;
-}
-
-.header-profile-pic {
-  border-radius: 50%;
-  width: 40px; /* Aumenta el tamaño de la imagen */
-  height: 40px;
-  margin-right: 8px;
-  transition: transform 0.3s ease;
-}
-
-.header-profile-pic:hover {
-  transform: scale(1.1);
-}
-
-.header-username {
-  font-weight: 500;
-  color: #000; /* Cambia el color del nombre de usuario a negro */
-  font-size: 16px; /* Aumenta el tamaño de la fuente */
-}
-
-/* Dropdown Menu */
-.header-dropdown {
-  position: absolute;
-  top: 50px;
-  right: 0;
-  background-color: white;
-  color: #333;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 8px;
-  width: 180px; /* Ancho del dropdown */
-  z-index: 100;
-  display: none;
-}
-
-.header-user:hover .header-dropdown {
-  display: block;
-}
-
-.header-dropdown-item {
-  padding: 8px 12px; /* Padding */
-  border-bottom: 1px solid #ddd;
-  color: #333;
-  transition: background-color 0.3s ease;
-  text-decoration: none;
-  display: block;
-  font-size: 14px; /* Tamaño de la fuente */
-}
-
-.header-dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.header-dropdown-item:hover {
-  background-color: #f0f0f0;
-}
-
-.logout-button {
-  border: none;
-  background-color: #e74c3c;
-  color: #fff;
-  padding: 8px 12px; /* Padding */
-  width: 100%;
-  text-align: left;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 14px; /* Tamaño de la fuente */
-}
-
-.logout-button:hover {
-  background-color: #c0392b;
-}
-
-/* Notifications */
 .header-notifications {
   position: relative;
+  margin-right: 15px;
   cursor: pointer;
-  margin-right: 8px;
 }
 
 .header-notifications-icon {
-  width: 20px; /* Tamaño del ícono */
-  height: 20px;
+  width: 30px;
+  height: 30px;
 }
 
 .header-notifications-dropdown {
   position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: #fff;
+  color: #000;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  z-index: 2;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.header-profile-pic {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.header-username {
+  cursor: pointer;
+  color: #fff; /* Color blanco para el nombre de usuario */
+}
+
+.header-dropdown {
+  position: absolute;
   top: 50px;
   right: 0;
-  background-color: white;
-  color: #333;
+  background-color: #fff;
+  color: #000;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 250px; /* Ancho del dropdown */
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 100;
-  display: none;
+  overflow: hidden;
+  z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+  width: 200px; /* Alargar más el dropdown */
 }
 
-.header-notifications:hover .header-notifications-dropdown {
+.header-user:hover .header-dropdown,
+.header-user .header-dropdown:hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.header-dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #333; /* Color del texto normal */
   display: block;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 5px;
 }
 
-.header-notifications-dropdown .notification-item {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px; /* Tamaño de la fuente */
+.header-dropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #000; /* Color del texto al pasar el mouse */
 }
 
-.header-notifications-dropdown .notification-item:last-child {
-  border-bottom: none;
+.logout-button {
+  border: none;
+  background-color: #e74c3c; /* Color rojo */
+  color: #fff; /* Cambiar color del texto a blanco */
+  cursor: pointer;
+  padding: 10px;
+  width: 100%; /* Asegurarse de que ocupa el 100% del ancho */
+  text-align: left;
+  transition: color 0.3s, background-color 0.3s;
 }
 
-.header-notifications-dropdown .notification-item:hover {
-  background-color: #f0f0f5;
+.logout-button:hover {
+  background-color: #c0392b; /* Color rojo más oscuro al hacer hover */
+  color: #fff; /* Cambiar el texto a blanco al hacer hover */
+}
+
+.header-buttons {
+  display: flex;
+}
+
+.header-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  background-color: #fff;
+  color: #5a189a;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.header-button:hover {
+  background-color: #f0f0f0;
+}
+
+.create-post-button, .explore-posts-button {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  margin-right: 15px; /* Añadir más margen a la derecha */
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.create-post-button:hover, .explore-posts-button:hover {
+  background-color: #5a0bac;
 }
