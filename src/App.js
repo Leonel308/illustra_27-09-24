@@ -11,7 +11,6 @@ import ForgotPassword from './components/forgotPassword';
 import VerifyEmail from './components/VerifyEmail';
 import TermsAndConditions from './components/TermsAndConditions';
 import Configuration from './components/Configuration';
-import PasswordResetSent from './components/PasswordResetSent';
 import SuccessPage from './PaymentsStatus/Success';
 import FailurePage from './PaymentsStatus/Failure';
 import PendingPage from './PaymentsStatus/Pending';
@@ -24,9 +23,10 @@ import ServiceRequest from './components/Services/ServiceRequest';
 import Notifications from './components/Notifications';
 import ServiceDetailsWorker from './components/Services/ServiceDetailsWorker';
 import ServiceDetailsUser from './components/Services/ServiceDetailsUser';
-import AllUsersPage from './components/AllUsersPage';
 import { UserProvider } from './context/UserContext';
 import Layout from './components/Layout';
+import './Styles/tailwind.css';
+
 
 function App() {
   return (
@@ -37,7 +37,6 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/" element={<Layout><Home /></Layout>} />
-          <Route path="/home" element={<Layout><Home /></Layout>} />
           <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/create-post" element={<Layout><CreatePost /></Layout>} />
@@ -45,11 +44,10 @@ function App() {
           <Route path="/explore-posts-mature" element={<Layout><ExplorePostsMature /></Layout>} />
           <Route path="/terms-and-conditions" element={<Layout><TermsAndConditions /></Layout>} />
           <Route path="/configuration" element={<Layout><Configuration /></Layout>} />
-          <Route path="/password-reset-sent" element={<Layout><PasswordResetSent /></Layout>} />
           <Route path="/success" element={<Layout><SuccessPage /></Layout>} />
           <Route path="/failure" element={<Layout><FailurePage /></Layout>} />
           <Route path="/pending" element={<Layout><PendingPage /></Layout>} />
-          <Route path="/mercadopago/callback" element={<Layout><CallbackPage /></Layout>} />
+          <Route path="/mercadopago/callback" element={<CallbackPage />} />
           <Route path="/dashboard" element={<Layout><UserDashboard /></Layout>} />
           <Route path="/admin-dashboard" element={<Layout><AdminDashboard /></Layout>} />
           <Route path="/post/:postId" element={<Layout><PostDetails /></Layout>} />
@@ -58,7 +56,6 @@ function App() {
           <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
           <Route path="/service-details-worker/:requestId/:clientId" element={<Layout><ServiceDetailsWorker /></Layout>} />
           <Route path="/service-details-user/:requestId/:clientId" element={<Layout><ServiceDetailsUser /></Layout>} />
-          <Route path="/all-users" element={<Layout><AllUsersPage /></Layout>} /> {/* Ruta para ver todos los usuarios */}
         </Routes>
       </Router>
     </UserProvider>

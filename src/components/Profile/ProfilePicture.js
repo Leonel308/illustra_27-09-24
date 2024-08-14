@@ -30,7 +30,7 @@ const ProfilePicture = ({ photoURL, isOwner, setPhotoURL, setError }) => {
         await uploadBytes(profilePicRef, croppedFile);
         const newPhotoURL = await getDownloadURL(profilePicRef);
         setPhotoURL(newPhotoURL);
-        await updateDoc(doc(db, 'users', user.uid), { photoURL: newPhotoURL });
+        await updateDoc(doc(db, 'users', user.uid), { photoURL: newPhotoURL }); // Asegúrate de usar 'photoURL' aquí
       } catch (error) {
         console.error("Error uploading profile picture: ", error);
         setError('Error uploading profile picture. Please try again.');

@@ -5,12 +5,16 @@ const cors = require('cors');
 const express = require('express');
 const dotenv = require('dotenv');
 
-dotenv.config(); // Cargar variables de entorno desde el archivo .env
+// Cargar variables de entorno desde el archivo .env
+dotenv.config(); 
 
+// Inicializar la aplicación de Firebase Admin
 admin.initializeApp();
 
 const app = express();
 const allowedOrigins = ['https://illustra-6ca8a.web.app', 'http://localhost:3000'];
+
+// Configurar CORS para permitir solicitudes desde orígenes específicos
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -22,19 +26,22 @@ app.use(cors({
   }
 }));
 
+// Configuración de las credenciales de Mercado Pago desde variables de entorno o configuración de Firebase
 const MERCADO_PAGO_CLIENT_ID = process.env.MERCADOPAGO_CLIENT_ID || functions.config().mercadopago.client_id;
 const MERCADO_PAGO_CLIENT_SECRET = process.env.MERCADOPAGO_CLIENT_SECRET || functions.config().mercadopago.client_secret;
 const REDIRECT_URI = process.env.MERCADOPAGO_REDIRECT_URI || functions.config().mercadopago.redirect_uri;
 const ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || functions.config().mercadopago.access_token;
 
-// Función para crear un pago
+// Función para crear un pago en Mercado Pago
 app.post('/createPayment', async (req, res) => {
   const { amount, description, payerEmail } = req.body;
 
+  // Validar los campos requeridos
   if (!amount || !description || !payerEmail) {
     return res.status(400).send("Missing required fields: amount, description, payerEmail");
   }
 
+  // Crear la preferencia de pago
   const preference = {
     items: [
       {
@@ -55,6 +62,7 @@ app.post('/createPayment', async (req, res) => {
   };
 
   try {
+    // Enviar la solicitud a la API de Mercado Pago
     const response = await axios.post("https://api.mercadopago.com/checkout/preferences", preference, {
       headers: {
         Authorization: `Bearer ${ACCESS_TOKEN}`
@@ -67,7 +75,7 @@ app.post('/createPayment', async (req, res) => {
   }
 });
 
-// Función para manejar el token de Mercado Pago
+// Función para manejar el token de autorización de Mercado Pago
 app.get('/mercadoPagoToken', async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.set('Access-Control-Allow-Origin', 'https://illustra-6ca8a.web.app');
@@ -83,12 +91,14 @@ app.get('/mercadoPagoToken', async (req, res) => {
   console.log("Received code:", code);
   console.log("Received state:", state);
 
+  // Validar los parámetros requeridos
   if (!code || !state) {
     console.error("Parámetros de URL inválidos: ", req.query);
     return res.status(400).send("Parámetros de URL inválidos.");
   }
 
   try {
+    // Enviar la solicitud para obtener el token de acceso
     const response = await axios.post("https://api.mercadopago.com/oauth/token", {
       grant_type: "authorization_code",
       client_id: MERCADO_PAGO_CLIENT_ID,
@@ -101,6 +111,7 @@ app.get('/mercadoPagoToken', async (req, res) => {
 
     const { access_token, refresh_token } = response.data;
 
+    // Guardar los tokens en Firestore
     const userRef = admin.firestore().collection('users').doc(state);
     await userRef.update({
       mercadoPagoAccessToken: access_token,
@@ -115,7 +126,7 @@ app.get('/mercadoPagoToken', async (req, res) => {
   }
 });
 
-// Función para desvincular Mercado Pago
+// Función para desvincular una cuenta de Mercado Pago
 app.get('/unlinkMercadoPago', async (req, res) => {
   const { uid } = req.query;
 
@@ -124,6 +135,7 @@ app.get('/unlinkMercadoPago', async (req, res) => {
   }
 
   try {
+    // Eliminar los tokens de Mercado Pago en Firestore
     const userRef = admin.firestore().collection('users').doc(uid);
     await userRef.update({
       mercadoPagoAccessToken: admin.firestore.FieldValue.delete(),
@@ -136,7 +148,7 @@ app.get('/unlinkMercadoPago', async (req, res) => {
   }
 });
 
-// Función para aprobar pagos a usuarios
+// Función para aprobar pagos a usuarios en Mercado Pago
 app.post('/approvePayment', async (req, res) => {
   const { userId, amount } = req.body;
 
@@ -145,6 +157,7 @@ app.post('/approvePayment', async (req, res) => {
   }
 
   try {
+    // Obtener el token de acceso del usuario desde Firestore
     const userRef = admin.firestore().collection('users').doc(userId);
     const userDoc = await userRef.get();
 
@@ -155,6 +168,7 @@ app.post('/approvePayment', async (req, res) => {
     const userData = userDoc.data();
     const accessToken = userData.mercadoPagoAccessToken;
 
+    // Crear la solicitud de pago
     const paymentData = {
       transaction_amount: amount,
       reason: "Withdrawal",
@@ -165,6 +179,7 @@ app.post('/approvePayment', async (req, res) => {
       }
     };
 
+    // Enviar la solicitud de pago a la API de Mercado Pago
     const paymentResponse = await axios.post("https://api.mercadopago.com/v1/payments", paymentData, {
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -188,13 +203,14 @@ app.post('/approvePayment', async (req, res) => {
   }
 });
 
-// Función para manejar notificaciones de Mercado Pago (webhook)
+// Función para manejar notificaciones de pagos desde el webhook de Mercado Pago
 app.post('/paymentNotification', async (req, res) => {
   const { type, data } = req.body;
 
   if (type === 'payment') {
     try {
       const paymentId = data.id;
+      // Obtener la información del pago desde la API de Mercado Pago
       const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
         headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
       });
@@ -257,40 +273,65 @@ app.post('/updatePendingBalance', async (req, res) => {
   }
 });
 
-/* 
- * Función programada para eliminar archivos no utilizados en Firebase Storage
- * 
- * Esta función se ejecuta cada 24 horas y revisa todos los archivos en el bucket de Firebase Storage.
- * Si encuentra archivos que no están referenciados en la colección 'users' de Firestore después de 2 días,
- * los elimina para liberar espacio.
- */
-exports.cleanUpStorage = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
-  const bucket = admin.storage().bucket();
-  const [files] = await bucket.getFiles();
+// Función para actualizar imágenes en Firebase Storage y eliminar las anteriores
+const updateProfileImage = async (userId, newImagePath, type) => {
+  const userRef = admin.firestore().collection('users').doc(userId);
+  const userDoc = await userRef.get();
 
-  const now = Date.now();
-  const twoDaysInMillis = 2 * 24 * 60 * 60 * 1000;
-
-  for (const file of files) {
-    const [metadata] = await file.getMetadata();
-    const lastModified = new Date(metadata.updated).getTime();
-
-    // Si el archivo no ha sido modificado en los últimos 2 días
-    if (now - lastModified > twoDaysInMillis) {
-      const filePath = file.name;
-
-      // Verifica si el archivo está referenciado en Firestore
-      const querySnapshot = await admin.firestore().collection('users').where('photoURL', '==', filePath).get();
-      const querySnapshot2 = await admin.firestore().collection('users').where('bannerURL', '==', filePath).get();
-
-      if (querySnapshot.empty && querySnapshot2.empty) {
-        await file.delete();
-        console.log(`Deleted ${filePath}`);
-      }
-    }
+  if (!userDoc.exists) {
+    throw new Error('User not found');
   }
 
-  return null;
+  const userData = userDoc.data();
+  let oldImagePath = '';
+
+  // Determinar el tipo de imagen que se está actualizando (perfil, banner o fondo)
+  if (type === 'profile') {
+    oldImagePath = userData.photoURL;
+    await userRef.update({
+      photoURL: newImagePath
+    });
+  } else if (type === 'banner') {
+    oldImagePath = userData.bannerURL;
+    await userRef.update({
+      bannerURL: newImagePath
+    });
+  } else if (type === 'background') {
+    oldImagePath = userData.backgroundURL;
+    await userRef.update({
+      backgroundURL: newImagePath
+    });
+  }
+
+  // Si hay una imagen anterior, eliminarla del almacenamiento
+  if (oldImagePath) {
+    const oldFile = admin.storage().bucket().file(oldImagePath);
+    await oldFile.delete();
+    console.log(`Deleted old image: ${oldImagePath}`);
+  }
+
+  console.log(`Updated ${type} image for user: ${userId}`);
+};
+
+// Función que se ejecuta cuando se actualiza un documento de usuario en Firestore
+exports.uploadImage = functions.firestore.document('users/{userId}').onUpdate(async (change, context) => {
+  const newValue = change.after.data();
+  const previousValue = change.before.data();
+
+  // Verificar si la imagen de perfil ha cambiado
+  if (newValue.photoURL !== previousValue.photoURL) {
+    await updateProfileImage(context.params.userId, newValue.photoURL, 'profile');
+  }
+
+  // Verificar si el banner ha cambiado
+  if (newValue.bannerURL !== previousValue.bannerURL) {
+    await updateProfileImage(context.params.userId, newValue.bannerURL, 'banner');
+  }
+
+  // Verificar si el fondo de pantalla ha cambiado
+  if (newValue.backgroundURL !== previousValue.backgroundURL) {
+    await updateProfileImage(context.params.userId, newValue.backgroundURL, 'background');
+  }
 });
 
 // Exportar la aplicación Express como una función de Firebase
