@@ -1,43 +1,50 @@
 /* layout.css */
-  
-  header a {
-    color: white;
-    text-decoration: none;
-    margin: 0 15px;
-    font-size: 18px;
-  }
-  
-  header a:hover {
-    text-decoration: underline;
-  }
-  
-  main {
-    margin-top: 60px; /* Deja espacio para el header fijo */
-    padding: 20px;
-    width: 100%;
-    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
-  }
-  
-  .container {
-    max-width: 1200px; /* Ancho máximo para la página */
-    margin: 0 auto; /* Centra el contenido */
-    padding: 0 20px;
-  }
-  
-  .footer {
-    width: 100%;
-    background-color: #6200ea;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-  }
-  
-  .footer p {
-    margin: 0;
-    font-size: 14px;
-  }
-  
+
+/* Asegúrate de que todo el fondo de la página sea blanco o del color que prefieras */
+body {
+  background-color: #ffffff; /* Cambia el color de fondo aquí */
+  margin: 0;
+  padding: 0;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  font-size: 18px;
+}
+
+header a:hover {
+  text-decoration: underline;
+}
+
+main {
+  margin-top: 60px; /* Deja espacio para el header fijo */
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+  background-color: #ffffff; /* Cambia a blanco u otro color si es necesario */
+}
+
+.container {
+  max-width: 1200px; /* Ancho máximo para la página */
+  margin: 0 auto; /* Centra el contenido */
+  padding: 0 20px;
+}
+
+.footer {
+  width: 100%;
+  background-color: #6200ea;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 14px;
+}

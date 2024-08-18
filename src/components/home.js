@@ -4,6 +4,7 @@ import { auth, db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import '../Styles/Home.css';
 import FeaturedUsers from './FeaturedUsers';
+import RecomendedPosts from './RecomendedPosts';
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -41,8 +42,7 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <FeaturedUsers />
-
+      {/* ¡Descubre Illustra! bloque movido al principio */}
       <div className="home-welcome-box">
         <h2>¡Descubre Illustra!</h2>
         <div className="home-publications-links">
@@ -56,6 +56,15 @@ const Home = () => {
             <p>Regístrate y personaliza tu perfil para comenzar a mostrar tu talento al mundo.</p>
           </div>
         )}
+      </div>
+
+      <FeaturedUsers />
+
+      {/* Añadir sección de Publicaciones Recomendadas */}
+      <div className="home-recommended-posts">
+        <h2>Publicaciones Recomendadas</h2>
+        {/* Solo se mostrarán publicaciones SFW */}
+        <RecomendedPosts collectionName="PostsCollection" category="SFW" />
       </div>
 
       <div className="home-how-it-works">
@@ -86,6 +95,7 @@ const Home = () => {
 
       <footer className="home-footer">
         <p>© 2024 Illustra. Todos los derechos reservados.</p>
+        <p>Contact: <a href="mailto:support@illustra.app">support@illustra.app</a></p>
       </footer>
     </div>
   );

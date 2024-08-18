@@ -12,7 +12,7 @@ dotenv.config();
 admin.initializeApp();
 
 const app = express();
-const allowedOrigins = ['https://illustra-6ca8a.web.app', 'http://localhost:3000'];
+const allowedOrigins = ['https://illustra.app', 'http://localhost:3000'];
 
 // Configurar CORS para permitir solicitudes desde orígenes específicos
 app.use(cors({
@@ -54,9 +54,9 @@ app.post('/createPayment', async (req, res) => {
       email: payerEmail,
     },
     back_urls: {
-      success: "https://illustra-6ca8a.web.app/success",
-      failure: "https://illustra-6ca8a.web.app/failure",
-      pending: "https://illustra-6ca8a.web.app/pending",
+      success: "https://illustra.app/success",
+      failure: "https://illustra.app/failure",
+      pending: "https://illustra.app/pending",
     },
     auto_return: "approved",
   };
@@ -78,7 +78,7 @@ app.post('/createPayment', async (req, res) => {
 // Función para manejar el token de autorización de Mercado Pago
 app.get('/mercadoPagoToken', async (req, res) => {
   if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Origin', 'https://illustra-6ca8a.web.app');
+    res.set('Access-Control-Allow-Origin', 'https://illustra.app');
     res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type');
     res.set('Access-Control-Max-Age', '3600');
@@ -118,7 +118,7 @@ app.get('/mercadoPagoToken', async (req, res) => {
       mercadoPagoRefreshToken: refresh_token,
     });
 
-    res.set('Access-Control-Allow-Origin', 'https://illustra-6ca8a.web.app');
+    res.set('Access-Control-Allow-Origin', 'https://illustra.app');
     res.json(response.data);
   } catch (error) {
     console.error("Error al obtener tokens de Mercado Pago:", error.response ? error.response.data : error.message);

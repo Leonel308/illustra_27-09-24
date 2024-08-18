@@ -20,7 +20,7 @@ const ExplorePostsMature = () => {
     );
   }
 
-  return <Feed collectionName="PostsCollection18" />;
+  return <Feed collectionName="PostsCollectionMature" />;
 };
 
 export default ExplorePostsMature;

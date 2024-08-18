@@ -153,7 +153,7 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
             <img src={service.imageUrl} alt={service.title} />
             <h4>{service.title}</h4>
             <p>{service.description}</p>
-            <p>{service.price}</p>
+            <p className="service-price">{service.price}</p>
             <div className="service-actions">
               <button onClick={() => navigate(`/hire-service/${user.uid}/${index}`)}>Contratar</button>
               {isOwner && (

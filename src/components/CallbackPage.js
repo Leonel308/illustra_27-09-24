@@ -14,39 +14,39 @@ const CallbackPage = () => {
       const code = query.get('code');
       const state = query.get('state');
 
-      if (code && state) {
-        try {
-          const response = await fetch(`https://us-central1-illustra-6ca8a.cloudfunctions.net/api/mercadoPagoToken?code=${code}&state=${state}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          });
+      if (!code || !state) {
+        setError('Parámetros de URL inválidos. No se pudo completar la autenticación.');
+        setLoading(false);
+        return;
+      }
 
-          if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`Network response was not ok: ${text}`);
+      try {
+        const response = await fetch(`https://illustra.app/api/mercadoPagoToken?code=${code}&state=${state}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
           }
+        });
 
-          const data = await response.json();
-          const { access_token, refresh_token } = data;
-
-          const userRef = doc(db, 'users', state);
-          await updateDoc(userRef, {
-            mercadoPagoAccessToken: access_token,
-            mercadoPagoRefreshToken: refresh_token
-          });
-
-          navigate('/configuration');
-        } catch (error) {
-          console.error('Error al obtener tokens:', error);
-          setError(`Error al obtener tokens: ${error.message}`);
-        } finally {
-          setLoading(false);
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Error de red: ${text}`);
         }
-      } else {
-        console.error('Parámetros de URL inválidos:', window.location.search);
-        setError('Parámetros de URL inválidos.');
+
+        const data = await response.json();
+        const { access_token, refresh_token } = data;
+
+        const userRef = doc(db, 'users', state);
+        await updateDoc(userRef, {
+          mercadoPagoAccessToken: access_token,
+          mercadoPagoRefreshToken: refresh_token
+        });
+
+        navigate('/configuration');
+      } catch (error) {
+        console.error('Error al obtener tokens:', error);
+        setError(`Hubo un problema al conectar tu cuenta de Mercado Pago: ${error.message}`);
+      } finally {
         setLoading(false);
       }
     };

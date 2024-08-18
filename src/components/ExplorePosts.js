@@ -1,4 +1,3 @@
-// src/components/ExplorePosts.js
 import React, { useEffect, useState } from 'react';
 import Feed from '../components/Feed/Feed';
 import '../Styles/ExplorePosts.css';
@@ -22,7 +21,6 @@ const ExplorePosts = () => {
 
   return (
     <div>
-      <h1 className="explore-title">Explora a Otros Artistas</h1> {/* Título añadido */}
       <Feed collectionName="PostsCollection" />
     </div>
   );

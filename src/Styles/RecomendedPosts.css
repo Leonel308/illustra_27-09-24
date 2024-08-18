@@ -1,0 +1,129 @@
+.feed-container {
+    padding: 5px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white; /* Fondo blanco en la sección principal */
+}
+
+.posts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    background-color: white; /* Fondo blanco en la cuadrícula */
+}
+
+.post-card {
+    background-color: white; /* Fondo blanco en las tarjetas individuales */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 200px; 
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-image-container {
+    width: 100%;
+    height: 120px;
+    overflow: hidden;
+    background-color: white; /* Asegura que el contenedor de la imagen sea blanco */
+}
+
+.post-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-details {
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    background-color: white; /* Asegura que los detalles del post también sean blancos */
+}
+
+.post-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.user-photo {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.user-name {
+    color: gray;
+    font-style: italic;
+    margin: 0;
+}
+
+.post-title {
+    color: #6a0dad;
+    margin: 3px 0;
+    font-size: 0.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.delete-post-button {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+    text-align: center;
+    margin-top: auto;
+}
+
+.delete-post-button:hover {
+    background-color: darkred;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: white; /* Asegura fondo blanco en el contenedor de carga */
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #6a0dad;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    background-color: white; /* Asegura fondo blanco en el spinner */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Asegurar fondo blanco en cualquier contenedor padre */
+
+.post-recommended-container {
+    background-color: white; /* Asegura que el fondo de la sección de recomendados sea blanco */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
