@@ -18,11 +18,11 @@ const Notifications = () => {
         const fetchedNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setNotifications(fetchedNotifications);
 
-        // Calcula la cantidad de notificaciones no leídas
+        // Calculate the number of unread notifications
         const unreadNotifications = fetchedNotifications.filter(notification => !notification.read);
         setUnreadCount(unreadNotifications.length);
 
-        // Si hay nuevas notificaciones no leídas, activa el efecto de la campana
+        // Trigger the bell effect if there are new unread notifications
         if (unreadNotifications.length > 0) {
           triggerBellEffect();
         }
@@ -71,6 +71,7 @@ const Notifications = () => {
           <ul className="notifications-list">
             {notifications.map(notification => (
               <li key={notification.id} className="notification-item">
+                <strong>{notification.title}</strong>
                 <p>{notification.message}</p>
                 <small>{new Date(notification.timestamp?.seconds * 1000).toLocaleString()}</small>
                 {!notification.read && (

@@ -22,7 +22,7 @@ import ServiceRequest from './components/Services/ServiceRequest';
 import Notifications from './components/Notifications';
 import ServiceDetailsWorker from './components/Services/ServiceDetailsWorker';
 import ServiceDetailsUser from './components/Services/ServiceDetailsUser';
-import InspectPost from './components/Feed/inspectPost'; // Import actualizado
+import InspectPost from './components/Feed/inspectPost';
 import { UserProvider } from './context/UserContext';
 import Layout from './components/Layout';
 
@@ -50,11 +50,11 @@ function App() {
           <Route path="/dashboard" element={<Layout><UserDashboard /></Layout>} />
           <Route path="/admin-dashboard" element={<Layout><AdminDashboard /></Layout>} />
           <Route path="/workbench" element={<Layout><Workbench /></Layout>} />
-          <Route path="/service-request/:userId/:serviceId" element={<Layout><ServiceRequest /></Layout>} />
+          <Route path="/service-request/:illustratorID/:serviceId" element={<Layout><ServiceRequest /></Layout>} />
           <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
           <Route path="/service-details-worker/:requestId/:clientId" element={<Layout><ServiceDetailsWorker /></Layout>} />
           <Route path="/service-details-user/:requestId/:clientId" element={<Layout><ServiceDetailsUser /></Layout>} />
-          <Route path="/inspectPost/:postId" element={<Layout><InspectPost /></Layout>} /> {/* Ruta actualizada */}
+          <Route path="/inspectPost/:postId" element={<Layout><InspectPost /></Layout>} />
         </Routes>
       </Router>
     </UserProvider>

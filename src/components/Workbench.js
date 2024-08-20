@@ -15,30 +15,32 @@ const Workbench = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       if (user) {
+        // Fetch received service requests
         const receivedRef = collection(db, 'users', user.uid, 'ServiceRequests');
         const receivedSnapshot = await getDocs(receivedRef);
 
         const requestsWithUsernames = await Promise.all(
           receivedSnapshot.docs.map(async (docSnapshot) => {
             const requestData = docSnapshot.data();
-            const clientRef = doc(db, 'users', requestData.clientId); // Importación corregida
+            const clientRef = doc(db, 'users', requestData.clientId);
             const clientDoc = await getDoc(clientRef);
-            const clientUsername = clientDoc.exists() ? clientDoc.data().username : 'Usuario desconocido';
+            const clientUsername = clientDoc.exists() ? clientDoc.data().clientUsername : 'Usuario desconocido';
             return { id: docSnapshot.id, ...requestData, clientUsername };
           })
         );
         setReceivedRequests(requestsWithUsernames);
 
+        // Fetch hired services
         const hiredRef = collection(db, 'users', user.uid, 'ServiceHired');
         const hiredSnapshot = await getDocs(hiredRef);
 
         const hiredWithUsernames = await Promise.all(
           hiredSnapshot.docs.map(async (docSnapshot) => {
             const requestData = docSnapshot.data();
-            const workerRef = doc(db, 'users', requestData.workerId); // Importación corregida
-            const workerDoc = await getDoc(workerRef);
-            const workerUsername = workerDoc.exists() ? workerDoc.data().username : 'Usuario desconocido';
-            return { id: docSnapshot.id, ...requestData, workerUsername };
+            const illustratorRef = doc(db, 'users', requestData.illustratorId);
+            const illustratorDoc = await getDoc(illustratorRef);
+            const illustratorUsername = illustratorDoc.exists() ? illustratorDoc.data().username : 'Usuario desconocido';
+            return { id: docSnapshot.id, ...requestData, illustratorUsername };
           })
         );
         setHiredRequests(hiredWithUsernames);
@@ -50,6 +52,7 @@ const Workbench = () => {
 
   const handleAccept = async (requestId, clientId) => {
     try {
+      // Update request status to "in progress"
       await updateDoc(doc(db, 'users', user.uid, 'ServiceRequests', requestId), {
         status: 'in progress',
       });
@@ -71,12 +74,15 @@ const Workbench = () => {
 
   const handleDeny = async (requestId, clientId, serviceTitle, servicePrice, paymentId) => {
     try {
+      // Delete request from the illustrator's side
       await deleteDoc(doc(db, 'users', user.uid, 'ServiceRequests', requestId));
       setReceivedRequests(receivedRequests.filter(request => request.id !== requestId));
 
+      // Delete request from the client's side
       await deleteDoc(doc(db, 'users', clientId, 'ServiceHired', requestId));
       setHiredRequests(hiredRequests.filter(request => request.id !== requestId));
 
+      // Send notification to the client
       const notificationsRef = collection(db, 'users', clientId, 'Notifications');
       await addDoc(notificationsRef, {
         message: `Tu solicitud para el servicio "${serviceTitle}" ha sido denegada.`,
@@ -84,19 +90,29 @@ const Workbench = () => {
         read: false,
       });
 
+      // Update payment status
       const paymentRef = doc(db, 'users', clientId, 'Payments', paymentId);
       await updateDoc(paymentRef, {
         status: 'rejected',
         updatedAt: new Date(),
       });
 
+      // Retrieve the client data
       const clientRef = doc(db, 'users', clientId);
       const clientDoc = await getDoc(clientRef);
       const clientData = clientDoc.data();
 
+      // Convert service price to number
+      const servicePriceNumber = parseFloat(servicePrice.replace(/[^0-9.-]+/g,""));
+
+      if (isNaN(servicePriceNumber)) {
+        throw new Error("Error al convertir el precio del servicio a número");
+      }
+
+      // Update the client's balance and pending balance
       await updateDoc(clientRef, {
-        balance: clientData.balance + servicePrice,
-        pendingBalance: clientData.pendingBalance - servicePrice,
+        balance: clientData.balance + servicePriceNumber,
+        pendingBalance: clientData.pendingBalance - servicePriceNumber,
       });
 
       alert('Solicitud denegada, saldo devuelto y notificación enviada al cliente.');
@@ -166,7 +182,7 @@ const Workbench = () => {
             <div key={request.id} className="workbench-item">
               <h3>{request.serviceTitle}</h3>
               <p>{request.description}</p>
-              <p>Proveedor del servicio: {request.workerUsername}</p>
+              <p>Proveedor del servicio: {request.illustratorUsername}</p>
               <p>Precio: ${request.servicePrice}</p>
               <p>Estado: {request.status}</p>
               <button

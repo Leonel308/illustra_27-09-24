@@ -3,6 +3,7 @@ import { db } from '../firebaseConfig';
 import { collection, onSnapshot, updateDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import '../Styles/AdminDashboard.css';
 import axios from 'axios';
+import SendNotification from '../components/sendNotifications'; // Import the SendNotification component
 
 const AdminDashboard = () => {
   const [withdrawalRequests, setWithdrawalRequests] = useState([]);
@@ -85,6 +86,7 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <h1>Dashboard de Admin</h1>
+      <SendNotification /> {/* Include the SendNotification component here */}
       {withdrawalRequests.map(request => (
         <div key={request.id} className="withdrawal-request">
           <img src={request.userPhotoURL} alt={request.username} className="user-photo" />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../../Styles/ProfileStyles/profile.css';
 import UserContext from '../../context/UserContext';
@@ -54,7 +54,6 @@ const Profile = () => {
           setPhotoURL(data.photoURL || defaultProfilePic);
           setBio(data.bio || '');
           setPortfolio(data.portfolio || []);
-          setServices(data.services || []);
           setUsername(data.username || '');
           setAdultContent(data.adultContent === 'NSFW-SFW' ? 'SFW/NSFW' : data.adultContent || '');
           setIsOwner(user && user.uid === userId);
@@ -62,6 +61,12 @@ const Profile = () => {
           setGender(data.gender || '');
           setDonationAmounts(data.donationAmounts || [1000, 5000, 10000, 20000]);
           setCanReceiveDonations(!!data.mercadoPagoAccessToken);
+
+          // Fetch services from the Services subcollection
+          const servicesRef = collection(db, 'users', userId, 'Services');
+          const servicesSnapshot = await getDocs(servicesRef);
+          const servicesData = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setServices(servicesData);
         } else {
           setError('User not found');
           navigate('/home');

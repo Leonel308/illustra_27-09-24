@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, collection, addDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
 import '../../Styles/ProfileStyles/ProfileServices.css';
@@ -37,13 +37,9 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
 
   const handlePriceChange = (e) => {
     const value = e.target.value;
-    if (/^\d{0,5}$/.test(value)) {
+    if (/^\d*\.?\d{0,2}$/.test(value) && value.length <= 7) {  // Permite números con hasta dos decimales y un máximo de 7 caracteres
       setServicePrice(value);
     }
-  };
-
-  const formatPrice = (price) => {
-    return `$${Number(price).toLocaleString()}`;
   };
 
   const handleAddService = async () => {
@@ -55,17 +51,18 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
         const serviceImageUrl = await getDownloadURL(serviceImageRef);
 
         const newService = {
+          illustratorId: user.uid,
           title: serviceTitle,
           description: serviceDescription,
-          price: formatPrice(servicePrice),
-          imageUrl: serviceImageUrl
+          price: parseFloat(servicePrice),  // Guarda el precio como número
+          imageUrl: serviceImageUrl,
+          createdAt: new Date(),
         };
 
-        await updateDoc(doc(db, 'users', user.uid), {
-          services: arrayUnion(newService)
-        });
+        const servicesRef = collection(db, 'users', user.uid, 'Services');
+        const serviceDocRef = await addDoc(servicesRef, newService);
 
-        setServices((prevServices) => [...prevServices, newService]);
+        setServices((prevServices) => [...prevServices, { ...newService, id: serviceDocRef.id }]);
         setServiceTitle('');
         setServiceDescription('');
         setServicePrice('');
@@ -83,19 +80,17 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
     }
   };
 
-  const handleDeleteService = async (service) => {
+  const handleDeleteService = async (serviceId, imageUrl) => {
     if (user) {
       setLoading(true);
       try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          services: arrayRemove(service)
-        });
+        const serviceRef = doc(db, 'users', user.uid, 'Services', serviceId);
+        await deleteDoc(serviceRef);
 
-        const serviceImageRef = ref(storage, `services/${user.uid}/${service.imageUrl.split('%2F')[2].split('?')[0]}`);
+        const serviceImageRef = ref(storage, `services/${user.uid}/${imageUrl.split('%2F')[2].split('?')[0]}`);
         await deleteObject(serviceImageRef);
 
-        setServices((prevServices) => prevServices.filter(s => s !== service));
+        setServices((prevServices) => prevServices.filter((service) => service.id !== serviceId));
         setError('');
       } catch (error) {
         console.error('Error al eliminar el servicio:', error);
@@ -104,6 +99,10 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
         setLoading(false);
       }
     }
+  };
+
+  const handleHireService = (serviceId, illustratorId) => {
+    navigate(`/service-request/${illustratorId}/${serviceId}`);
   };
 
   return (
@@ -134,6 +133,7 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
                 onChange={handlePriceChange} 
                 placeholder="Precio del Servicio" 
               />
+              <p className="char-counter">{servicePrice.length}/7</p>
               <input 
                 type="file" 
                 accept="image/*" 
@@ -148,18 +148,18 @@ const ProfileServices = ({ services = [], isOwner, setServices }) => {
         </>
       )}
       <div className="services-list">
-        {services.map((service, index) => (
-          <div key={index} className="service-item">
+        {services.map((service) => (
+          <div key={service.id} className="service-item">
             <img src={service.imageUrl} alt={service.title} />
             <h4>{service.title}</h4>
             <p>{service.description}</p>
-            <p className="service-price">{service.price}</p>
+            <p className="service-price">${service.price.toFixed(2)}</p>
             <div className="service-actions">
-              <button onClick={() => navigate(`/hire-service/${user.uid}/${index}`)}>Contratar</button>
+              <button onClick={() => handleHireService(service.id, service.illustratorId)}>Contratar</button>
               {isOwner && (
                 <button 
                   className="delete-button" 
-                  onClick={() => handleDeleteService(service)}
+                  onClick={() => handleDeleteService(service.id, service.imageUrl)}
                   disabled={loading}
                 >
                   {loading ? 'Eliminando...' : '-'}

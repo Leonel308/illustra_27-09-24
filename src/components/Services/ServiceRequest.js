@@ -5,11 +5,11 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, addDoc, getDoc, setDoc, collection, updateDoc } from 'firebase/firestore';
 import '../../Styles/ServiceRequest.css';
 import UserContext from '../../context/UserContext';
-import PaymentMethodModal from './PaymentMethodModal'; // Importar el modal
+import PaymentMethodModal from './PaymentMethodModal';
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext);
-  const { serviceId, userId } = useParams();
+  const { serviceId, illustratorID } = useParams();
   const navigate = useNavigate();
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState([]);
@@ -17,19 +17,27 @@ const ServiceRequest = () => {
   const [servicePrice, setServicePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // Estado para mostrar el modal de método de pago
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
       try {
-        const serviceRef = doc(db, 'users', userId, 'Services', serviceId);
-        const serviceDoc = await getDoc(serviceRef);
-        if (serviceDoc.exists()) {
-          const serviceData = serviceDoc.data();
-          setServiceTitle(serviceData.title);
-          setServicePrice(serviceData.price);
-        } else {
-          setError('El documento no existe.');
+        if (illustratorID && serviceId) {
+          const serviceRef = doc(db, 'users', illustratorID, 'Services', serviceId);
+          const serviceDoc = await getDoc(serviceRef);
+
+          if (serviceDoc.exists()) {
+            const serviceData = serviceDoc.data();
+            console.log("Service document found:", serviceData);
+            setServiceTitle(serviceData.title);
+            setServicePrice(Number(serviceData.price));  // Convertir precio a número
+
+            if (currentUser && currentUser.uid === illustratorID) {
+              setError('No puedes contratar tu propio servicio, pero puedes ver los detalles.');
+            }
+          } else {
+            setError('El servicio no existe.');
+          }
         }
       } catch (error) {
         console.error('Error fetching service details:', error);
@@ -37,10 +45,8 @@ const ServiceRequest = () => {
       }
     };
 
-    if (serviceId && userId) {
-      fetchServiceDetails();
-    }
-  }, [serviceId, userId]);
+    fetchServiceDetails();
+  }, [serviceId, illustratorID, currentUser]);
 
   const handleFilesChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -53,23 +59,59 @@ const ServiceRequest = () => {
   };
 
   const handlePaymentMethodSelection = async (method) => {
-    setShowPaymentModal(false); // Cerrar el modal después de seleccionar un método de pago
+    setShowPaymentModal(false);
 
     if (method === 'wallet') {
-      await submitServiceRequest('wallet');
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+      
+      if (Number(userData.balance) >= servicePrice) {  // Asegurarse de que balance sea un número
+        await submitServiceRequest(method);
+      } else {
+        setError('Saldo insuficiente. Por favor, recarga tu billetera.');
+      }
     } else if (method === 'mercadoPago') {
-      await submitServiceRequest('mercadoPago');
+      handleMercadoPago();
+    }
+  };
+
+  const handleMercadoPago = async () => {
+    try {
+      // Crear una preferencia de pago en tu backend o directamente desde el frontend usando la API de Mercado Pago.
+      const response = await fetch('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createPayment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: servicePrice,
+          description: serviceTitle,
+          payerEmail: currentUser.email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.init_point) {
+        window.location.href = data.init_point; // Redirigir a la página de pago de Mercado Pago
+      } else {
+        setError('Hubo un problema al procesar el pago con Mercado Pago. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al redirigir a Mercado Pago:', error);
+      setError('Hubo un problema al procesar el pago con Mercado Pago. Por favor, inténtalo de nuevo.');
     }
   };
 
   const submitServiceRequest = async (paymentMethod) => {
     if (!description) {
-      setError('Por favor, complete la descripción.');
+      setError('Por favor, completa la descripción.');
       return;
     }
 
     if (files.length === 0) {
-      setError('Por favor, adjunte al menos un archivo.');
+      setError('Por favor, adjunta al menos un archivo.');
       return;
     }
 
@@ -78,19 +120,23 @@ const ServiceRequest = () => {
       return;
     }
 
+    if (currentUser.uid === illustratorID) {
+      setError('No puedes contratar tu propio servicio.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
       const currentUserId = currentUser.uid;
-      const serviceRequestRef = collection(db, 'users', userId, 'ServiceRequests');
+      const serviceRequestRef = collection(db, 'users', illustratorID, 'ServiceRequests');
 
       const uploadedFiles = await Promise.all(
         files.map(async (file) => {
-          const fileRef = ref(storage, `service-requests/${userId}/${file.name}`);
+          const fileRef = ref(storage, `service-requests/${illustratorID}/${file.name}`);
           await uploadBytes(fileRef, file);
-          const fileUrl = await getDownloadURL(fileRef);
-          return fileUrl;
+          return await getDownloadURL(fileRef);
         })
       );
 
@@ -102,51 +148,46 @@ const ServiceRequest = () => {
         createdAt: new Date(),
         status: 'pending',
         clientId: currentUserId,
-        clientUsername: currentUser.username, // Almacenar el nombre de usuario del cliente
-        paymentId: '', // Este campo se actualizará después de crear el documento en Payments
+        clientUsername: currentUser.username,
+        paymentId: '',
       };
 
       const docRef = await addDoc(serviceRequestRef, newRequest);
 
-      // Crear un registro de pago en la subcolección Payments del usuario
       const paymentRef = await addDoc(collection(db, 'users', currentUserId, 'Payments'), {
         amount: servicePrice,
-        illustratorID: userId,
-        paymentMethod: paymentMethod,
-        serviceID: docRef.id, // Aquí guardamos el ID del servicio
+        illustratorID: illustratorID,
+        paymentMethod,
+        serviceID: docRef.id,
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
-      // Actualizar el paymentId en la solicitud de servicio
       await updateDoc(docRef, { paymentId: paymentRef.id });
 
-      // Actualizar el balance y el pendingBalance del usuario si se paga con wallet
       if (paymentMethod === 'wallet') {
         const userRef = doc(db, 'users', currentUserId);
         const userDoc = await getDoc(userRef);
         const userData = userDoc.data();
 
         await updateDoc(userRef, {
-          balance: userData.balance - servicePrice,
+          balance: Number(userData.balance) - servicePrice,
           pendingBalance: (userData.pendingBalance || 0) + servicePrice,
         });
       }
 
-      // Guardar la solicitud en ServiceHired con serviceID
       const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
       await setDoc(clientServiceHiredRef, {
-        illustratorId: userId,
+        illustratorId: illustratorID,
         serviceTitle: serviceTitle,
         servicePrice: servicePrice,
         status: 'pending',
         createdAt: new Date(),
-        serviceID: docRef.id, // Guardar el serviceID en ServiceHired
+        serviceID: docRef.id,
       });
 
-      // Enviar notificación al ilustrador
-      const notificationsRef = collection(db, 'users', userId, 'Notifications');
+      const notificationsRef = collection(db, 'users', illustratorID, 'Notifications');
       await addDoc(notificationsRef, {
         message: `Has recibido una nueva solicitud de servicio para "${serviceTitle}".`,
         timestamp: new Date(),
@@ -165,9 +206,9 @@ const ServiceRequest = () => {
 
   const handleSubmit = () => {
     if (!description || files.length === 0) {
-      setError('Por favor, complete la descripción y adjunte al menos un archivo.');
+      setError('Por favor, completa la descripción y adjunta al menos un archivo.');
     } else {
-      setShowPaymentModal(true); // Mostrar el modal de método de pago
+      setShowPaymentModal(true);
     }
   };
 
@@ -186,16 +227,15 @@ const ServiceRequest = () => {
         <input 
           type="file" 
           multiple 
-          accept=".png" 
+          accept="image/*" 
           onChange={handleFilesChange} 
         />
         {files.length > 0 && <p>{files.length} archivo(s) seleccionados</p>}
       </div>
-      <button onClick={handleSubmit} disabled={loading}>
+      <button onClick={handleSubmit} disabled={loading || currentUser?.uid === illustratorID}>
         {loading ? 'Enviando...' : 'Enviar Solicitud'}
       </button>
 
-      {/* Mostrar el modal de método de pago */}
       {showPaymentModal && (
         <PaymentMethodModal
           show={showPaymentModal}
