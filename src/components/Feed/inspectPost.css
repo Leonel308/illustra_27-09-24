@@ -1,242 +1,211 @@
-/* Contenedor principal */
 .inspect-post-page {
   display: flex;
-  max-width: 1000px; /* Reducción del ancho máximo */
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 15px; /* Reducción del padding */
-  background-color: white;
-  border-radius: 8px; /* Bordes más ajustados */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+  padding: 20px;
+  gap: 20px;
 }
 
-/* Área principal del post */
 .inspect-post-main {
-  flex: 2;
-  padding-right: 15px; /* Reducción del padding */
+  flex: 3;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-/* Barra lateral */
 .inspect-post-sidebar {
   flex: 1;
-  padding: 15px; /* Reducción del padding */
   background-color: white;
-  border-radius: 8px; /* Bordes más ajustados */
-  margin-left: 15px; /* Reducción del margen */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  height: fit-content;
 }
 
-/* Contenedor del post */
-.inspect-post-container {
-  padding: 15px; /* Reducción del padding */
-  max-width: 750px; /* Reducción del ancho máximo */
-  margin: 0 auto;
+.inspect-post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-/* Detalles del post */
-.inspect-post-details {
-  margin-bottom: 15px; /* Reducción del margen inferior */
-}
-
-/* Información del autor */
 .inspect-post-author {
   display: flex;
   align-items: center;
-  margin-bottom: 12px; /* Reducción del margen inferior */
 }
 
 .inspect-user-photo {
-  width: 35px; /* Reducción del tamaño de la foto */
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  margin-right: 12px; /* Reducción del margen derecho */
+  margin-right: 12px;
 }
 
 .inspect-user-name {
-  color: gray;
-  font-style: italic;
-  margin: 0;
-  font-size: 0.9em; /* Reducción del tamaño de la fuente */
+  font-weight: 600;
+  color: #333;
 }
 
-/* Título del post */
-.inspect-post-title {
+.inspect-post-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #65676b;
+  font-size: 14px;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.action-button:hover {
   color: #6a0dad;
-  margin: 8px 0;
-  font-size: 1.4em; /* Reducción del tamaño de la fuente */
-  word-break: break-word;
-  overflow-wrap: break-word;
-  border-bottom: 1px solid #f0f0f0; /* Reducción del grosor del borde */
-  padding-bottom: 8px; /* Reducción del padding inferior */
+  transform: scale(1.1);
 }
 
-/* Categoría del post */
+.action-button.liked {
+  color: #e0245e;
+}
+
+.action-button.delete {
+  color: #dc3545;
+}
+
+.action-icon {
+  margin-right: 4px;
+}
+
+.inspect-post-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1c1e21;
+  margin: 16px;
+}
+
 .inspect-post-category {
-  font-size: 1em; /* Tamaño de fuente para la categoría */
-  color: #888; /* Color gris suave para la categoría */
-  margin-bottom: 8px; /* Margen inferior para separarlo del título */
+  font-size: 14px;
+  color: #65676b;
+  margin: 0 16px 16px;
 }
 
-/* Imagen del post */
 .inspect-post-image {
   width: 100%;
-  max-width: 650px; /* Reducción del ancho máximo */
-  height: auto;
-  margin: 15px 0; /* Reducción del margen vertical */
-  border-radius: 8px; /* Bordes más ajustados */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+  max-height: 600px;
   object-fit: contain;
 }
 
-/* Descripción del post */
 .inspect-post-description {
-  font-size: 1.1em; /* Reducción del tamaño de la fuente */
-  line-height: 1.4; /* Reducción de la altura de la línea */
-  color: #333;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1c1e21;
+  margin: 16px;
 }
 
-/* Sección de comentarios */
 .inspect-comments-section {
-  margin-top: 15px; /* Reducción del margen superior */
+  padding: 16px;
   border-top: 1px solid #f0f0f0;
-  padding-top: 15px; /* Reducción del padding superior */
+}
+
+.inspect-comments-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1e21;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .inspect-comment {
-  background-color: #f9f9f9;
-  padding: 12px; /* Reducción del padding */
-  border-radius: 8px; /* Bordes más ajustados */
-  margin-bottom: 12px; /* Reducción del margen inferior */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  margin-bottom: 16px;
 }
 
-/* Campo para agregar comentarios */
+.comment-user-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.comment-content {
+  background-color: #f0f2f5;
+  border-radius: 18px;
+  padding: 8px 12px;
+  flex-grow: 1;
+}
+
+.comment-content strong {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
 .inspect-add-comment {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+  margin-top: 16px;
 }
 
 .inspect-add-comment textarea {
-  resize: none;
-  border-radius: 6px; /* Bordes más ajustados */
-  padding: 10px; /* Reducción del padding */
-  margin-bottom: 10px; /* Reducción del margen inferior */
-  border: 1px solid #ddd;
   width: 100%;
-  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #ccd0d5;
+  border-radius: 20px;
+  resize: none;
+  margin-bottom: 8px;
 }
 
-/* Botón de comentar */
 .inspect-add-comment button {
   background-color: #6a0dad;
   color: white;
   border: none;
-  padding: 10px; /* Reducción del padding */
-  border-radius: 6px; /* Bordes más ajustados */
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  width: 100%;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Sombra más suave */
-  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
 .inspect-add-comment button:hover {
-  background-color: #5c0dab;
+  background-color: #580ea2;
+  transform: scale(1.05);
 }
 
-/* Sidebar styling */
+.inspect-add-comment button:active {
+  transform: scale(0.95);
+}
+
 .inspect-post-sidebar h3 {
-  margin-bottom: 15px; /* Reducción del margen inferior */
-  color: #6a0dad;
-  font-size: 1.2em; /* Reducción del tamaño de la fuente */
-  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1e21;
+  margin-bottom: 16px;
 }
 
-.inspect-post-sidebar .posts-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px; /* Reducción del espacio entre tarjetas */
-  justify-items: center;
-}
-
-/* Tarjetas de post recomendados */
-.inspect-post-sidebar .post-card {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px; /* Bordes más ajustados */
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  width: 100%; /* Asegura que las tarjetas ocupen el 100% del ancho disponible */
-  max-width: 230px; /* Reducción del ancho máximo */
-}
-
-.inspect-post-sidebar .post-card:hover {
-  transform: translateY(-3px); /* Reducción del efecto de elevación */
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); /* Sombra más suave */
-}
-
-.inspect-post-sidebar .post-image-container {
-  width: 100%;
-  height: 130px; /* Reducción de la altura de la imagen */
-  overflow: hidden;
-}
-
-.inspect-post-sidebar .post-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.inspect-post-sidebar .post-details {
-  padding: 8px; /* Reducción del padding */
-  text-align: center;
-}
-
-.inspect-post-sidebar .post-info {
+.inspect-post-loading,
+.inspect-post-error {
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 4px; /* Reducción del margen inferior */
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #65676b;
 }
 
-.inspect-post-sidebar .user-photo {
-  width: 25px; /* Reducción del tamaño de la foto */
-  height: 25px;
-  border-radius: 50%;
-  margin-right: 5px;
-}
+@media (max-width: 768px) {
+  .inspect-post-page {
+    flex-direction: column;
+  }
 
-.inspect-post-sidebar .user-name {
-  color: gray;
-  font-style: italic;
-  margin: 0;
-  font-size: 0.8em; /* Reducción del tamaño de la fuente */
-}
-
-.inspect-post-sidebar .post-title {
-  color: #6a0dad;
-  margin: 4px 0; /* Reducción del margen */
-  font-size: 0.8em; /* Reducción del tamaño de la fuente */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Botón Eliminar en Post Recomendados */
-.inspect-post-sidebar .post-card .delete-post-button {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 8px; /* Reducción del padding */
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-  margin-top: 8px; /* Reducción del margen superior */
-}
-
-.inspect-post-sidebar .post-card .delete-post-button:hover {
-  background-color: #c0392b;
+  .inspect-post-sidebar {
+    margin-top: 20px;
+  }
 }

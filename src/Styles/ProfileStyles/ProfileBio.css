@@ -1,10 +1,10 @@
 .bio-container {
-  margin-top: 5px; /* Reducir el margen superior */
+  margin-top: 5px;
   text-align: center;
 }
 
 .bio {
-  margin: 5px 0; /* Reducir el margen */
+  margin: 5px 0;
 }
 
 .bio textarea {
@@ -16,11 +16,16 @@
 }
 
 .bio button {
-  margin-top: 5px; /* Reducir el margen superior */
+  margin-top: 5px;
   padding: 5px 10px;
-  background-color: #6200ea;
+  background-color: var(--button-color);
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.bio button:hover {
+  transform: scale(1.05);
 }

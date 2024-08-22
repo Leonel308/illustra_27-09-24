@@ -24,8 +24,8 @@ body, html {
   left: 0;
   width: 100%;
   height: 100%;
-  background-size: cover; /* Asegura que la imagen cubra toda el área */
-  background-position: center; /* Centra la imagen */
+  background-size: cover;
+  background-position: center;
   z-index: -1;
   filter: blur(8px);
   opacity: 0.5;
@@ -57,7 +57,7 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-size: cover; /* Volvemos a usar cover para asegurar el ajuste completo */
+  background-size: cover;
   background-position: center;
   position: relative;
   cursor: pointer;
@@ -155,8 +155,11 @@ body, html {
 }
 
 /* Estilos para el cuadro de patrocinio */
-.profile-page .sponsor-box {
-  background-color: violet;
+.profile-page .sponsor-box,
+.background-update-button,
+.bio button,
+.tabs-list button {
+  background-color: var(--button-color, violet);
   color: white;
   padding: 10px;
   margin: 5px 0;
@@ -164,11 +167,14 @@ body, html {
   font-size: 18px;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
-.profile-page .sponsor-box:hover {
-  background-color: darkviolet;
+.profile-page .sponsor-box:hover,
+.background-update-button:hover,
+.bio button:hover,
+.tabs-list button:hover {
+  transform: scale(1.05);
 }
 
 .profile-page .sponsor-box[style*="pointer-events: none"] {
@@ -211,12 +217,11 @@ body, html {
   padding: 10px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .profile-page .sponsor-modal-content button:hover {
-  background-color: #531091;
-  color: white;
+  transform: scale(1.05);
 }
 
 .profile-page .close {
@@ -238,21 +243,35 @@ body, html {
 
 /* Estilo para el botón de actualización del fondo */
 .background-update-button {
-  background-color: violet;
-  color: white;
-  padding: 10px;
   margin-top: 10px;
-  text-align: center;
   font-size: 16px;
   border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.background-update-button:hover {
-  background-color: darkviolet;
 }
 
 .background-input {
   display: none;
+}
+
+/* Estilos adicionales para las pestañas */
+.profile-page .tabs-list {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.tabs-list button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: violet;
+}
+
+.tabs-list button.active {
+  background-color: var(--button-color, violet);
+}
+
+.tabs-list button.inactive {
+  background-color: #ddd;
+  color: black;
 }

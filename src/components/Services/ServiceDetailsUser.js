@@ -34,6 +34,29 @@ const ServiceDetailsUser = () => {
     fetchServiceDetails();
   }, [user, requestId]);
 
+  const handleDownloadFiles = async () => {
+    if (serviceDetails && serviceDetails.completedImages) {
+      for (const [index, file] of serviceDetails.completedImages.entries()) {
+        try {
+          const response = await fetch(file, { mode: 'no-cors' }); // Usar 'no-cors' para evitar problemas de CORS
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `Trabajo_${index + 1}.${blob.type.split('/')[1]}`; // Mantiene la extensión del archivo
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error al descargar el archivo:', error);
+        }
+      }
+    } else {
+      alert('No hay archivos disponibles para descargar.');
+    }
+  };
+
   const handleAcceptDelivery = async () => {
     if (!window.confirm('¿Estás seguro de que deseas aceptar la entrega de este servicio?')) {
       return;
@@ -84,13 +107,20 @@ const ServiceDetailsUser = () => {
             <h4>Imágenes Completadas por el Trabajador</h4>
             <div className="images-container">
               {serviceDetails.completedImages && serviceDetails.completedImages.map((file, index) => (
-                <img key={index} src={file} alt={`Trabajo imagen ${index + 1}`} />
+                <div key={index} className="image-item">
+                  <img src={file} alt={`Trabajo imagen ${index + 1}`} />
+                </div>
               ))}
             </div>
           </div>
-          <button onClick={handleAcceptDelivery} className="accept-button">
-            Aceptar Entrega
-          </button>
+          <div className="actions-container">
+            <button onClick={handleDownloadFiles} className="download-button">
+              Descargar Archivos
+            </button>
+            <button onClick={handleAcceptDelivery} className="accept-button">
+              Aceptar Entrega
+            </button>
+          </div>
         </div>
       ) : (
         <p>Cargando detalles del servicio...</p>

@@ -34,18 +34,18 @@ const ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || functions.config().
 
 // Función para crear un pago en Mercado Pago
 app.post('/createPayment', async (req, res) => {
-  const { amount, description, payerEmail } = req.body;
+  const { amount, description, payerEmail, serviceId, illustratorID, clientId } = req.body;
 
   // Validar los campos requeridos
-  if (!amount || !description || !payerEmail) {
-    return res.status(400).send("Missing required fields: amount, description, payerEmail");
+  if (!amount || !description || !payerEmail || !serviceId || !illustratorID || !clientId) {
+    return res.status(400).send("Missing required fields: amount, description, payerEmail, serviceId, illustratorID, clientId");
   }
 
   // Crear la preferencia de pago
   const preference = {
     items: [
       {
-        title: "Donación",
+        title: description,
         unit_price: parseFloat(amount),
         quantity: 1,
       },
@@ -54,7 +54,7 @@ app.post('/createPayment', async (req, res) => {
       email: payerEmail,
     },
     back_urls: {
-      success: "https://illustra.app/success",
+      success: `https://illustra.app/success?serviceId=${serviceId}&illustratorID=${illustratorID}&clientId=${clientId}`,
       failure: "https://illustra.app/failure",
       pending: "https://illustra.app/pending",
     },
@@ -68,6 +68,21 @@ app.post('/createPayment', async (req, res) => {
         Authorization: `Bearer ${ACCESS_TOKEN}`
       }
     });
+
+    // Almacenar los detalles del pago en Firestore
+    await admin.firestore().collection('users').doc(illustratorID).collection('ServiceRequests').doc(serviceId).update({
+      paymentId: response.data.id,
+      status: 'pending'
+    });
+
+    // Enviar notificación al ilustrador
+    const notificationsRef = admin.firestore().collection('users').doc(illustratorID).collection('Notifications');
+    await notificationsRef.add({
+      message: `Has recibido una nueva solicitud de servicio para "${description}".`,
+      timestamp: new Date(),
+      read: false,
+    });
+
     res.json({ init_point: response.data.init_point });
   } catch (error) {
     console.error("Error creating preference:", error);

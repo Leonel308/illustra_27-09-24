@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../../firebaseConfig';
-import { collection, getDocs, doc, getDoc, query, orderBy, addDoc, deleteDoc } from 'firebase/firestore'; 
-import '../../Styles/Feed.css';
+import { collection, getDocs, doc, getDoc, query, orderBy, addDoc, deleteDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { MessageCircle, Trash2, Send } from 'lucide-react';
+import '../../Styles/Feed.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
-const Feed = ({ collectionName }) => {
+function Feed({ collectionName }) {
   const { user } = useContext(UserContext);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +20,7 @@ const Feed = ({ collectionName }) => {
     const fetchPosts = async () => {
       try {
         const postsCollection = collection(db, collectionName);
-        const q = query(postsCollection, orderBy('timestamp', 'desc')); 
+        const q = query(postsCollection, orderBy('timestamp', 'desc'));
         const postsSnapshot = await getDocs(q);
         const postsList = await Promise.all(
           postsSnapshot.docs.map(async (postDoc) => {
@@ -63,6 +64,7 @@ const Feed = ({ collectionName }) => {
         comment: commentText,
         timestamp: new Date(),
         user: user.username,
+        userPhotoURL: user.photoURL || defaultProfilePic,
       };
       const commentsCollectionRef = collection(db, `${collectionName}/${postId}/comments`);
       await addDoc(commentsCollectionRef, comment);
@@ -78,7 +80,6 @@ const Feed = ({ collectionName }) => {
       }));
       setNewComment('');
 
-      // Redirigir a la página de "InspectPost" después de agregar el comentario
       navigate(`/inspectPost/${postId}`);
     } catch (error) {
       console.error('Error adding comment: ', error);
@@ -98,72 +99,70 @@ const Feed = ({ collectionName }) => {
   };
 
   if (loading) {
-    return (
-      <div className="feed-loading-container">
-        <div className="feed-spinner"></div>
-      </div>
-    );
+    return <div className="feed-loading">Cargando...</div>;
   }
 
   if (error) {
-    return (
-      <div className="feed-container">
-        <div className="feed-error-message">{error}</div>
-      </div>
-    );
+    return <div className="feed-error">{error}</div>;
   }
 
   if (posts.length === 0) {
-    return (
-      <div className="feed-container">
-        <div className="feed-no-posts-message">No hay publicaciones para mostrar</div>
-      </div>
-    );
+    return <div className="feed-empty">No hay publicaciones para mostrar</div>;
   }
 
   return (
     <div className="feed-container">
-      <div className="feed-posts-grid">
-        {posts.map(post => (
-          <div key={post.id} className="feed-post-card">
-            <div className="feed-post-image-container">
-              <img src={post.imageURL} alt={post.title} className="feed-post-image" />
-            </div>
-            <div className="feed-post-details">
-              <div className="feed-post-author">
-                <img src={post.userPhotoURL} alt={post.username} className="feed-user-photo" />
-                <span className="feed-user-name">{post.username}</span>
-              </div>
-              <h2 className="feed-post-title">{post.title}</h2>
-              <p className="feed-post-description">{post.description}</p>
-              <p className="feed-post-category">Categoría: {post.category}</p> {/* Añadir la categoría aquí */}
-              <div className="feed-comments-section">
-                <h3>Comentarios</h3>
-                {post.comments?.map(comment => (
-                  <div key={comment.id} className="feed-comment">
-                    <p><strong>{comment.user}</strong>: {comment.comment}</p>
-                  </div>
-                ))}
-                {user && (
-                  <div className="feed-add-comment">
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Añade un comentario..."
-                    ></textarea>
-                    <button onClick={() => handleAddComment(post.id, newComment)}>Comentar</button>
-                  </div>
-                )}
-              </div>
-              {user?.role === 'admin' && (
-                <button className="delete-post-button" onClick={() => handleDeletePost(post.id)}>Eliminar</button>
+      {posts.map(post => (
+        <div 
+          key={post.id} 
+          className="feed-post"
+          onClick={() => navigate(`/inspectPost/${post.id}`)}
+        >
+          <div className="feed-post-header">
+            <img src={post.userPhotoURL} alt={post.username} className="feed-user-avatar" />
+            <span className="feed-username">{post.username}</span>
+          </div>
+          <img src={post.imageURL} alt={post.title} className="feed-post-image" />
+          <div className="feed-post-content">
+            <h2 className="feed-post-title">{post.title}</h2>
+            <p className="feed-post-description">{post.description}</p>
+            <p className="feed-post-category">Categoría: {post.category}</p>
+            <div className="feed-comments">
+              <h3><MessageCircle size={18} /> Comentarios</h3>
+              {post.comments?.map((comment, index) => (
+                <div key={index} className="feed-comment">
+                  <strong>{comment.user}:</strong> {comment.comment}
+                </div>
+              ))}
+              {user && (
+                <div className="feed-comment-form" onClick={(e) => e.stopPropagation()}>
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Añade un comentario..."
+                  />
+                  <button 
+                    onClick={() => handleAddComment(post.id, newComment)} 
+                    className="send-button"
+                  >
+                    <Send size={18} />
+                  </button>
+                </div>
               )}
             </div>
+            {user?.role === 'admin' && (
+              <button 
+                className="feed-delete-post" 
+                onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}
+              >
+                <Trash2 size={18} /> Eliminar
+              </button>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
-};
+}
 
 export default Feed;

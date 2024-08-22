@@ -41,6 +41,7 @@ const Profile = () => {
   const [backgroundURL, setBackgroundURL] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
+  const [buttonColor, setButtonColor] = useState('#6200ea'); // Color por defecto
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -61,6 +62,7 @@ const Profile = () => {
           setGender(data.gender || '');
           setDonationAmounts(data.donationAmounts || [1000, 5000, 10000, 20000]);
           setCanReceiveDonations(!!data.mercadoPagoAccessToken);
+          setButtonColor(data.buttonColor || '#6200ea'); // Obtener color de los botones si está en la base de datos
 
           // Fetch services from the Services subcollection
           const servicesRef = collection(db, 'users', userId, 'Services');
@@ -68,12 +70,12 @@ const Profile = () => {
           const servicesData = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setServices(servicesData);
         } else {
-          setError('User not found');
+          setError('Usuario no encontrado');
           navigate('/home');
         }
       } catch (error) {
-        console.error("Error fetching user data: ", error);
-        setError('Error fetching user data');
+        console.error("Error obteniendo datos del usuario: ", error);
+        setError('Error obteniendo datos del usuario');
         navigate('/home');
       } finally {
         setLoading(false);
@@ -112,10 +114,21 @@ const Profile = () => {
         setBackgroundURL(newBackgroundURL);
         await updateDoc(doc(db, 'users', user.uid), { backgroundURL: newBackgroundURL });
       } catch (error) {
-        console.error("Error uploading background: ", error);
-        setError('Error uploading background. Please try again.');
+        console.error("Error subiendo fondo: ", error);
+        setError('Error subiendo fondo. Por favor, intenta nuevamente.');
       } finally {
         setShowModal(false);
+      }
+    }
+  };
+
+  const handleColorChange = async (newColor) => {
+    setButtonColor(newColor);
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), { buttonColor: newColor });
+      } catch (error) {
+        console.error("Error guardando el color de los botones: ", error);
       }
     }
   };
@@ -136,7 +149,7 @@ const Profile = () => {
   return (
     <div className="profile-page">
       {backgroundURL && <div className="background-image" style={{ backgroundImage: `url(${backgroundURL})` }} />}
-      <div className="profile-container">
+      <div className="profile-container" style={{ '--button-color': buttonColor }}>
         <ProfileBanner
           bannerURL={bannerURL}
           isOwner={isOwner}
@@ -191,6 +204,14 @@ const Profile = () => {
             <div className="background-update-button" onClick={() => document.getElementById('backgroundInput').click()}>
               Actualizar Fondo
             </div>
+            <div className="color-picker">
+              <label>Cambiar color de botones: </label>
+              <input
+                type="color"
+                value={buttonColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+              />
+            </div>
           </>
         )}
 
@@ -213,6 +234,7 @@ const Profile = () => {
         <ProfileTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          buttonColor={buttonColor} // Pasa el color de los botones como prop
         />
         {activeTab === 'services' && (
           <ProfileServices

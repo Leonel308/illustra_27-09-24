@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { doc, onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs, query, where, limit } from 'firebase/firestore';
 import UserContext from '../context/UserContext';
 import { logout, db } from '../firebaseConfig';
 import Notifications from './Notifications';
@@ -11,10 +11,11 @@ import notificationAlert from '../assets/notificationAlert.png';
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
 const Header = () => {
-  const { user } = useContext(UserContext); // Eliminado `setUser` porque no se está utilizando
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [balance, setBalance] = useState(0.00);
+  const [pendingBalance, setPendingBalance] = useState(0.00);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,7 +47,8 @@ const Header = () => {
         if (doc.exists()) {
           const userData = doc.data();
           setBalance(userData.balance || 0.00);
-          setProfilePic(userData.photoURL || defaultProfilePic); // Actualizar la foto de perfil en tiempo real
+          setPendingBalance(userData.pendingBalance || 0.00);
+          setProfilePic(userData.photoURL || defaultProfilePic);
         }
       });
 
@@ -69,12 +71,13 @@ const Header = () => {
     const queryText = e.target.value.trim();
     setSearchQuery(queryText);
 
-    if (queryText) {
+    if (queryText.length >= 2) {
       try {
         const q = query(
           collection(db, 'users'),
           where('username_lower', '>=', queryText.toLowerCase()),
-          where('username_lower', '<=', queryText.toLowerCase() + '\uf8ff')
+          where('username_lower', '<=', queryText.toLowerCase() + '\uf8ff'),
+          limit(5)
         );
         const querySnapshot = await getDocs(q);
         const results = querySnapshot.docs.map((doc) => ({
@@ -92,74 +95,79 @@ const Header = () => {
 
   return (
     <header className="header">
-      <h1 className="header-title" onClick={() => navigate('/')}>ILLUSTRA</h1>
-      <div className="header-search-bar">
-        <input
-          type="text"
-          placeholder="Buscar usuario..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
-        {searchResults.length > 0 && (
-          <div className="header-search-dropdown">
-            {searchResults.map((result, index) => (
-              <div
-                key={index}
-                className="header-search-result-item"
-                onClick={() => navigate(`/profile/${result.id}`)}
-              >
-                <img src={result.photoURL || defaultProfilePic} alt={result.username} />
-                <div className="header-search-result-info">
-                  <h3>{result.username}</h3>
+      <div className="header-content">
+        <h1 className="header-title" onClick={() => navigate('/')}>ILLUSTRA</h1>
+        <div className="header-search-bar">
+          <input
+            type="text"
+            placeholder="Buscar usuario..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+          {searchResults.length > 0 && (
+            <div className="header-search-dropdown">
+              {searchResults.map((result) => (
+                <div
+                  key={result.id}
+                  className="header-search-result-item"
+                  onClick={() => navigate(`/profile/${result.id}`)}
+                >
+                  <img src={result.photoURL || defaultProfilePic} alt={result.username} />
+                  <div className="header-search-result-info">
+                    <h3>{result.username}</h3>
+                  </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <nav className="header-nav">
+          <Link className="header-button" to="/explore-posts">Explorar</Link>
+          {user ? (
+            <>
+              <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>Crear Publicación</button>
+              <div className="header-notifications" onClick={toggleNotifications}>
+                <div className="header-notifications-icon">
+                  <img 
+                    src={hasNotifications ? notificationAlert : notificationEmpty} 
+                    alt="Notificaciones" 
+                  />
+                  {hasNotifications && <span className="header-notifications-badge"></span>}
+                </div>
+                {notificationsVisible && (
+                  <div className="header-notifications-dropdown">
+                    <Notifications />
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="header-nav">
-        <Link className="header-button" to="/explore-posts">Explorar</Link>
-        {user ? (
-          <>
-            <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>Crear Publicación</button>
-            <div className="header-notifications" onClick={toggleNotifications}>
-              <img 
-                src={hasNotifications ? notificationAlert : notificationEmpty} 
-                alt="Notificaciones" 
-                className="header-notifications-icon" 
-              />
-              {notificationsVisible && (
-                <div className="header-notifications-dropdown">
-                  <Notifications />
-                </div>
-              )}
+              <div className="header-user" onClick={toggleDropdown}>
+                <img src={profilePic} alt="Profile" className="header-profile-pic" />
+                <span className="header-username">{user.username}</span>
+                {dropdownVisible && (
+                  <div className="header-dropdown">
+                    <div className="header-dropdown-item balance">Balance: {balance.toFixed(2)}$</div>
+                    <div className="header-dropdown-item pending">Pendiente: {pendingBalance.toFixed(2)}$</div>
+                    <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>
+                    <Link to="/workbench" className="header-dropdown-item">Mesa de trabajo</Link>
+                    {user.role === 'admin' ? (
+                      <Link to="/admin-dashboard" className="header-dropdown-item">Admin Dashboard</Link>
+                    ) : (
+                      <Link to="/dashboard" className="header-dropdown-item">Dashboard</Link>
+                    )}
+                    <Link to="/configuration" className="header-dropdown-item">Configuración</Link>
+                    <Link to="/donations" className="header-dropdown-item">Donaciones</Link>
+                    <button onClick={handleLogout} className="header-dropdown-item logout-button">Log out</button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="header-buttons">
+              <Link to="/login" className="header-button">Log In</Link>
+              <Link to="/register" className="header-button">Register</Link>
             </div>
-            <div className="header-user" onClick={toggleDropdown}>
-              <img src={profilePic} alt="Profile" className="header-profile-pic" />
-              <span className="header-username">{user.username}</span>
-              {dropdownVisible && (
-                <div className="header-dropdown">
-                  <div className="header-dropdown-item">Saldo: {balance.toFixed(2)}$</div>
-                  <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>
-                  <Link to="/workbench" className="header-dropdown-item">Mesa de trabajo</Link>
-                  {user.role === 'admin' ? (
-                    <Link to="/admin-dashboard" className="header-dropdown-item">Admin Dashboard</Link>
-                  ) : (
-                    <Link to="/dashboard" className="header-dropdown-item">Dashboard</Link>
-                  )}
-                  <Link to="/configuration" className="header-dropdown-item">Configuración</Link>
-                  <Link to="/donations" className="header-dropdown-item">Donaciones</Link>
-                  <button onClick={handleLogout} className="header-dropdown-item logout-button">Log out</button>
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="header-buttons">
-            <Link to="/login" className="header-button">Log In</Link>
-            <Link to="/register" className="header-button">Register</Link>
-          </div>
-        )}
+          )}
+        </nav>
       </div>
     </header>
   );

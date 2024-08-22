@@ -74,6 +74,11 @@ const Workbench = () => {
 
   const handleDeny = async (requestId, clientId, serviceTitle, servicePrice, paymentId) => {
     try {
+      // Retrieve the client data before making any changes
+      const clientRef = doc(db, 'users', clientId);
+      const clientDoc = await getDoc(clientRef);
+      const clientData = clientDoc.data();
+
       // Delete request from the illustrator's side
       await deleteDoc(doc(db, 'users', user.uid, 'ServiceRequests', requestId));
       setReceivedRequests(receivedRequests.filter(request => request.id !== requestId));
@@ -97,22 +102,10 @@ const Workbench = () => {
         updatedAt: new Date(),
       });
 
-      // Retrieve the client data
-      const clientRef = doc(db, 'users', clientId);
-      const clientDoc = await getDoc(clientRef);
-      const clientData = clientDoc.data();
-
-      // Convert service price to number
-      const servicePriceNumber = parseFloat(servicePrice.replace(/[^0-9.-]+/g,""));
-
-      if (isNaN(servicePriceNumber)) {
-        throw new Error("Error al convertir el precio del servicio a número");
-      }
-
       // Update the client's balance and pending balance
       await updateDoc(clientRef, {
-        balance: clientData.balance + servicePriceNumber,
-        pendingBalance: clientData.pendingBalance - servicePriceNumber,
+        balance: clientData.balance + servicePrice,
+        pendingBalance: clientData.pendingBalance - servicePrice,
       });
 
       alert('Solicitud denegada, saldo devuelto y notificación enviada al cliente.');
@@ -158,7 +151,9 @@ const Workbench = () => {
               <p>Solicitado por: {request.clientUsername}</p>
               <p>Precio: ${request.servicePrice}</p>
               <p>Estado: {request.status}</p>
-              {request.status === 'in progress' ? (
+              {request.status === 'delivered' ? (
+                <button className="waiting-confirmation-button">Esperando confirmación...</button>
+              ) : request.status === 'in progress' ? (
                 <button
                   className="view-details-button"
                   onClick={() => handleViewDetails(request.id, request.clientId, 'worker')}

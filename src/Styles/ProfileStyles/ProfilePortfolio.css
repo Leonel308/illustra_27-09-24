@@ -17,19 +17,19 @@ body {
 }
 
 .profile-portfolio h2 {
-  color: #6200ea;
+  color: var(--button-color);
   font-size: 24px;
   margin-bottom: 20px;
 }
 
 .add-portfolio-header {
-  background-color: #6200ea;
+  background-color: var(--button-color);
   color: white;
   padding: 10px;
   margin: 10px 0;
   text-align: center;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+  transition: transform 0.3s ease;
   border-radius: 10px;
   width: 50%;
   margin-left: auto;
@@ -37,7 +37,7 @@ body {
 }
 
 .add-portfolio-header:hover {
-  background-color: #4a00b4;
+  transform: scale(1.05);
 }
 
 .add-portfolio-header h3 {
@@ -63,7 +63,7 @@ body {
   max-width: 800px;
   margin: 20px auto;
   animation: fadeIn 0.3s ease-in-out;
-  text-align: center; /* Centrar el contenido del formulario */
+  text-align: center;
 }
 
 @keyframes fadeIn {
@@ -81,24 +81,24 @@ body {
 .upload-section label {
   display: block;
   margin-top: 10px;
-  color: #6200ea;
+  color: var(--button-color);
 }
 
 .upload-section button {
-  background-color: #6200ea;
+  background-color: var(--button-color);
   color: white;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.3s ease;
   margin-top: 10px;
-  width: 40%; /* Ancho reducido al 40% */
-  margin: 0 auto; /* Centrar el botón */
+  width: 40%;
+  margin: 0 auto;
 }
 
 .upload-section button:hover {
-  background-color: #4a00b4;
+  transform: scale(1.05);
 }
 
 .portfolio-items {
@@ -165,7 +165,7 @@ body {
 /* Spinner Styles */
 .spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
-  border-top: 4px solid #6200ea;
+  border-top: 4px solid var(--button-color);
   border-radius: 50%;
   width: 24px;
   height: 24px;

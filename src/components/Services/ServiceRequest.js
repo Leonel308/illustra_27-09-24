@@ -88,6 +88,9 @@ const ServiceRequest = () => {
           amount: servicePrice,
           description: serviceTitle,
           payerEmail: currentUser.email,
+          serviceId: serviceId,
+          illustratorID: illustratorID,
+          clientId: currentUser.uid
         }),
       });
 

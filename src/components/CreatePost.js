@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebaseConfig';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, updateDoc } from 'firebase/firestore'; // Agregamos updateDoc aquí
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../context/UserContext';
 import ImageCropperModal from '../components/Profile/ImageCropperModal';
@@ -19,11 +19,11 @@ const CreatePost = () => {
   const [description, setDescription] = useState('');
   const [mainCategory, setMainCategory] = useState('SFW');
   const [subCategory, setSubCategory] = useState(categories['SFW'][0]);
-  const [imageSrc, setImageSrc] = useState(null); // Para mostrar la imagen en el modal
+  const [imageSrc, setImageSrc] = useState(null); 
   const [croppedImage, setCroppedImage] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showModal, setShowModal] = useState(false); // Estado para mostrar/ocultar el modal
+  const [showModal, setShowModal] = useState(false); 
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -31,20 +31,20 @@ const CreatePost = () => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
-        setImageSrc(reader.result); // Configura la imagen para el modal
-        setShowModal(true); // Muestra el modal
+        setImageSrc(reader.result);
+        setShowModal(true); 
       };
     }
   };
 
   const handleSaveCroppedImage = async (croppedFile) => {
     setCroppedImage(croppedFile);
-    setShowModal(false); // Cierra el modal después de recortar
+    setShowModal(false); 
   };
 
   const handleCancelCrop = () => {
     setShowModal(false);
-    setImageSrc(null); // Resetea la imagen si se cancela el recorte
+    setImageSrc(null); 
   };
 
   const handleMainCategoryChange = (e) => {
@@ -66,18 +66,26 @@ const CreatePost = () => {
     const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
-      const imageRef = ref(storage, `posts/${user.uid}/${croppedImage.name}`);
-      await uploadBytes(imageRef, croppedImage);
-      const imageURL = await getDownloadURL(imageRef);
-
-      await addDoc(collection(db, collectionName), {
+      // Primero crea el documento en Firestore para obtener el ID
+      const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
         title,
         description,
         category: `${mainCategory} - ${subCategory}`,
         isAdultContent,
-        imageURL,
         timestamp: Timestamp.fromDate(new Date())
+      });
+
+      const postId = postRef.id;
+
+      // Luego sube la imagen usando el ID del post como nombre del archivo
+      const imageRef = ref(storage, `posts/${user.uid}/${postId}`);
+      await uploadBytes(imageRef, croppedImage);
+      const imageURL = await getDownloadURL(imageRef);
+
+      // Actualiza el documento con la URL de la imagen
+      await updateDoc(postRef, {
+        imageURL,
       });
 
       const navigateTo = isAdultContent ? '/explore-posts-mature' : '/explore-posts';
@@ -161,10 +169,10 @@ const CreatePost = () => {
             <div className="image-cropper-overlay" onClick={handleCancelCrop}></div>
             <ImageCropperModal
               isOpen={showModal}
-              onClose={handleCancelCrop} // Maneja el cierre del modal al hacer clic en cerrar
+              onClose={handleCancelCrop}
               onSave={handleSaveCroppedImage}
               imageSrc={imageSrc}
-              aspect={4 / 3} // Relación de aspecto 4:3 para la imagen de la publicación
+              aspect={4 / 3}
             />
           </>
         )}
