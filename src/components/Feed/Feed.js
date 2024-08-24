@@ -8,7 +8,7 @@ import '../../Styles/Feed.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
-function Feed({ collectionName }) {
+function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
   const { user } = useContext(UserContext);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ function Feed({ collectionName }) {
         const postsList = await Promise.all(
           postsSnapshot.docs.map(async (postDoc) => {
             const postData = postDoc.data();
-            if (!postData.userID || !postData.title || !postData.description || !postData.imageURL) {
+            if (!postData || !postData.userID || !postData.title || !postData.description || !postData.imageURL) {
               console.error('Invalid post data found', postDoc.id);
               return null;
             }
@@ -44,7 +44,16 @@ function Feed({ collectionName }) {
             };
           })
         );
-        setPosts(postsList.filter(post => post !== null));
+
+        const validPosts = postsList.filter(post => post !== null);
+
+        const filteredPosts = validPosts.filter(post => {
+          const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
+          const matchesCategory = activeCategory === 'Todos' || post.category.toLowerCase().includes(activeCategory.toLowerCase());
+          return matchesSearch && matchesCategory;
+        });
+
+        setPosts(filteredPosts);
       } catch (error) {
         console.error('Error fetching posts: ', error);
         setError('Error fetching posts');
@@ -54,7 +63,7 @@ function Feed({ collectionName }) {
     };
 
     fetchPosts();
-  }, [collectionName]);
+  }, [collectionName, searchTerm, activeCategory]);
 
   const handleAddComment = async (postId, commentText) => {
     if (commentText.trim() === '') return;
@@ -142,7 +151,7 @@ function Feed({ collectionName }) {
                     placeholder="Añade un comentario..."
                   />
                   <button 
-                    onClick={() => handleAddComment(post.id, newComment)} 
+                    onClick={() => handleAddComment(post.id, newComment)}
                     className="send-button"
                   >
                     <Send size={18} />

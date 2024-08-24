@@ -42,7 +42,6 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      {/* ¡Descubre Illustra! bloque movido al principio */}
       <div className="home-welcome-box">
         <h2>¡Descubre Illustra!</h2>
         <div className="home-publications-links">
@@ -58,38 +57,31 @@ const Home = () => {
         )}
       </div>
 
-      <FeaturedUsers />
+      <div className="home-featured-users">
+        <h2 className="home-featured-title">Usuarios Destacados</h2>
+        <FeaturedUsers />
+      </div>
 
-      {/* Añadir sección de Publicaciones Recomendadas */}
       <div className="home-recommended-posts">
         <h2>Publicaciones Recomendadas</h2>
-        {/* Solo se mostrarán publicaciones SFW */}
         <RecomendedPosts collectionName="PostsCollection" category="SFW" />
       </div>
 
       <div className="home-how-it-works">
         <h2>¿Cómo funciona Illustra?</h2>
         <div className="home-steps-container">
-          <div className="home-step">
-            <h3>Crea tu cuenta</h3>
-            <p>Regístrate y personaliza tu perfil para comenzar a mostrar tu talento al mundo.</p>
-            <img src="/createAccount.png" alt="Crear cuenta" className="home-step-icon" />
-          </div>
-          <div className="home-step">
-            <h3>Crea contenido</h3>
-            <p>Comparte tus ilustraciones y proyectos. Publica en redes sociales para que más personas vean tu trabajo.</p>
-            <img src="/pen.png" alt="Crear contenido" className="home-step-icon" />
-          </div>
-          <div className="home-step">
-            <h3>Genera ingresos</h3>
-            <p>Ofrece tus comisiones como ilustrador a todos los usuarios. Demuestra tu talento y conviértelo en ingresos.</p>
-            <img src="/money.png" alt="Genera ingresos" className="home-step-icon" />
-          </div>
-          <div className="home-step">
-            <h3>Contrata a expertos</h3>
-            <p>Contrata a nuestros talentosos ilustradores para dar vida a tus ideas y proyectos con sus habilidades excepcionales.</p>
-            <img src="/handshake.png" alt="Contrata expertos" className="home-step-icon" />
-          </div>
+          {[
+            { title: "Crea tu cuenta", description: "Regístrate y personaliza tu perfil para comenzar a mostrar tu talento al mundo.", icon: "/createAccount.png" },
+            { title: "Crea contenido", description: "Comparte tus ilustraciones y proyectos. Publica en redes sociales para que más personas vean tu trabajo.", icon: "/pen.png" },
+            { title: "Genera ingresos", description: "Ofrece tus comisiones como ilustrador a todos los usuarios. Demuestra tu talento y conviértelo en ingresos.", icon: "/money.png" },
+            { title: "Contrata a expertos", description: "Contrata a nuestros talentosos ilustradores para dar vida a tus ideas y proyectos con sus habilidades excepcionales.", icon: "/handshake.png" },
+          ].map((step, index) => (
+            <div key={index} className="home-step">
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+              <img src={step.icon} alt={step.title} className="home-step-icon" />
+            </div>
+          ))}
         </div>
       </div>
 

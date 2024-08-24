@@ -24,7 +24,7 @@ const Workbench = () => {
             const requestData = docSnapshot.data();
             const clientRef = doc(db, 'users', requestData.clientId);
             const clientDoc = await getDoc(clientRef);
-            const clientUsername = clientDoc.exists() ? clientDoc.data().clientUsername : 'Usuario desconocido';
+            const clientUsername = clientDoc.exists() ? clientDoc.data().username : 'Usuario desconocido';
             return { id: docSnapshot.id, ...requestData, clientUsername };
           })
         );
@@ -59,6 +59,7 @@ const Workbench = () => {
 
       await updateDoc(doc(db, 'users', clientId, 'ServiceHired', requestId), {
         status: 'in progress',
+        acceptedByClient: false, // Asegurar que este campo se agregue
       });
 
       setReceivedRequests(receivedRequests.map(request =>
@@ -180,12 +181,26 @@ const Workbench = () => {
               <p>Proveedor del servicio: {request.illustratorUsername}</p>
               <p>Precio: ${request.servicePrice}</p>
               <p>Estado: {request.status}</p>
-              <button
-                className="view-details-button"
-                onClick={() => handleViewDetails(request.id, user.uid, 'user')}
-              >
-                Ver detalles
-              </button>
+              {request.status === 'delivered' && !request.acceptedByClient ? (
+                <>
+                  <button
+                    className="view-details-button"
+                    onClick={() => handleViewDetails(request.id, user.uid, 'user')}
+                  >
+                    Ver detalles
+                  </button>
+                  <p>Trabajo entregado, esperando aceptación.</p>
+                </>
+              ) : request.acceptedByClient ? (
+                <p>Trabajo aceptado por el cliente</p>
+              ) : (
+                <button
+                  className="view-details-button"
+                  onClick={() => handleViewDetails(request.id, user.uid, 'user')}
+                >
+                  Ver detalles
+                </button>
+              )}
             </div>
           ))
         ) : (

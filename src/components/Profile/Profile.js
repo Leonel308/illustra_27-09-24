@@ -41,7 +41,7 @@ const Profile = () => {
   const [backgroundURL, setBackgroundURL] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
-  const [buttonColor, setButtonColor] = useState('#6200ea'); // Color por defecto
+  const [buttonColor, setButtonColor] = useState('#6200ea');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -62,9 +62,8 @@ const Profile = () => {
           setGender(data.gender || '');
           setDonationAmounts(data.donationAmounts || [1000, 5000, 10000, 20000]);
           setCanReceiveDonations(!!data.mercadoPagoAccessToken);
-          setButtonColor(data.buttonColor || '#6200ea'); // Obtener color de los botones si está en la base de datos
+          setButtonColor(data.buttonColor || '#6200ea');
 
-          // Fetch services from the Services subcollection
           const servicesRef = collection(db, 'users', userId, 'Services');
           const servicesSnapshot = await getDocs(servicesRef);
           const servicesData = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -171,9 +170,11 @@ const Profile = () => {
           )}
         </div>
 
-        <div className="sponsor-box" onClick={handleSponsorClick} style={{ pointerEvents: isOwner || !canReceiveDonations ? 'none' : 'auto', opacity: isOwner || !canReceiveDonations ? 0.5 : 1 }}>
-          Patrocinar
-        </div>
+        {!isOwner && canReceiveDonations && (
+          <div className="sponsor-box" onClick={handleSponsorClick}>
+            Patrocinar
+          </div>
+        )}
 
         {showSponsorModal && (
           <div className="sponsor-modal">
@@ -221,7 +222,7 @@ const Profile = () => {
             onClose={() => setShowModal(false)}
             onSave={handleSaveCroppedImage}
             imageSrc={imageSrc}
-            aspect={16 / 9} // Relación de aspecto común para fondos (16:9)
+            aspect={16 / 9}
           />
         )}
 
@@ -234,7 +235,7 @@ const Profile = () => {
         <ProfileTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          buttonColor={buttonColor} // Pasa el color de los botones como prop
+          buttonColor={buttonColor}
         />
         {activeTab === 'services' && (
           <ProfileServices
