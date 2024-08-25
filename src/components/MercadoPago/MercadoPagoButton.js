@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import UserContext from '../context/UserContext';
+import UserContext from '../../context/UserContext';
 
 const MercadoPagoButton = () => {
   const { user } = useContext(UserContext);
@@ -13,14 +13,10 @@ const MercadoPagoButton = () => {
   useEffect(() => {
     const checkMercadoPagoLinked = async () => {
       if (user) {
-        try {
-          const userRef = doc(db, 'users', user.uid);
-          const userDoc = await getDoc(userRef);
-          if (userDoc.exists() && userDoc.data().mercadoPagoAccessToken) {
-            setIsLinked(true);
-          }
-        } catch (error) {
-          console.error('Error checking Mercado Pago link status:', error);
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists() && userDoc.data().mercadoPagoAccessToken) {
+          setIsLinked(true);
         }
       }
     };
@@ -32,8 +28,6 @@ const MercadoPagoButton = () => {
     const clientId = process.env.REACT_APP_MERCADOPAGO_CLIENT_ID;
     const redirectUri = process.env.REACT_APP_MERCADOPAGO_REDIRECT_URI;
     const authUrl = `https://auth.mercadopago.com.ar/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${user.uid}`;
-    
-    console.log("Redirecting to Mercado Pago Auth:", authUrl); // Agregar log para depuración
     window.location.href = authUrl;
   };
 

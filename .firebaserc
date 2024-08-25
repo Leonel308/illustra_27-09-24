@@ -1,6 +1,7 @@
 {
   "projects": {
-    "default": "illustra-6ca8a"
+    "default": "illustra-6ca8a",
+    "production": "illustra-6ca8a"
   },
   "targets": {},
   "etags": {},

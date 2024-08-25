@@ -14,7 +14,7 @@ import Configuration from './components/Configuration';
 import SuccessPage from './PaymentsStatus/Success';
 import FailurePage from './PaymentsStatus/Failure';
 import PendingPage from './PaymentsStatus/Pending';
-import CallbackPage from './components/CallbackPage';
+import CallbackPage from './components/MercadoPago/CallbackPage';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Workbench from './components/Workbench';
