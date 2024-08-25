@@ -11,16 +11,16 @@
 .header-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8px 20px;  /* Reducción del padding */
+  padding: 8px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .header-title {
-  font-size: 2rem;  /* Reducción del tamaño de la fuente */
+  font-size: 2rem;
   font-weight: bold;
-  font-family: 'Montserrat', sans-serif;  /* Fuente moderna y no cursiva */
+  font-family: 'Montserrat', sans-serif;
   color: #5a189a;
   cursor: pointer;
   transition: color 0.3s ease;
@@ -125,11 +125,14 @@
 
 .header-notifications-icon {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
 }
 
-.header-notifications-icon img {
-  width: 30px;
-  height: 30px;
+.header-notifications-icon:hover {
+  transform: scale(1.1);
 }
 
 .header-notifications-badge {
@@ -177,7 +180,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  width: 200px;
+  width: 180px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -185,10 +188,11 @@
 }
 
 .header-dropdown-item {
-  padding: 10px 15px;
+  padding: 8px 10px;
   color: #333;
   text-decoration: none;
   display: block;
+  font-size: 0.9rem;
   transition: background-color 0.3s ease;
 }
 
@@ -199,11 +203,36 @@
 .header-dropdown-item.balance {
   font-weight: bold;
   color: #5a189a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-balance-btn {
+  background-color: #5a189a;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-left: 10px;
+}
+
+.add-balance-btn:hover {
+  background-color: #7b2cbf;
+  transform: scale(1.05);
 }
 
 .header-dropdown-item.pending {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666;
+  margin-top: 5px;
 }
 
 .logout-button {
@@ -211,12 +240,24 @@
   color: #fff;
   border: none;
   width: 100%;
+  padding: 8px 10px;
   text-align: left;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
 .logout-button:hover {
   background-color: #ff1a1a;
+}
+
+/* Animación de rebote para la campana de notificaciones */
+@keyframes notification-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.notification-bounce {
+  animation: notification-bounce 0.5s ease-in-out;
 }
 
 @media (max-width: 768px) {

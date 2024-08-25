@@ -5,7 +5,6 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, addDoc, getDoc, setDoc, collection, updateDoc } from 'firebase/firestore';
 import '../../Styles/ServiceRequest.css';
 import UserContext from '../../context/UserContext';
-import PaymentMethodModal from './PaymentMethodModal';
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext);
@@ -17,7 +16,6 @@ const ServiceRequest = () => {
   const [servicePrice, setServicePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -58,56 +56,7 @@ const ServiceRequest = () => {
     }
   };
 
-  const handlePaymentMethodSelection = async (method) => {
-    setShowPaymentModal(false);
-
-    if (method === 'wallet') {
-      const userRef = doc(db, 'users', currentUser.uid);
-      const userDoc = await getDoc(userRef);
-      const userData = userDoc.data();
-      
-      if (Number(userData.balance) >= servicePrice) {  // Asegurarse de que balance sea un número
-        await submitServiceRequest(method);
-      } else {
-        setError('Saldo insuficiente. Por favor, recarga tu billetera.');
-      }
-    } else if (method === 'mercadoPago') {
-      handleMercadoPago();
-    }
-  };
-
-  const handleMercadoPago = async () => {
-    try {
-      // Crear una preferencia de pago en tu backend o directamente desde el frontend usando la API de Mercado Pago.
-      const response = await fetch('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createPayment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: servicePrice,
-          description: serviceTitle,
-          payerEmail: currentUser.email,
-          serviceId: serviceId,
-          illustratorID: illustratorID,
-          clientId: currentUser.uid
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.init_point) {
-        window.location.href = data.init_point; // Redirigir a la página de pago de Mercado Pago
-      } else {
-        setError('Hubo un problema al procesar el pago con Mercado Pago. Por favor, inténtalo de nuevo.');
-      }
-    } catch (error) {
-      console.error('Error al redirigir a Mercado Pago:', error);
-      setError('Hubo un problema al procesar el pago con Mercado Pago. Por favor, inténtalo de nuevo.');
-    }
-  };
-
-  const submitServiceRequest = async (paymentMethod) => {
+  const submitServiceRequest = async () => {
     if (!description) {
       setError('Por favor, completa la descripción.');
       return;
@@ -125,6 +74,15 @@ const ServiceRequest = () => {
 
     if (currentUser.uid === illustratorID) {
       setError('No puedes contratar tu propio servicio.');
+      return;
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const userDoc = await getDoc(userRef);
+    const userData = userDoc.data();
+
+    if (Number(userData.balance) < servicePrice) {
+      setError('Saldo insuficiente. Por favor, recarga tu billetera.');
       return;
     }
 
@@ -152,7 +110,6 @@ const ServiceRequest = () => {
         status: 'pending',
         clientId: currentUserId,
         clientUsername: currentUser.username,
-        paymentId: '',
       };
 
       const docRef = await addDoc(serviceRequestRef, newRequest);
@@ -160,7 +117,7 @@ const ServiceRequest = () => {
       const paymentRef = await addDoc(collection(db, 'users', currentUserId, 'Payments'), {
         amount: servicePrice,
         illustratorID: illustratorID,
-        paymentMethod,
+        paymentMethod: 'wallet',
         serviceID: docRef.id,
         status: 'pending',
         createdAt: new Date(),
@@ -169,16 +126,10 @@ const ServiceRequest = () => {
 
       await updateDoc(docRef, { paymentId: paymentRef.id });
 
-      if (paymentMethod === 'wallet') {
-        const userRef = doc(db, 'users', currentUserId);
-        const userDoc = await getDoc(userRef);
-        const userData = userDoc.data();
-
-        await updateDoc(userRef, {
-          balance: Number(userData.balance) - servicePrice,
-          pendingBalance: (userData.pendingBalance || 0) + servicePrice,
-        });
-      }
+      await updateDoc(userRef, {
+        balance: Number(userData.balance) - servicePrice,
+        pendingBalance: (userData.pendingBalance || 0) + servicePrice,
+      });
 
       const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
       await setDoc(clientServiceHiredRef, {
@@ -207,14 +158,6 @@ const ServiceRequest = () => {
     }
   };
 
-  const handleSubmit = () => {
-    if (!description || files.length === 0) {
-      setError('Por favor, completa la descripción y adjunta al menos un archivo.');
-    } else {
-      setShowPaymentModal(true);
-    }
-  };
-
   return (
     <div className="service-request-container">
       <h2>Solicitar Servicio</h2>
@@ -235,17 +178,9 @@ const ServiceRequest = () => {
         />
         {files.length > 0 && <p>{files.length} archivo(s) seleccionados</p>}
       </div>
-      <button onClick={handleSubmit} disabled={loading || currentUser?.uid === illustratorID}>
+      <button onClick={submitServiceRequest} disabled={loading || currentUser?.uid === illustratorID}>
         {loading ? 'Enviando...' : 'Enviar Solicitud'}
       </button>
-
-      {showPaymentModal && (
-        <PaymentMethodModal
-          show={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          onSelect={handlePaymentMethodSelection}
-        />
-      )}
     </div>
   );
 };

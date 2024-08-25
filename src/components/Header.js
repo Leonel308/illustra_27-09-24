@@ -1,12 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { doc, onSnapshot, collection, getDocs, query, where, limit } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs, query, where, limit, updateDoc, getDoc } from 'firebase/firestore';
+import { FaBell } from 'react-icons/fa';
 import UserContext from '../context/UserContext';
 import { logout, db } from '../firebaseConfig';
 import Notifications from './Notifications';
 import '../Styles/Header.css';
-import notificationEmpty from '../assets/notificationEmpty.png';
-import notificationAlert from '../assets/notificationAlert.png';
+import AddBalanceModal from './addBalance';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
@@ -21,6 +21,8 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [profilePic, setProfilePic] = useState(defaultProfilePic);
+  const [showAddBalanceModal, setShowAddBalanceModal] = useState(false);
+  const [animateBell, setAnimateBell] = useState(false);
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -61,6 +63,11 @@ const Header = () => {
       const notificationsRef = collection(db, 'users', user.uid, 'Notifications');
       const unsubscribe = onSnapshot(notificationsRef, (snapshot) => {
         setHasNotifications(!snapshot.empty);
+
+        if (!snapshot.empty) {
+          setAnimateBell(true);
+          setTimeout(() => setAnimateBell(false), 1000);
+        }
       });
 
       return () => unsubscribe();
@@ -91,6 +98,25 @@ const Header = () => {
     } else {
       setSearchResults([]);
     }
+  };
+
+  const handleAddBalance = async (amount) => {
+    if (!user) return;
+
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      const newBalance = Number(userData.balance || 0) + amount;
+
+      await updateDoc(userRef, { balance: newBalance });
+      setBalance(newBalance);
+      setShowAddBalanceModal(false);
+    }
+  };
+
+  const handleAddBalanceClick = () => {
+    setShowAddBalanceModal(true);
   };
 
   return (
@@ -127,11 +153,8 @@ const Header = () => {
             <>
               <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>Crear Publicación</button>
               <div className="header-notifications" onClick={toggleNotifications}>
-                <div className="header-notifications-icon">
-                  <img 
-                    src={hasNotifications ? notificationAlert : notificationEmpty} 
-                    alt="Notificaciones" 
-                  />
+                <div className={`header-notifications-icon ${animateBell ? 'notification-bounce' : ''}`}>
+                  <FaBell size={28} color={hasNotifications ? "#ff1493" : "#000"} />
                   {hasNotifications && <span className="header-notifications-badge"></span>}
                 </div>
                 {notificationsVisible && (
@@ -145,7 +168,9 @@ const Header = () => {
                 <span className="header-username">{user.username}</span>
                 {dropdownVisible && (
                   <div className="header-dropdown">
-                    <div className="header-dropdown-item balance">Balance: {balance.toFixed(2)}$</div>
+                    <div className="header-dropdown-item balance">
+                      Balance: {balance.toFixed(2)}$ <button className="add-balance-btn" onClick={handleAddBalanceClick}>+</button>
+                    </div>
                     <div className="header-dropdown-item pending">Pendiente: {pendingBalance.toFixed(2)}$</div>
                     <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>
                     <Link to="/workbench" className="header-dropdown-item">Mesa de trabajo</Link>
@@ -169,6 +194,13 @@ const Header = () => {
           )}
         </nav>
       </div>
+
+      {showAddBalanceModal && (
+        <AddBalanceModal 
+          onClose={() => setShowAddBalanceModal(false)} 
+          onAddBalance={handleAddBalance} 
+        />
+      )}
     </header>
   );
 };
