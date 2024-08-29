@@ -1,199 +1,233 @@
-/* Contenedor principal del componente ServiceDetailsWorker */
-.service-details-worker-container {
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.card {
     background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    border-radius: 12px;
-    max-width: 900px;
     margin: 20px auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 700px; /* Aumentar el ancho máximo */
+    font-family: 'Roboto', sans-serif;
 }
 
-.service-details-worker-header {
-    color: #6a0dad;
-    font-size: 26px;
-    text-align: center;
+.card-header {
+    border-bottom: 1px solid #eeeeee;
+    padding-bottom: 15px;
     margin-bottom: 20px;
 }
 
-.service-details-worker-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.service-details-worker-info {
-    grid-column: span 2;
-    margin-bottom: 20px; /* Añadir espacio entre bloques */
-}
-
-.service-details-worker-info h3 {
+.card-header h2 {
+    font-size: 1.8em;
+    margin: 0;
     color: #333;
-    font-size: 22px;
-    margin-bottom: 10px;
+    font-weight: 700;
 }
 
-.service-details-worker-info p {
-    color: #555;
-    font-size: 16px;
-    margin-bottom: 15px;
+.card-header p {
+    font-size: 1em;
+    color: #888; /* Gray color for the description */
+    margin-top: 5px;
 }
 
-.service-details-worker-price {
-    color: #999;
-    font-style: italic;
-    font-size: 20px;
-    margin-bottom: 15px;
-}
-
-.service-details-worker-image {
-    grid-column: span 2;
-    text-align: center;
-}
-
-.service-details-worker-image h4 {
-    margin-bottom: 10px;
-    color: #333;
-    font-size: 18px;
-}
-
-.service-details-worker-images-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-}
-
-.service-details-worker-images-container img {
-    max-width: 200px;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    cursor: pointer;
-}
-
-.service-details-worker-images-container img:hover {
-    transform: scale(1.1);
-}
-
-.service-details-worker-textarea {
-    width: 100%;
-    padding: 15px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    resize: vertical; /* Permitir solo ajuste vertical */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    background-color: #f9f9f9; /* Fondo más claro para resaltar */
-    transition: border-color 0.3s, background-color 0.3s;
-    min-height: 100px; /* Establecer una altura mínima */
-    line-height: 1.5; /* Aumentar el espacio entre líneas para mejorar la legibilidad */
-}
-
-.service-details-worker-textarea:focus {
-    border-color: #6a0dad; /* Cambiar color del borde al enfocar */
-    background-color: #ffffff; /* Fondo blanco al enfocar */
-}
-
-.service-details-worker-file-input {
-    display: block;
-    margin: 10px auto 20px;
-    padding: 8px;
-    font-size: 16px;
-    color: #666;
-    border: 2px dashed #6a0dad;
-    background-color: #f9f9f9;
-    cursor: pointer;
-    text-align: center;
-    border-radius: 8px;
-    transition: border-color 0.3s;
-}
-
-.service-details-worker-file-input:hover {
-    border-color: #5a008b;
-}
-
-.service-details-worker-button-group {
-    grid-column: span 2;
+.service-summary {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
-}
-
-.service-details-worker-button {
-    flex: 1;
-    padding: 15px;
-    font-size: 18px;
-    color: #fff;
-    background-color: #6a0dad;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.service-details-worker-button:hover {
-    background-color: #5a008b;
-}
-
-.service-details-worker-cancel-button {
-    background-color: #e74c3c;
-}
-
-.service-details-worker-cancel-button:hover {
-    background-color: #c0392b;
-}
-
-.service-details-worker-error-message {
-    color: #e74c3c;
-    font-size: 14px;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+.service-summary h3 {
+    font-size: 1.4em;
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+}
+
+.service-description {
+    font-size: 1.1em;
+    color: #555; /* Color gris para la descripción */
+    margin-top: 5px;
+}
+
+.service-price {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #007f00; /* Verde medio oscuro para el precio */
+}
+
+.uploaded-images {
+    display: flex;
+    gap: 20px; /* Aumentar el espacio entre imágenes */
+    margin-bottom: 20px;
+}
+
+.uploaded-image {
+    width: 180px; /* Aumentar el tamaño de la imagen */
+    height: 180px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.uploaded-image:hover {
+    transform: scale(1.1); /* Slight zoom on hover */
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    resize: none;
+    font-size: 1em;
+}
+
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.file-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+}
+
+.file-upload-icon {
+    margin-left: 10px;
+    color: #555;
+}
+
+.preview-images {
+    display: flex;
+    gap: 20px; /* Aumentar el espacio entre las imágenes de vista previa */
+    margin-top: 15px;
+}
+
+.preview-image {
+    width: 180px; /* Aumentar el tamaño de las imágenes de vista previa */
+    height: 180px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #eeeeee;
+}
+
+.button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button-cancel {
+    background-color: #dc3545;
+    color: #fff;
+    width: 48%;
     text-align: center;
 }
 
-/* Lightbox container */
-.service-details-worker-lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+.button-cancel:hover {
+    background-color: #c82333;
 }
 
-/* Visible state */
-.service-details-worker-lightbox.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* Image inside the lightbox */
-.service-details-worker-lightbox img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 8px;
-}
-
-/* Close button */
-.service-details-worker-lightbox-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 30px;
+.button-submit {
+    background-color: #007f00;
     color: #fff;
-    cursor: pointer;
-    transition: color 0.3s ease;
+    width: 48%;
+    text-align: center;
 }
 
-.service-details-worker-lightbox-close:hover {
-    color: #ccc;
+.button-submit:hover {
+    background-color: #006400; /* Verde más oscuro para el hover */
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.alert-icon {
+    margin-right: 15px;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-title {
+    font-weight: bold;
+    margin: 0;
+}
+
+.alert-description {
+    margin: 0;
+}
+
+/* Estilo para el modal */
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: #ffffff;
+  font-size: 2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+  color: #ff0000;
 }

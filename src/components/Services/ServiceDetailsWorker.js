@@ -4,18 +4,21 @@ import { db, storage } from '../../firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc, collection, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
+import { AlertCircle, Upload } from "lucide-react";
 import '../../Styles/ServiceDetailsWorker.css';
 
-const ServiceDetailsWorker = () => {
-  const { user, loading, error } = useContext(UserContext);
+export default function ServiceDetailsWorker() {
+  const { user, loading } = useContext(UserContext);
   const { requestId, clientId } = useParams();
   const navigate = useNavigate();
   const [serviceDetails, setServiceDetails] = useState(null);
   const [completedImages, setCompletedImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
   const [comment, setComment] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
+  const [modalImage, setModalImage] = useState(null);
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -40,8 +43,22 @@ const ServiceDetailsWorker = () => {
   }, [user, loading, requestId]);
 
   const handleFilesChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    setCompletedImages(selectedFiles);
+    const selectedFiles = Array.from(e.target.files || []);
+    if (completedImages.length + selectedFiles.length > 10) {
+      alert('Solo puedes subir un máximo de 10 imágenes.');
+      return;
+    }
+    setCompletedImages((prevImages) => [...prevImages, ...selectedFiles]);
+    const previewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
+    setPreviewImages((prevPreviews) => [...prevPreviews, ...previewUrls]);
+  };
+
+  const handleImageClick = (src) => {
+    setModalImage(src);
+  };
+
+  const handleModalClose = () => {
+    setModalImage(null);
   };
 
   const handleSubmit = async () => {
@@ -49,7 +66,6 @@ const ServiceDetailsWorker = () => {
       alert('Por favor, sube al menos una imagen del trabajo completado.');
       return;
     }
-
     setSubmitLoading(true);
     try {
       const uploadedFiles = await Promise.all(
@@ -93,7 +109,6 @@ const ServiceDetailsWorker = () => {
     if (!window.confirm('¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.')) {
       return;
     }
-
     setCancelLoading(true);
     try {
       const serviceRef = doc(db, 'users', user.uid, 'ServiceRequests', requestId);
@@ -133,80 +148,99 @@ const ServiceDetailsWorker = () => {
     }
   };
 
-  if (loading) {
-    return <p>Cargando...</p>;
+  if (fetchError) {
+    return (
+      <div className="alert error">
+        <span className="alert-icon"><AlertCircle /></span>
+        <div>
+          <h4 className="alert-title">Error</h4>
+          <p className="alert-description">{fetchError}</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error || fetchError) {
-    return <p className="service-details-worker-error-message">{error || fetchError}</p>;
-  }
-
-  if (!user) {
-    return <p className="service-details-worker-error-message">No se ha iniciado sesión.</p>;
+  if (!serviceDetails) {
+    return <p className="text-center">Cargando detalles del servicio...</p>;
   }
 
   return (
-    <div className="service-details-worker-container">
-      <h2 className="service-details-worker-header">Detalles del Servicio para Trabajador</h2>
-      {serviceDetails ? (
-        <div className="service-details-worker-content">
-          <div className="service-details-worker-info">
-            <p className="service-details-worker-price">Precio: ${serviceDetails.servicePrice}</p>
-            <h3>Título: {serviceDetails.serviceTitle}</h3>
-            <h4>Descripción:</h4>
-            <p>{serviceDetails.description}</p>
+    <div className="card">
+      <div className="card-header">
+        <h2>Detalles del Servicio para Trabajador</h2>
+        <p>Gestiona y entrega el trabajo solicitado</p>
+      </div>
+      <div className="card-content">
+        <div className="service-summary">
+          <div>
+            <h3>{serviceDetails.serviceTitle}</h3>
+            <p className="service-description">{serviceDetails.description}</p>
           </div>
-          <div className="service-details-worker-image">
-            <h4>Imágenes Subidas por el Cliente</h4>
-            <div className="service-details-worker-images-container">
-              {serviceDetails.files && serviceDetails.files.map((file, index) => (
-                <img key={index} src={file} alt={`Cliente imagen ${index + 1}`} />
+          <p className="service-price">${serviceDetails.servicePrice}</p>
+        </div>
+
+        <div>
+          <h4>Imágenes Subidas por el Cliente</h4>
+          <div className="uploaded-images">
+            {serviceDetails.files && serviceDetails.files.map((file, index) => (
+              <img
+                key={index}
+                src={file}
+                alt={`Cliente imagen ${index + 1}`}
+                className="uploaded-image"
+                onClick={() => handleImageClick(file)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="comment">Comentario del Trabajo</label>
+          <textarea
+            id="comment"
+            placeholder="Describe el trabajo realizado..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            maxLength={360}
+            rows={5}
+            className="textarea"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="file-upload">Subir Trabajo Completado</label>
+          <div className="file-input-wrapper">
+            <input id="file-upload" type="file" multiple accept="image/*" onChange={handleFilesChange} className="file-input" />
+            <span className="file-upload-icon"><Upload /></span>
+          </div>
+        </div>
+
+        {previewImages.length > 0 && (
+          <div>
+            <h4>Vista previa</h4>
+            <div className="preview-images">
+              {previewImages.map((image, index) => (
+                <img key={index} src={image} alt={`Preview ${index + 1}`} className="preview-image" />
               ))}
             </div>
           </div>
-          <div className="service-details-worker-info">
-            <h4>Comentario del Trabajo</h4>
-            <textarea
-              className="service-details-worker-textarea"
-              placeholder="Describe el trabajo realizado..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              maxLength={360}
-              rows={5}
-            />
-          </div>
-          <div className="service-details-worker-info">
-            <h4>Subir Trabajo Completado</h4>
-            <input 
-              className="service-details-worker-file-input"
-              type="file" 
-              multiple 
-              accept="image/*" 
-              onChange={handleFilesChange} 
-            />
-          </div>
-          <div className="service-details-worker-button-group">
-            <button 
-              className="service-details-worker-button" 
-              onClick={handleSubmit} 
-              disabled={submitLoading}
-            >
-              {submitLoading ? 'Enviando...' : 'Entregar Trabajo'}
-            </button>
-            <button 
-              className="service-details-worker-button service-details-worker-cancel-button" 
-              onClick={handleCancel} 
-              disabled={cancelLoading}
-            >
-              {cancelLoading ? 'Cancelando...' : 'Cancelar Pedido'}
-            </button>
-          </div>
+        )}
+      </div>
+      <div className="card-footer">
+        <button className="button button-cancel" onClick={handleCancel} disabled={cancelLoading}>
+          {cancelLoading ? 'Cancelando...' : 'Cancelar Pedido'}
+        </button>
+        <button className="button button-submit" onClick={handleSubmit} disabled={submitLoading}>
+          {submitLoading ? 'Enviando...' : 'Entregar Trabajo'}
+        </button>
+      </div>
+
+      {modalImage && (
+        <div className="modal" onClick={handleModalClose}>
+          <span className="modal-close">&times;</span>
+          <img className="modal-content" src={modalImage} alt="Expanded view" />
         </div>
-      ) : (
-        <p>Cargando detalles del servicio...</p>
       )}
     </div>
   );
-};
-
-export default ServiceDetailsWorker;
+}
