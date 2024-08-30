@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
 import { doc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
-import RecomendedPosts from '../RecomendedPosts';
 import { MessageCircle, Heart, Share2, Trash2, Send } from 'lucide-react';
 import './inspectPost.css';
 
@@ -194,13 +193,6 @@ function InspectPost() {
             </div>
           )}
         </div>
-      </div>
-      <div className="inspect-post-sidebar">
-        <h3>Posts Recomendados</h3>
-        <RecomendedPosts 
-          category={post.category} 
-          collectionName={post.isAdultContent ? "PostsCollectionMature" : "PostsCollection"} 
-        />
       </div>
     </div>
   );

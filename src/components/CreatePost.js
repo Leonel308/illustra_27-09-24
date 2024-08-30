@@ -8,8 +8,18 @@ import ImageCropperModal from '../components/Profile/ImageCropperModal';
 import '../Styles/CreatePost.css';
 
 const categories = {
-  "SFW": ["OC", "Furry", "Realismo", "Anime", "Manga"],
-  "NSFW": ["Hentai", "Yuri", "Gore"]
+  "SFW": [
+    'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+    'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art', 
+    'Cómic', 'Abstracto', 'Minimalista', 'Chibi', 
+    'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+    'Fantasía', 'Cyberpunk', 'Retro'
+  ],
+  "NSFW": [
+    'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage', 
+    'Futanari', 'Tentáculos', 'Furry NSFW', 
+    'Monstruos', 'Femdom', 'Maledom'
+  ]
 };
 
 const CreatePost = () => {

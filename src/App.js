@@ -5,8 +5,6 @@ import Login from './components/login';
 import Register from './components/register';
 import Profile from './components/Profile/Profile';
 import CreatePost from './components/CreatePost';
-import ExplorePosts from './components/ExplorePosts';
-import ExplorePostsMature from './components/ExplorePostsMature';
 import ForgotPassword from './components/forgotPassword';
 import VerifyEmail from './components/VerifyEmail';
 import TermsAndConditions from './components/TermsAndConditions';
@@ -39,8 +37,6 @@ function App() {
           <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/create-post" element={<Layout><CreatePost /></Layout>} />
-          <Route path="/explore-posts" element={<Layout><ExplorePosts /></Layout>} />
-          <Route path="/explore-posts-mature" element={<Layout><ExplorePostsMature /></Layout>} />
           <Route path="/terms-and-conditions" element={<Layout><TermsAndConditions /></Layout>} />
           <Route path="/configuration" element={<Layout><Configuration /></Layout>} />
           <Route path="/success" element={<Layout><SuccessPage /></Layout>} />
