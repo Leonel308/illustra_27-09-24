@@ -1,71 +1,88 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { db } from '../../firebaseConfig';
-import { collection, getDocs, doc, getDoc, query, orderBy, addDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db, storage } from '../../firebaseConfig';
+import { collection, onSnapshot, doc, getDoc, query, orderBy, addDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
-import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Trash2, Send, Heart, Share2 } from 'lucide-react';
+import ImageCropperModal from '../Profile/ImageCropperModal'; // Asegúrate de que la ruta sea correcta
 import '../../Styles/Feed.css';
 
 function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
   const { user } = useContext(UserContext);
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [newPost, setNewPost] = useState('');
-  const [characterCount, setCharacterCount] = useState(0); // Para el conteo de caracteres
-  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [mainCategory, setMainCategory] = useState('SFW');
+  const [subCategory, setSubCategory] = useState('General');
+  const [imageSrc, setImageSrc] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
+  const [showCropper, setShowCropper] = useState(false); 
+  const [characterCount, setCharacterCount] = useState(0);
+  const [postType, setPostType] = useState('quick');
+  const [isPosting, setIsPosting] = useState(false);
+  const [likeProcessing, setLikeProcessing] = useState({});
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const categories = {
+    "SFW": [
+      'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+      'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+      'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+      'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+      'Fantasía', 'Cyberpunk', 'Retro'
+    ],
+    "NSFW": [
+      'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
+      'Futanari', 'Tentáculos', 'Furry NSFW',
+      'Monstruos', 'Femdom', 'Maledom'
+    ]
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const postsCollection = collection(db, collectionName);
-        const q = query(postsCollection, orderBy('timestamp', 'desc'));
-        const postsSnapshot = await getDocs(q);
-        const postsList = await Promise.all(
-          postsSnapshot.docs.map(async (postDoc) => {
-            const postData = postDoc.data();
-            if (!postData || !postData.userID || !postData.description) {
-              console.error('Invalid post data found', postDoc.id);
-              return null;
-            }
-            const userDocRef = doc(db, 'users', postData.userID);
-            const userDoc = await getDoc(userDocRef);
-            if (!userDoc.exists()) {
-              console.error('No user document found for', postData.userID);
-              return null;
-            }
-            const userData = userDoc.data();
-            return {
-              id: postDoc.id,
-              ...postData,
-              username: userData.username || 'Unknown User',
-              userPhotoURL: userData.photoURL || '',
-              commentsOpen: false,
-              isLiked: postData.likedBy?.includes(user?.uid) || false,
-            };
-          })
-        );
+    const postsCollection = collection(db, collectionName);
+    const q = query(postsCollection, orderBy('timestamp', 'desc'));
 
-        const validPosts = postsList.filter(post => post !== null);
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const postsList = await Promise.all(
+        snapshot.docs.map(async (postDoc) => {
+          const postData = postDoc.data();
+          if (!postData || !postData.userID || !postData.description) {
+            console.error('Datos de publicación inválidos', postDoc.id);
+            return null;
+          }
+          const userDocRef = doc(db, 'users', postData.userID);
+          const userDoc = await getDoc(userDocRef);
+          if (!userDoc.exists()) {
+            console.error('No se encontró documento del usuario', postData.userID);
+            return null;
+          }
+          const userData = userDoc.data();
+          return {
+            id: postDoc.id,
+            ...postData,
+            username: userData.username || 'Usuario Desconocido',
+            userPhotoURL: userData.photoURL || '',
+            commentsOpen: false,
+            isLiked: postData.likedBy?.includes(user?.uid) || false,
+          };
+        })
+      );
 
-        const filteredPosts = validPosts.filter(post => {
-          const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
-          const matchesCategory = activeCategory === 'Todos' || post.category.toLowerCase().includes(activeCategory.toLowerCase());
-          return matchesSearch && matchesCategory;
-        });
+      const validPosts = postsList.filter(post => post !== null);
 
-        setPosts(filteredPosts);
-      } catch (error) {
-        console.error('Error fetching posts: ', error);
-        setError('Error fetching posts');
-      } finally {
-        setLoading(false);
-      }
-    };
+      const filteredPosts = validPosts.filter(post => {
+        const matchesSearch = post.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = activeCategory === 'Todos' || post.category.toLowerCase().includes(activeCategory.toLowerCase());
+        return matchesSearch && matchesCategory;
+      });
 
-    fetchPosts();
-  }, [collectionName, searchTerm, activeCategory]);
+      setPosts(filteredPosts);
+    });
+
+    return () => unsubscribe();
+  }, [collectionName, searchTerm, activeCategory, user?.uid]);
 
   const handleAddComment = async (postId, commentText) => {
     if (commentText.trim() === '') return;
@@ -79,19 +96,9 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
       };
       const commentsCollectionRef = collection(db, `${collectionName}/${postId}/comments`);
       await addDoc(commentsCollectionRef, comment);
-
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            comments: [...(post.comments || []), comment],
-          };
-        }
-        return post;
-      }));
       setNewComment('');
     } catch (error) {
-      console.error('Error adding comment: ', error);
+      console.error('Error al agregar comentario: ', error);
     }
   };
 
@@ -100,39 +107,83 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
 
     try {
       await deleteDoc(doc(db, collectionName, postId));
-      setPosts(posts.filter(post => post.id !== postId));
     } catch (error) {
-      console.error('Error deleting post: ', error);
-      setError('Error deleting post');
+      console.error('Error al eliminar publicación: ', error);
     }
   };
 
   const handleNewPost = async () => {
-    if (newPost.trim() === '' || characterCount > 360) return;  // Limitar a 360 caracteres
+    if (newPost.trim() === '' || (isExpanded && (!title || !description || !croppedImage))) {
+      return; // Elimina el setError aquí ya que no estamos manejando errores directamente
+    }
+
+    setIsPosting(true);
+
+    const isAdultContent = mainCategory === 'NSFW';
+    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
-      const post = {
-        title: newPost.substring(0, 60) || 'Sin título',  // Usa los primeros 60 caracteres como título o 'Sin título'
-        description: newPost,
-        imageURL: '',  // No imagen por defecto
+      const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
+        title: isExpanded ? title : newPost.substring(0, 60),
+        description: isExpanded ? description : newPost,
+        category: `${mainCategory} - ${subCategory}`,
+        isAdultContent,
         timestamp: new Date(),
-        category: 'General',
         likes: 0,
         likedBy: [],
-      };
-      const postsCollectionRef = collection(db, collectionName);
-      await addDoc(postsCollectionRef, post);
+      });
+
+      const postId = postRef.id;
+
+      if (croppedImage) {
+        const imageRef = ref(storage, `posts/${user.uid}/${postId}`);
+        await uploadBytes(imageRef, croppedImage);
+        const imageURL = await getDownloadURL(imageRef);
+        await updateDoc(postRef, { imageURL });
+      }
+
       setNewPost('');
-      setCharacterCount(0);  // Restablecer el conteo de caracteres
-      const updatedPosts = [post, ...posts];
-      setPosts(updatedPosts);
+      setTitle('');
+      setDescription('');
+      setCharacterCount(0);
+      setIsExpanded(false);
+      setImageSrc(null);
+      setCroppedImage(null);
     } catch (error) {
-      console.error('Error adding post: ', error);
+      console.error('Error al agregar publicación: ', error);
+    } finally {
+      setIsPosting(false);
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setImageSrc(reader.result);
+        setShowCropper(true); 
+      };
+    }
+  };
+
+  const handleSaveCroppedImage = async (croppedFile) => {
+    setCroppedImage(croppedFile);
+    setShowCropper(false); 
+  };
+
+  const handleCancelCrop = () => {
+    setShowCropper(false);
+    setImageSrc(null); 
+  };
+
   const handleLikePost = async (postId, currentLikes, isLiked) => {
+    if (likeProcessing[postId]) return;
+
+    setLikeProcessing(prev => ({ ...prev, [postId]: true }));
+
     try {
       const postRef = doc(db, collectionName, postId);
       const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
@@ -142,19 +193,10 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
           ? arrayRemove(user.uid)
           : arrayUnion(user.uid)
       });
-
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            likes: newLikes,
-            isLiked: !isLiked,
-          };
-        }
-        return post;
-      }));
     } catch (error) {
-      console.error('Error updating likes:', error);
+      console.error('Error al actualizar likes: ', error);
+    } finally {
+      setLikeProcessing(prev => ({ ...prev, [postId]: false }));
     }
   };
 
@@ -174,17 +216,27 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     const postUrl = `${window.location.origin}/inspectPost/${postId}`;
     if (navigator.share) {
       navigator.share({
-        title: "Check out this post!",
-        text: "Here is something interesting!",
+        title: "¡Mira esta publicación!",
+        text: "¡Aquí hay algo interesante!",
         url: postUrl,
-      }).catch((error) => console.error('Error sharing', error));
+      }).catch((error) => console.error('Error al compartir', error));
     } else {
       navigator.clipboard.writeText(postUrl).then(() => {
         alert('Enlace copiado al portapapeles');
       }, (error) => {
-        console.error('Error copying text', error);
+        console.error('Error al copiar texto', error);
       });
     }
+  };
+
+  const handleClearPostData = () => {
+    setNewPost('');
+    setTitle('');
+    setDescription('');
+    setCharacterCount(0);
+    setIsExpanded(false);
+    setImageSrc(null);
+    setCroppedImage(null);
   };
 
   const renderPosts = () => {
@@ -198,26 +250,34 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
           <img src={post.userPhotoURL} alt={post.username} className="feed-user-avatar" />
           <span className="feed-username">{post.username}</span>
         </div>
-        {post.imageURL && <img src={post.imageURL} alt={post.title} className="feed-post-image" />}
+        {post.imageURL && (
+          <img
+            src={post.imageURL}
+            alt={post.description}
+            className="feed-post-image"
+            onClick={() => window.open(post.imageURL, '_blank')}
+            style={{ cursor: 'pointer' }}
+          />
+        )}
         <div className="feed-post-content">
-          <h2 className="feed-post-title">{post.title}</h2>
           <p className="feed-post-description">{post.description}</p>
           <p className="feed-post-category">Categoría: {post.category}</p>
           <div className="feed-post-actions">
             <button
               className={`action-button ${post.isLiked ? 'liked' : ''}`}
               onClick={() => handleLikePost(post.id, post.likes, post.isLiked)}
+              disabled={likeProcessing[post.id]}
             >
               <Heart className="action-icon" />
               <span>{post.likes}</span>
             </button>
-            <button className="action-button" onClick={() => handleSharePost(post.id)}>
-              <Share2 className="action-icon" />
-              <span>Compartir</span>
-            </button>
             <button className="action-button" onClick={() => handleToggleComments(post.id)}>
               <MessageCircle className="action-icon" />
               <span>Comentar</span>
+            </button>
+            <button className="action-button" onClick={() => handleSharePost(post.id)}>
+              <Share2 className="action-icon" />
+              <span>Compartir</span>
             </button>
             {user?.role === 'admin' && (
               <button
@@ -262,19 +322,97 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
   return (
     <div className="feed-container">
       <div className="new-post-form">
-        <textarea
-          value={newPost}
-          onChange={(e) => {
-            setNewPost(e.target.value);
-            setCharacterCount(e.target.value.length);
-          }}
-          placeholder="¿Qué está pasando?"
-          maxLength={360}  // Límite de 360 caracteres
-        />
-        <small>{characterCount}/360 caracteres</small> {/* Contador de caracteres */}
-        <button onClick={handleNewPost} className="publish-button">Publicar</button>
+        <div className="post-type-toggle">
+          <button
+            className={`toggle-button ${postType === 'quick' ? 'active' : ''}`}
+            onClick={() => setPostType('quick')}
+          >
+            Post Flash
+          </button>
+          <button
+            className={`toggle-button ${postType === 'complete' ? 'active' : ''}`}
+            onClick={() => setPostType('complete')}
+          >
+            Post Completo
+          </button>
+        </div>
+        
+        {postType === 'quick' ? (
+          <>
+            <textarea
+              value={newPost}
+              onChange={(e) => {
+                setNewPost(e.target.value);
+                setCharacterCount(e.target.value.length);
+              }}
+              placeholder="¿Qué está pasando?"
+              maxLength={360}
+            />
+            <small>{characterCount}/360 caracteres</small>
+            <button onClick={handleNewPost} className="publish-button">
+              {isPosting ? <div className="spinner"></div> : "Publicar"}
+            </button>
+          </>
+        ) : (
+          <>
+            <input
+              type="text"
+              placeholder="Título"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+            <textarea
+              placeholder="Descripción"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                setCharacterCount(e.target.value.length);
+              }}
+              maxLength={360}
+              required
+            />
+            <small>{characterCount}/360 caracteres</small>
+            <select
+              value={mainCategory}
+              onChange={(e) => setMainCategory(e.target.value)}
+              required
+            >
+              <option value="SFW">SFW</option>
+              <option value="NSFW">NSFW</option>
+            </select>
+            <select
+              value={subCategory}
+              onChange={(e) => setSubCategory(e.target.value)}
+              required
+            >
+              {categories[mainCategory].map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {imageSrc && <img src={imageSrc} alt="Preview" className="image-preview" />}
+            <div className="buttons-group">
+              <button onClick={handleNewPost} className="publish-button">
+                {isPosting ? <div className="spinner"></div> : "Publicar"}
+              </button>
+              <button onClick={handleClearPostData} className="clear-button">
+                Limpiar
+              </button>
+            </div>
+          </>
+        )}
       </div>
       {renderPosts()}
+      {showCropper && (
+        <ImageCropperModal
+          isOpen={showCropper}
+          onClose={handleCancelCrop}
+          onSave={handleSaveCroppedImage}
+          imageSrc={imageSrc}
+          aspect={4 / 3} // Ajusta el aspecto según lo que necesites
+        />
+      )}
     </div>
   );
 }
