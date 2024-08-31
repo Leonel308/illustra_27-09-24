@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../../firebaseConfig';
 import { collection, onSnapshot, doc, getDoc, query, orderBy, addDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -9,6 +10,7 @@ import '../../Styles/Feed.css';
 
 function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
   const { user } = useContext(UserContext);
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [newPost, setNewPost] = useState('');
@@ -136,18 +138,19 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     setIsPosting(true);
 
     const isAdultContent = mainCategory === 'NSFW';
-    const selectedCollectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
+    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
-      const postRef = await addDoc(collection(db, selectedCollectionName), {
+      const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
-        title: title,  // Asegurando que el título se use en el post
-        description: description || newPost,
+        title: title,
+        description: isExpanded ? description : newPost,
         category: `${mainCategory} - ${subCategory}`,
         isAdultContent,
         timestamp: new Date(),
         likes: 0,
         likedBy: [],
+        postType: postType,
       });
 
       const postId = postRef.id;
@@ -189,7 +192,7 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
 
   const handleSaveCroppedImage = async (croppedFile) => {
     setCroppedImage(croppedFile);
-    setImageSrc(URL.createObjectURL(croppedFile));  // Actualizar la vista previa con la imagen recortada
+    setImageSrc(URL.createObjectURL(croppedFile));
     setShowCropper(false); 
   };
 
@@ -219,19 +222,11 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     }
   };
 
-  const handleToggleComments = (postId) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          commentsOpen: !post.commentsOpen,
-        };
-      }
-      return post;
-    }));
+  const handlePostClick = (postId) => {
+    navigate(`/inspectPost/${postId}`);
   };
 
-  const handleSharePost = (postId) => {
+  const handleSharePost = async (postId) => {
     const postUrl = `${window.location.origin}/inspectPost/${postId}`;
     if (navigator.share) {
       navigator.share({
@@ -268,19 +263,18 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     }
 
     return posts.map(post => (
-      <div key={post.id} className="feed-post">
+      <div key={post.id} className="feed-post" onClick={() => handlePostClick(post.id)}>
         <div className="feed-post-header">
           <img src={post.userPhotoURL} alt={post.username} className="feed-user-avatar" />
           <span className="feed-username">{post.username}</span>
         </div>
-        <h2 className="feed-post-title">{post.title}</h2> {/* Añadir título del post */}
+        <h2 className="feed-post-title">{post.title}</h2>
         {post.imageURL && (
           <div className="feed-post-image-container">
             <img
               src={post.imageURL}
               alt={post.description}
               className="feed-post-image"
-              onClick={() => window.open(post.imageURL, '_blank')}
               style={{ cursor: 'pointer' }}
             />
           </div>
@@ -291,55 +285,36 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
           <div className="feed-post-actions">
             <button
               className={`action-button ${post.isLiked ? 'liked' : ''}`}
-              onClick={() => handleLikePost(post.id, post.likes, post.isLiked)}
+              onClick={(e) => { e.stopPropagation(); handleLikePost(post.id, post.likes, post.isLiked); }}
               disabled={likeProcessing[post.id]}
             >
               <Heart className="action-icon" />
               <span>{post.likes}</span>
             </button>
-            <button className="action-button" onClick={() => handleToggleComments(post.id)}>
+            <button
+              className="action-button"
+              onClick={(e) => { e.stopPropagation(); handlePostClick(post.id); }}
+            >
               <MessageCircle className="action-icon" />
               <span>Comentar</span>
             </button>
-            <button className="action-button" onClick={() => handleSharePost(post.id)}>
+            <button
+              className="action-button"
+              onClick={(e) => { e.stopPropagation(); handleSharePost(post.id); }}
+            >
               <Share2 className="action-icon" />
               <span>Compartir</span>
             </button>
             {user?.role === 'admin' && (
               <button
                 className="action-button delete-button"
-                onClick={() => handleDeletePost(post.id)}
+                onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}
               >
                 <Trash2 className="action-icon" />
                 <span>Eliminar</span>
               </button>
             )}
           </div>
-          <div className={`feed-comments ${post.commentsOpen ? 'open' : ''}`}>
-            {post.comments?.map((comment, index) => (
-              <div key={index} className="feed-comment">
-                <img src={comment.userPhotoURL} alt={comment.user} className="comment-user-avatar" />
-                <div className="comment-content">
-                  <strong>{comment.user}:</strong> {comment.comment}
-                </div>
-              </div>
-            ))}
-          </div>
-          {post.commentsOpen && user && (
-            <div className="feed-comment-form">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Añade un comentario..."
-              />
-              <button
-                onClick={() => handleAddComment(post.id, newComment)}
-                className="send-button"
-              >
-                <Send size={18} />
-              </button>
-            </div>
-          )}
         </div>
       </div>
     ));

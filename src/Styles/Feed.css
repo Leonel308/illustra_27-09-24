@@ -1,4 +1,4 @@
-/* Estilos generales */
+/* Contenedor principal del feed */
 .feed-container {
   max-width: 700px;
   margin: 0 auto;
@@ -10,12 +10,14 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Formulario para crear nuevos posts */
 .new-post-form {
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
 }
 
+/* Toggle para seleccionar el tipo de post */
 .post-type-toggle {
   display: flex;
   justify-content: space-between;
@@ -50,7 +52,7 @@
   border-radius: 0 10px 10px 0;
 }
 
-/* Estilo para el formulario completo */
+/* Estilos para los inputs del formulario */
 .new-post-form input,
 .new-post-form select,
 .new-post-form textarea {
@@ -78,6 +80,7 @@
   cursor: pointer;
 }
 
+/* Vista previa de la imagen subida */
 .image-preview {
   width: 100%;
   max-height: 300px;
@@ -88,6 +91,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Botón para publicar */
 .publish-button {
   align-self: center;
   width: 100%;
@@ -110,6 +114,7 @@
   background-color: #1991da;
 }
 
+/* Botón para limpiar el formulario */
 .clear-button {
   margin-top: 10px;
   padding: 12px 20px;
@@ -127,12 +132,14 @@
   background-color: #c81b51;
 }
 
+/* Contenedor de botones en el formulario */
 .buttons-group {
   display: flex;
   gap: 10px;
   justify-content: space-between;
 }
 
+/* Estilo de los posts */
 .feed-post {
   padding: 20px;
   margin-bottom: 20px;
@@ -140,8 +147,14 @@
   border-radius: 10px;
   border: 1px solid #e1e8ed;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 }
 
+.feed-post:hover {
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Encabezado de cada post */
 .feed-post-header {
   display: flex;
   align-items: center;
@@ -161,6 +174,7 @@
   font-size: 18px;
 }
 
+/* Título del post */
 .feed-post-title {
   font-size: 20px;
   font-weight: bold;
@@ -168,9 +182,10 @@
   margin: 15px 0;
 }
 
+/* Contenedor de la imagen del post */
 .feed-post-image-container {
   width: 100%;
-  height: 300px; /* Altura fija para la imagen */
+  height: 300px;
   overflow: hidden;
   border-radius: 10px;
 }
@@ -181,6 +196,7 @@
   object-fit: cover;
 }
 
+/* Descripción y categoría del post */
 .feed-post-description {
   font-size: 16px;
   color: #657786;
@@ -196,13 +212,14 @@
   margin-bottom: 15px;
 }
 
+/* Acciones del post */
 .feed-post-actions {
   display: flex;
   gap: 15px;
   margin-bottom: 15px;
 }
 
-.action-button {
+.feed-post-actions .action-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -215,19 +232,20 @@
   transition: background-color 0.2s, transform 0.2s;
 }
 
-.action-button:hover {
+.feed-post-actions .action-button:hover {
   background-color: #1991da;
   transform: scale(1.05);
 }
 
-.delete-button {
+.feed-post-actions .delete-button {
   background-color: #e0245e;
 }
 
-.delete-button:hover {
+.feed-post-actions .delete-button:hover {
   background-color: #c81b51;
 }
 
+/* Comentarios del post */
 .feed-comments {
   margin-top: 15px;
   border-top: 1px solid #e1e8ed;
@@ -263,6 +281,7 @@
   color: #14171a;
 }
 
+/* Formulario para añadir comentarios */
 .feed-comment-form {
   display: flex;
   align-items: center;
@@ -283,6 +302,7 @@
   color: #657786;
 }
 
+/* Botón para enviar comentarios */
 .send-button {
   margin-left: 10px;
   padding: 10px 20px;
@@ -299,6 +319,7 @@
   background-color: #1991da;
 }
 
+/* Estilos para las vistas de carga, error y vacío */
 .feed-loading,
 .feed-error,
 .feed-empty {

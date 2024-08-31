@@ -41,19 +41,22 @@ const RightSidebar = () => {
         const postsList = await Promise.all(
           postsSnapshot.docs.map(async (postDoc) => {
             const postData = postDoc.data();
-            const userDocRef = doc(db, 'users', postData.userID);
-            const userDoc = await getDoc(userDocRef);
-            const userData = userDoc.data();
-            return {
-              id: postDoc.id,
-              ...postData,
-              username: userData.username || 'Unknown User',
-              userPhotoURL: userData.photoURL || defaultProfilePic,
-              title: postData.title.substring(0, 40),
-            };
+            if (postData.title && postData.imageURL) { // Filtrar posts que tienen título e imagen
+              const userDocRef = doc(db, 'users', postData.userID);
+              const userDoc = await getDoc(userDocRef);
+              const userData = userDoc.data();
+              return {
+                id: postDoc.id,
+                ...postData,
+                username: userData.username || 'Unknown User',
+                userPhotoURL: userData.photoURL || defaultProfilePic,
+                title: postData.title.substring(0, 40),
+              };
+            }
+            return null;
           })
         );
-        setPosts(postsList.filter(post => post !== null));
+        setPosts(postsList.filter(post => post !== null)); // Filtrar los posts nulos
       } catch (error) {
         console.error('Error fetching posts: ', error);
       }
