@@ -4,7 +4,7 @@ import { collection, onSnapshot, doc, getDoc, query, orderBy, addDoc, updateDoc,
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
 import { MessageCircle, Trash2, Send, Heart, Share2 } from 'lucide-react';
-import ImageCropperModal from '../Profile/ImageCropperModal'; // Asegúrate de que la ruta sea correcta
+import ImageCropperModal from '../Profile/ImageCropperModal';
 import '../../Styles/Feed.css';
 
 function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
@@ -113,20 +113,36 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
   };
 
   const handleNewPost = async () => {
-    if (newPost.trim() === '' || (isExpanded && (!title || !description || !croppedImage))) {
-      return; // Elimina el setError aquí ya que no estamos manejando errores directamente
+    if (postType === 'quick') {
+      if (newPost.trim() === '') {
+        alert('El campo "¿Qué está pasando?" es obligatorio.');
+        return;
+      }
+    } else {
+      if (!title.trim()) {
+        alert('El campo "Título" es obligatorio.');
+        return;
+      }
+      if (!description.trim()) {
+        alert('El campo "Descripción" es obligatorio.');
+        return;
+      }
+      if (!croppedImage) {
+        alert('Por favor, selecciona y recorta una imagen.');
+        return;
+      }
     }
 
     setIsPosting(true);
 
     const isAdultContent = mainCategory === 'NSFW';
-    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
+    const selectedCollectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
-      const postRef = await addDoc(collection(db, collectionName), {
+      const postRef = await addDoc(collection(db, selectedCollectionName), {
         userID: user.uid,
-        title: isExpanded ? title : newPost.substring(0, 60),
-        description: isExpanded ? description : newPost,
+        title: title,  // Asegurando que el título se use en el post
+        description: description || newPost,
         category: `${mainCategory} - ${subCategory}`,
         isAdultContent,
         timestamp: new Date(),
@@ -163,14 +179,17 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
-        setImageSrc(reader.result);
-        setShowCropper(true); 
+        if (!showCropper) {
+          setImageSrc(reader.result);
+          setShowCropper(true);
+        }
       };
     }
   };
 
   const handleSaveCroppedImage = async (croppedFile) => {
     setCroppedImage(croppedFile);
+    setImageSrc(URL.createObjectURL(croppedFile));  // Actualizar la vista previa con la imagen recortada
     setShowCropper(false); 
   };
 
@@ -239,6 +258,10 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     setCroppedImage(null);
   };
 
+  const handlePostTypeChange = (type) => {
+    setPostType(type);
+  };
+
   const renderPosts = () => {
     if (posts.length === 0) {
       return <div className="feed-empty">No hay publicaciones para mostrar</div>;
@@ -250,14 +273,17 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
           <img src={post.userPhotoURL} alt={post.username} className="feed-user-avatar" />
           <span className="feed-username">{post.username}</span>
         </div>
+        <h2 className="feed-post-title">{post.title}</h2> {/* Añadir título del post */}
         {post.imageURL && (
-          <img
-            src={post.imageURL}
-            alt={post.description}
-            className="feed-post-image"
-            onClick={() => window.open(post.imageURL, '_blank')}
-            style={{ cursor: 'pointer' }}
-          />
+          <div className="feed-post-image-container">
+            <img
+              src={post.imageURL}
+              alt={post.description}
+              className="feed-post-image"
+              onClick={() => window.open(post.imageURL, '_blank')}
+              style={{ cursor: 'pointer' }}
+            />
+          </div>
         )}
         <div className="feed-post-content">
           <p className="feed-post-description">{post.description}</p>
@@ -325,83 +351,82 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
         <div className="post-type-toggle">
           <button
             className={`toggle-button ${postType === 'quick' ? 'active' : ''}`}
-            onClick={() => setPostType('quick')}
+            onClick={() => handlePostTypeChange('quick')}
           >
             Post Flash
           </button>
           <button
             className={`toggle-button ${postType === 'complete' ? 'active' : ''}`}
-            onClick={() => setPostType('complete')}
+            onClick={() => handlePostTypeChange('complete')}
           >
             Post Completo
           </button>
         </div>
         
-        {postType === 'quick' ? (
-          <>
-            <textarea
-              value={newPost}
-              onChange={(e) => {
-                setNewPost(e.target.value);
-                setCharacterCount(e.target.value.length);
-              }}
-              placeholder="¿Qué está pasando?"
-              maxLength={360}
-            />
-            <small>{characterCount}/360 caracteres</small>
+        <>
+          {postType === 'quick' ? (
+            <>
+              <textarea
+                value={newPost}
+                onChange={(e) => {
+                  setNewPost(e.target.value);
+                  setCharacterCount(e.target.value.length);
+                }}
+                placeholder="¿Qué está pasando?"
+                maxLength={360}
+              />
+              <small>{characterCount}/360 caracteres</small>
+            </>
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="Título"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+              <textarea
+                placeholder="Descripción"
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setCharacterCount(e.target.value.length);
+                }}
+                maxLength={360}
+                required
+              />
+              <small>{characterCount}/360 caracteres</small>
+              <select
+                value={mainCategory}
+                onChange={(e) => setMainCategory(e.target.value)}
+                required
+              >
+                <option value="SFW">SFW</option>
+                <option value="NSFW">NSFW</option>
+              </select>
+              <select
+                value={subCategory}
+                onChange={(e) => setSubCategory(e.target.value)}
+                required
+              >
+                {categories[mainCategory].map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+              {imageSrc && <img src={imageSrc} alt="Preview" className="image-preview" />}
+            </>
+          )}
+          <div className="buttons-group">
             <button onClick={handleNewPost} className="publish-button">
               {isPosting ? <div className="spinner"></div> : "Publicar"}
             </button>
-          </>
-        ) : (
-          <>
-            <input
-              type="text"
-              placeholder="Título"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-            <textarea
-              placeholder="Descripción"
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setCharacterCount(e.target.value.length);
-              }}
-              maxLength={360}
-              required
-            />
-            <small>{characterCount}/360 caracteres</small>
-            <select
-              value={mainCategory}
-              onChange={(e) => setMainCategory(e.target.value)}
-              required
-            >
-              <option value="SFW">SFW</option>
-              <option value="NSFW">NSFW</option>
-            </select>
-            <select
-              value={subCategory}
-              onChange={(e) => setSubCategory(e.target.value)}
-              required
-            >
-              {categories[mainCategory].map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-            <input type="file" accept="image/*" onChange={handleImageChange} />
-            {imageSrc && <img src={imageSrc} alt="Preview" className="image-preview" />}
-            <div className="buttons-group">
-              <button onClick={handleNewPost} className="publish-button">
-                {isPosting ? <div className="spinner"></div> : "Publicar"}
-              </button>
-              <button onClick={handleClearPostData} className="clear-button">
-                Limpiar
-              </button>
-            </div>
-          </>
-        )}
+            <button onClick={handleClearPostData} className="clear-button">
+              Limpiar
+            </button>
+          </div>
+        </>
       </div>
       {renderPosts()}
       {showCropper && (
@@ -410,7 +435,7 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
           onClose={handleCancelCrop}
           onSave={handleSaveCroppedImage}
           imageSrc={imageSrc}
-          aspect={4 / 3} // Ajusta el aspecto según lo que necesites
+          aspect={4 / 3}
         />
       )}
     </div>

@@ -1,13 +1,13 @@
 /* Estilos generales */
 .feed-container {
-  max-width: 700px; /* Aumentado el ancho máximo */
+  max-width: 700px;
   margin: 0 auto;
   padding: 20px;
   background-color: #ffffff;
   color: #14171a;
   border-radius: 10px;
   border: 1px solid #e1e8ed;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Añadido sombra para efecto de profundidad */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .new-post-form {
@@ -24,12 +24,12 @@
 
 .toggle-button {
   flex: 1;
-  padding: 12px 0; /* Aumentado el padding para mejor accesibilidad */
+  padding: 12px 0;
   background-color: #f1f1f1;
   border: none;
   cursor: pointer;
   font-weight: bold;
-  font-size: 16px; /* Tamaño de fuente aumentado */
+  font-size: 16px;
   transition: background-color 0.3s ease;
 }
 
@@ -67,7 +67,7 @@
 .new-post-form textarea:focus {
   border-color: #1da1f2;
   outline: none;
-  box-shadow: 0 0 5px rgba(29, 161, 242, 0.5); /* Añadido efecto de enfoque */
+  box-shadow: 0 0 5px rgba(29, 161, 242, 0.5);
 }
 
 .new-post-form input[type="file"] {
@@ -90,7 +90,7 @@
 
 .publish-button {
   align-self: center;
-  width: 100%; /* Hacer el botón ancho completo */
+  width: 100%;
   margin-top: 10px;
   padding: 12px 20px;
   background-color: #1da1f2;
@@ -99,7 +99,7 @@
   border-radius: 10px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 16px; /* Aumentado el tamaño de la fuente */
+  font-size: 16px;
   transition: background-color 0.3s ease;
   display: flex;
   align-items: center;
@@ -134,12 +134,12 @@
 }
 
 .feed-post {
-  padding: 20px; /* Aumentado el padding */
+  padding: 20px;
   margin-bottom: 20px;
   background-color: #f5f8fa;
   border-radius: 10px;
   border: 1px solid #e1e8ed;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Añadido sombra */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .feed-post-header {
@@ -149,7 +149,7 @@
 }
 
 .feed-user-avatar {
-  width: 50px; /* Ajustado el tamaño */
+  width: 50px;
   height: 50px;
   border-radius: 50%;
   margin-right: 15px;
@@ -158,20 +158,27 @@
 .feed-username {
   font-weight: bold;
   color: #14171a;
-  font-size: 18px; /* Aumentado el tamaño de la fuente */
+  font-size: 18px;
 }
 
 .feed-post-title {
-  font-size: 20px; /* Aumentado el tamaño de la fuente */
+  font-size: 20px;
   font-weight: bold;
   color: #14171a;
   margin: 15px 0;
 }
 
-.feed-post-image {
-  max-width: 100%;
+.feed-post-image-container {
+  width: 100%;
+  height: 300px; /* Altura fija para la imagen */
+  overflow: hidden;
   border-radius: 10px;
-  margin: 15px 0;
+}
+
+.feed-post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .feed-post-description {
@@ -298,6 +305,6 @@
   text-align: center;
   padding: 20px;
   color: #14171a;
-  font-size: 18px; /* Aumentado el tamaño de la fuente */
+  font-size: 18px;
   font-weight: bold;
 }
