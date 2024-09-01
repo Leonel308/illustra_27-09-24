@@ -1,0 +1,131 @@
+/* PostCreator.css */
+
+/* Contenedor principal del formulario */
+.new-post-form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  /* Toggle para seleccionar el tipo de post */
+  .post-type-toggle {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  
+  .toggle-button {
+    flex: 1;
+    padding: 12px 0;
+    background-color: #f1f1f1;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .toggle-button.active {
+    background-color: #1da1f2;
+    color: white;
+  }
+  
+  .toggle-button:not(.active):hover {
+    background-color: #d4d4d4;
+  }
+  
+  .toggle-button:first-child {
+    border-radius: 10px 0 0 10px;
+  }
+  
+  .toggle-button:last-child {
+    border-radius: 0 10px 10px 0;
+  }
+  
+  /* Estilos para los inputs del formulario */
+  .new-post-form input,
+  .new-post-form select,
+  .new-post-form textarea {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #e1e8ed;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    font-size: 16px;
+  }
+  
+  .new-post-form input:focus,
+  .new-post-form select:focus,
+  .new-post-form textarea:focus {
+    border-color: #1da1f2;
+    outline: none;
+    box-shadow: 0 0 5px rgba(29, 161, 242, 0.5);
+  }
+  
+  .new-post-form input[type="file"] {
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #e1e8ed;
+    background-color: #ffffff;
+    cursor: pointer;
+  }
+  
+  /* Vista previa de la imagen subida */
+  .image-preview {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e1e8ed;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Botón para publicar */
+  .publish-button {
+    align-self: center;
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 20px;
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .publish-button:hover {
+    background-color: #1991da;
+  }
+  
+  /* Botón para limpiar el formulario */
+  .clear-button {
+    margin-top: 10px;
+    padding: 12px 20px;
+    background-color: #e0245e;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .clear-button:hover {
+    background-color: #c81b51;
+  }
+  
+  /* Contenedor de botones en el formulario */
+  .buttons-group {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  

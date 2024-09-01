@@ -10,6 +10,7 @@ import Feed from '../components/Feed/Feed';
 const Home = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showNSFW, setShowNSFW] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +31,10 @@ const Home = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const handleFilterChange = (newFilter) => {
+    setShowNSFW(newFilter === 'NSFW');
+  };
 
   const renderLoadingSpinner = () => (
     <div className="home-loading-container">
@@ -59,7 +64,7 @@ const Home = () => {
 
   const renderMainContent = () => (
     <div className="home-main-content">
-      <LeftSidebar />
+      <LeftSidebar onFilterChange={handleFilterChange} />
       <div className="feed-container">
         <h2>Feed de Publicaciones</h2>
         {!user ? (
@@ -67,7 +72,7 @@ const Home = () => {
             Para ver el contenido debes <span onClick={() => navigate('/register')} className="link-text">registrarte</span> o <span onClick={() => navigate('/login')} className="link-text">iniciar sesión</span>.
           </div>
         ) : (
-          <Feed collectionName="PostsCollection" />
+          <Feed showNSFW={showNSFW} />
         )}
       </div>
       <RightSidebar />

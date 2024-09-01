@@ -1,59 +1,36 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, storage } from '../../firebaseConfig';
-import { collection, onSnapshot, doc, getDoc, query, orderBy, addDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db } from '../../firebaseConfig';
+import { collection, onSnapshot, doc, getDoc, query, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
-import { MessageCircle, Trash2, Send, Heart, Share2 } from 'lucide-react';
-import ImageCropperModal from '../Profile/ImageCropperModal';
+import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
+import PostCreator from '../HomeComponents/PostCreator';
 import '../../Styles/Feed.css';
 
-function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
-  const { user } = useContext(UserContext);
-  const navigate = useNavigate();
-  const [posts, setPosts] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [newPost, setNewPost] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [mainCategory, setMainCategory] = useState('SFW');
-  const [subCategory, setSubCategory] = useState('General');
-  const [imageSrc, setImageSrc] = useState(null);
-  const [croppedImage, setCroppedImage] = useState(null);
-  const [showCropper, setShowCropper] = useState(false); 
-  const [characterCount, setCharacterCount] = useState(0);
-  const [postType, setPostType] = useState('quick');
-  const [isPosting, setIsPosting] = useState(false);
-  const [likeProcessing, setLikeProcessing] = useState({});
-  const [isExpanded, setIsExpanded] = useState(false);
+function Feed({ showNSFW }) {
+  const { user } = useContext(UserContext); // Obtiene el usuario actual desde el contexto
+  const navigate = useNavigate(); // Hook para navegación entre rutas
+  const [posts, setPosts] = useState([]); // Estado para almacenar las publicaciones
+  const [likeProcessing, setLikeProcessing] = useState({}); // Estado para manejar el procesamiento de "me gusta"
 
-  const categories = {
-    "SFW": [
-      'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
-      'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
-      'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
-      'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
-      'Fantasía', 'Cyberpunk', 'Retro'
-    ],
-    "NSFW": [
-      'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
-      'Futanari', 'Tentáculos', 'Furry NSFW',
-      'Monstruos', 'Femdom', 'Maledom'
-    ]
-  };
+  // Función para actualizar el feed manualmente después de crear una publicación
+  const updateFeed = () => {
+    // Código para actualizar las publicaciones después de la creación de un post
+    const postsCollection = collection(db, 'PostsCollection'); // Referencia a la colección de publicaciones SFW
+    const nsfwCollection = collection(db, 'PostsCollectionMature'); // Referencia a la colección de publicaciones NSFW
+    const sfwQuery = query(postsCollection, orderBy('timestamp', 'desc')); // Consulta para ordenar las publicaciones SFW por fecha de creación
+    const nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc')); // Consulta para ordenar las publicaciones NSFW por fecha de creación
 
-  useEffect(() => {
-    const postsCollection = collection(db, collectionName);
-    const q = query(postsCollection, orderBy('timestamp', 'desc'));
-
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    // Suscripción a la colección de publicaciones SFW
+    const unsubscribeSFW = onSnapshot(sfwQuery, async (snapshot) => {
       const postsList = await Promise.all(
         snapshot.docs.map(async (postDoc) => {
-          const postData = postDoc.data();
+          const postData = postDoc.data(); // Obtiene los datos de cada publicación
           if (!postData || !postData.userID || !postData.description) {
             console.error('Datos de publicación inválidos', postDoc.id);
             return null;
           }
+          // Obtiene la información del usuario que hizo la publicación
           const userDocRef = doc(db, 'users', postData.userID);
           const userDoc = await getDoc(userDocRef);
           if (!userDoc.exists()) {
@@ -61,6 +38,7 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
             return null;
           }
           const userData = userDoc.data();
+          // Retorna un objeto con los datos de la publicación y del usuario
           return {
             id: postDoc.id,
             ...postData,
@@ -72,142 +50,60 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
         })
       );
 
-      const validPosts = postsList.filter(post => post !== null);
-
-      const filteredPosts = validPosts.filter(post => {
-        const matchesSearch = post.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = activeCategory === 'Todos' || post.category.toLowerCase().includes(activeCategory.toLowerCase());
-        return matchesSearch && matchesCategory;
-      });
-
-      setPosts(filteredPosts);
+      const validPosts = postsList.filter(post => post !== null); // Filtra publicaciones válidas
+      setPosts(validPosts); // Actualiza el estado con las publicaciones obtenidas
     });
 
-    return () => unsubscribe();
-  }, [collectionName, searchTerm, activeCategory, user?.uid]);
+    // Suscripción a la colección de publicaciones NSFW (si se selecciona ver contenido NSFW)
+    const unsubscribeNSFW = onSnapshot(nsfwQuery, async (snapshot) => {
+      if (showNSFW) {
+        const postsList = await Promise.all(
+          snapshot.docs.map(async (postDoc) => {
+            const postData = postDoc.data();
+            if (!postData || !postData.userID || !postData.description) {
+              console.error('Datos de publicación inválidos', postDoc.id);
+              return null;
+            }
+            const userDocRef = doc(db, 'users', postData.userID);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+              console.error('No se encontró documento del usuario', postData.userID);
+              return null;
+            }
+            const userData = userDoc.data();
+            return {
+              id: postDoc.id,
+              ...postData,
+              username: userData.username || 'Usuario Desconocido',
+              userPhotoURL: userData.photoURL || '',
+              commentsOpen: false,
+              isLiked: postData.likedBy?.includes(user?.uid) || false,
+            };
+          })
+        );
 
-  const handleAddComment = async (postId, commentText) => {
-    if (commentText.trim() === '') return;
-
-    try {
-      const comment = {
-        comment: commentText,
-        timestamp: new Date(),
-        user: user.username,
-        userPhotoURL: user.photoURL || '',
-      };
-      const commentsCollectionRef = collection(db, `${collectionName}/${postId}/comments`);
-      await addDoc(commentsCollectionRef, comment);
-      setNewComment('');
-    } catch (error) {
-      console.error('Error al agregar comentario: ', error);
-    }
-  };
-
-  const handleDeletePost = async (postId) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")) return;
-
-    try {
-      await deleteDoc(doc(db, collectionName, postId));
-    } catch (error) {
-      console.error('Error al eliminar publicación: ', error);
-    }
-  };
-
-  const handleNewPost = async () => {
-    if (postType === 'quick') {
-      if (newPost.trim() === '') {
-        alert('El campo "¿Qué está pasando?" es obligatorio.');
-        return;
+        const validPosts = postsList.filter(post => post !== null);
+        setPosts((prevPosts) => [...prevPosts, ...validPosts]); // Combina publicaciones SFW y NSFW
       }
-    } else {
-      if (!title.trim()) {
-        alert('El campo "Título" es obligatorio.');
-        return;
-      }
-      if (!description.trim()) {
-        alert('El campo "Descripción" es obligatorio.');
-        return;
-      }
-      if (!croppedImage) {
-        alert('Por favor, selecciona y recorta una imagen.');
-        return;
-      }
-    }
+    });
 
-    setIsPosting(true);
-
-    const isAdultContent = mainCategory === 'NSFW';
-    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
-
-    try {
-      const postRef = await addDoc(collection(db, collectionName), {
-        userID: user.uid,
-        title: title,
-        description: isExpanded ? description : newPost,
-        category: `${mainCategory} - ${subCategory}`,
-        isAdultContent,
-        timestamp: new Date(),
-        likes: 0,
-        likedBy: [],
-        postType: postType,
-      });
-
-      const postId = postRef.id;
-
-      if (croppedImage) {
-        const imageRef = ref(storage, `posts/${user.uid}/${postId}`);
-        await uploadBytes(imageRef, croppedImage);
-        const imageURL = await getDownloadURL(imageRef);
-        await updateDoc(postRef, { imageURL });
-      }
-
-      setNewPost('');
-      setTitle('');
-      setDescription('');
-      setCharacterCount(0);
-      setIsExpanded(false);
-      setImageSrc(null);
-      setCroppedImage(null);
-    } catch (error) {
-      console.error('Error al agregar publicación: ', error);
-    } finally {
-      setIsPosting(false);
-    }
+    return () => {
+      unsubscribeSFW(); // Limpia la suscripción a las publicaciones SFW
+      unsubscribeNSFW(); // Limpia la suscripción a las publicaciones NSFW
+    };
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        if (!showCropper) {
-          setImageSrc(reader.result);
-          setShowCropper(true);
-        }
-      };
-    }
-  };
+  // Llama a `updateFeed` cuando el componente se monte o cambie alguna dependencia
+  useEffect(updateFeed, [showNSFW, user?.uid]);
 
-  const handleSaveCroppedImage = async (croppedFile) => {
-    setCroppedImage(croppedFile);
-    setImageSrc(URL.createObjectURL(croppedFile));
-    setShowCropper(false); 
-  };
-
-  const handleCancelCrop = () => {
-    setShowCropper(false);
-    setImageSrc(null); 
-  };
-
+  // Maneja la acción de dar "me gusta" a una publicación
   const handleLikePost = async (postId, currentLikes, isLiked) => {
     if (likeProcessing[postId]) return;
 
-    setLikeProcessing(prev => ({ ...prev, [postId]: true }));
+    setLikeProcessing(prev => ({ ...prev, [postId]: true })); // Marca que el proceso de "me gusta" está en curso
 
     try {
-      const postRef = doc(db, collectionName, postId);
+      const postRef = doc(db, 'PostsCollection', postId);
       const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
       await updateDoc(postRef, {
         likes: newLikes,
@@ -218,14 +114,27 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     } catch (error) {
       console.error('Error al actualizar likes: ', error);
     } finally {
-      setLikeProcessing(prev => ({ ...prev, [postId]: false }));
+      setLikeProcessing(prev => ({ ...prev, [postId]: false })); // Marca que el proceso de "me gusta" ha terminado
     }
   };
 
+  // Maneja la acción de eliminar una publicación
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")) return;
+
+    try {
+      await deleteDoc(doc(db, 'PostsCollection', postId)); // Elimina la publicación de la base de datos
+    } catch (error) {
+      console.error('Error al eliminar publicación: ', error);
+    }
+  };
+
+  // Navega a la vista detallada de la publicación seleccionada
   const handlePostClick = (postId) => {
     navigate(`/inspectPost/${postId}`);
   };
 
+  // Maneja la acción de compartir la publicación
   const handleSharePost = async (postId) => {
     const postUrl = `${window.location.origin}/inspectPost/${postId}`;
     if (navigator.share) {
@@ -243,23 +152,10 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
     }
   };
 
-  const handleClearPostData = () => {
-    setNewPost('');
-    setTitle('');
-    setDescription('');
-    setCharacterCount(0);
-    setIsExpanded(false);
-    setImageSrc(null);
-    setCroppedImage(null);
-  };
-
-  const handlePostTypeChange = (type) => {
-    setPostType(type);
-  };
-
+  // Renderiza las publicaciones en el feed
   const renderPosts = () => {
     if (posts.length === 0) {
-      return <div className="feed-empty">No hay publicaciones para mostrar</div>;
+      return <div className="feed-empty">No hay publicaciones para mostrar</div>; // Muestra mensaje si no hay publicaciones
     }
 
     return posts.map(post => (
@@ -322,97 +218,8 @@ function Feed({ collectionName, searchTerm = '', activeCategory = 'Todos' }) {
 
   return (
     <div className="feed-container">
-      <div className="new-post-form">
-        <div className="post-type-toggle">
-          <button
-            className={`toggle-button ${postType === 'quick' ? 'active' : ''}`}
-            onClick={() => handlePostTypeChange('quick')}
-          >
-            Post Flash
-          </button>
-          <button
-            className={`toggle-button ${postType === 'complete' ? 'active' : ''}`}
-            onClick={() => handlePostTypeChange('complete')}
-          >
-            Post Completo
-          </button>
-        </div>
-        
-        <>
-          {postType === 'quick' ? (
-            <>
-              <textarea
-                value={newPost}
-                onChange={(e) => {
-                  setNewPost(e.target.value);
-                  setCharacterCount(e.target.value.length);
-                }}
-                placeholder="¿Qué está pasando?"
-                maxLength={360}
-              />
-              <small>{characterCount}/360 caracteres</small>
-            </>
-          ) : (
-            <>
-              <input
-                type="text"
-                placeholder="Título"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-              <textarea
-                placeholder="Descripción"
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                  setCharacterCount(e.target.value.length);
-                }}
-                maxLength={360}
-                required
-              />
-              <small>{characterCount}/360 caracteres</small>
-              <select
-                value={mainCategory}
-                onChange={(e) => setMainCategory(e.target.value)}
-                required
-              >
-                <option value="SFW">SFW</option>
-                <option value="NSFW">NSFW</option>
-              </select>
-              <select
-                value={subCategory}
-                onChange={(e) => setSubCategory(e.target.value)}
-                required
-              >
-                {categories[mainCategory].map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-              {imageSrc && <img src={imageSrc} alt="Preview" className="image-preview" />}
-            </>
-          )}
-          <div className="buttons-group">
-            <button onClick={handleNewPost} className="publish-button">
-              {isPosting ? <div className="spinner"></div> : "Publicar"}
-            </button>
-            <button onClick={handleClearPostData} className="clear-button">
-              Limpiar
-            </button>
-          </div>
-        </>
-      </div>
-      {renderPosts()}
-      {showCropper && (
-        <ImageCropperModal
-          isOpen={showCropper}
-          onClose={handleCancelCrop}
-          onSave={handleSaveCroppedImage}
-          imageSrc={imageSrc}
-          aspect={4 / 3}
-        />
-      )}
+      <PostCreator onPostCreated={updateFeed} /> {/* Actualiza el feed al crear una publicación */}
+      {renderPosts()} {/* Renderiza las publicaciones */}
     </div>
   );
 }
