@@ -1,31 +1,63 @@
-.bio-container {
-  margin-top: 5px;
-  text-align: center;
+.profile-bio {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
-.bio {
-  margin: 5px 0;
+.profile-bio h2 {
+  color: #fff;
+  margin-bottom: 1rem;
 }
 
-.bio textarea {
+.bio-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.bio-textarea {
   width: 100%;
-  height: 100px;
-  padding: 10px;
-  border: 1px solid #ddd;
+  min-height: 100px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: none;
   border-radius: 5px;
+  resize: vertical;
 }
 
-.bio button {
-  margin-top: 5px;
-  padding: 5px 10px;
-  background-color: var(--button-color);
-  color: white;
+.bio-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bio-button {
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
-.bio button:hover {
-  transform: scale(1.05);
+.bio-button.save {
+  background-color: #4ecdc4;
+  color: white;
+}
+
+.bio-button.cancel {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.bio-button.edit {
+  background-color: #4ecdc4;
+  color: white;
+  margin-top: 1rem;
+}
+
+.bio-content {
+  color: #fff;
+}
+
+.bio-content p {
+  margin-bottom: 1rem;
 }

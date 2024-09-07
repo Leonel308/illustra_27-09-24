@@ -1,115 +1,126 @@
-import React, { useState } from 'react';
-import { auth, db, storage } from '../../firebaseConfig';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import React, { useState, useEffect, useCallback } from 'react';
+import { db, storage } from '../../firebaseConfig';
+import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../../Styles/ProfileStyles/ProfilePortfolio.css';
 
-const ProfilePortfolio = ({ portfolio, isOwner, setPortfolio, setError }) => {
-  const [file, setFile] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isNSFW, setIsNSFW] = useState(false);
+const ProfilePortfolio = ({ isOwner, userId }) => {
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [portfolioImages, setPortfolioImages] = useState([]);
+    const [showModal, setShowModal] = useState(false);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+    const toggleModal = () => setShowModal(!showModal);
 
-  const handleUpload = async () => {
-    if (!file) return;
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            const file = e.target.files[0];
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
 
-    setLoading(true);
+    const handleUpload = async () => {
+        if (!imageFile) return;
+        setUploading(true);
 
-    try {
-      const userId = auth.currentUser.uid;
-      const fileRef = ref(storage, `portfolios/${userId}/${file.name}`);
-      await uploadBytes(fileRef, file);
-      const fileURL = await getDownloadURL(fileRef);
+        try {
+            const imageRef = ref(storage, `portfolio/${userId}/${imageFile.name}`);
+            await uploadBytes(imageRef, imageFile);
+            const downloadURL = await getDownloadURL(imageRef);
 
-      const newPost = {
-        url: fileURL,
-        isNSFW: isNSFW
-      };
+            const userDoc = doc(db, 'users', userId);
+            await updateDoc(userDoc, {
+                portfolio: arrayUnion({ url: downloadURL })
+            });
 
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, {
-        portfolio: arrayUnion(newPost)
-      });
+            setUploadSuccess(true);
+            setImageFile(null);
+            setImagePreview(null);
+            toggleModal();
+            fetchPortfolioImages(); // Refrescar las imágenes después de subir la nueva
+        } catch (error) {
+            console.error("Error uploading image: ", error);
+        } finally {
+            setUploading(false);
+        }
+    };
 
-      setPortfolio([...portfolio, newPost]);
-      setFile(null);
-      setIsNSFW(false);
-      setShowForm(false);
-    } catch (error) {
-      console.error("Error uploading file: ", error);
-      setError('Error uploading file');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Definir fetchPortfolioImages con useCallback para evitar recreación en cada render
+    const fetchPortfolioImages = useCallback(async () => {
+        try {
+            const userDoc = doc(db, 'users', userId);
+            const docSnapshot = await getDoc(userDoc);
 
-  const handleDelete = async (item) => {
-    setLoading(true);
-    try {
-      const userId = auth.currentUser.uid;
-      const userRef = doc(db, 'users', userId);
-      
-      const fileRef = ref(storage, item.url);
-      await deleteObject(fileRef);
+            if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+                if (data.portfolio) {
+                    const urls = data.portfolio.map(item => item.url);
+                    setPortfolioImages(urls);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching portfolio images:", error);
+        }
+    }, [userId]);
 
-      await updateDoc(userRef, {
-        portfolio: arrayRemove(item)
-      });
+    // useEffect con fetchPortfolioImages como dependencia
+    useEffect(() => {
+        fetchPortfolioImages();
+    }, [fetchPortfolioImages]);
 
-      setPortfolio(portfolio.filter(i => i !== item));
-      setError('');
-    } catch (error) {
-      console.error("Error deleting file: ", error);
-      setError('Error deleting file');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="profile-portfolio">
-      <h2>Mi Portafolio</h2>
-      {isOwner && (
-        <>
-          <div
-            className={`add-portfolio-header ${showForm ? 'active' : ''}`}
-            onClick={() => setShowForm(!showForm)}
-          >
-            <h3>AÑADIR PORTFOLIO <span className={showForm ? 'rotate' : ''}>+</span></h3>
-          </div>
-          {showForm && (
-            <div className="upload-section">
-              <input type="file" onChange={handleFileChange} />
-              <div>
-                <label>
-                  <input type="checkbox" checked={isNSFW} onChange={() => setIsNSFW(!isNSFW)} />
-                  Contenido para adultos (+18)
-                </label>
-              </div>
-              <button onClick={handleUpload} disabled={loading}>
-                {loading ? 'Añadiendo...' : 'Subir Archivo'}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-      <div className="portfolio-items">
-        {portfolio.map((item, index) => (
-          <div key={index} className="portfolio-item">
-            <img src={item.url} alt={`Portfolio ${index + 1}`} />
-            {item.isNSFW && <p className="nsfw-label">NSFW</p>}
+    return (
+        <div className="portfolio-uploader">
             {isOwner && (
-              <button className="delete-button" onClick={() => handleDelete(item)}>X</button>
+                <button onClick={toggleModal} className="upload-button">
+                    Subir Imagen
+                </button>
             )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <span className="close-modal" onClick={toggleModal}>×</span>
+                        <h2>Subir Imagen al Portafolio</h2>
+                        <input type="file" accept="image/*" onChange={handleImageChange} />
+
+                        {imagePreview && (
+                            <div className="image-preview">
+                                <img src={imagePreview} alt="Preview de la imagen" />
+                            </div>
+                        )}
+
+                        {uploading ? (
+                            <p>Subiendo imagen...</p>
+                        ) : (
+                            <button onClick={handleUpload} disabled={!imageFile} className="upload-button">
+                                Subir Imagen
+                            </button>
+                        )}
+
+                        {uploadSuccess && <p>¡Imagen subida exitosamente!</p>}
+                    </div>
+                </div>
+            )}
+
+            <div className="portfolio-gallery">
+                <h3>Imágenes del Portafolio</h3>
+                <div className="portfolio-grid">
+                    {portfolioImages.length > 0 ? (
+                        portfolioImages.map((imageURL, index) => (
+                            <div key={index} className="portfolio-item">
+                                <img src={imageURL} alt={`Portafolio ${index}`} />
+                            </div>
+                        ))
+                    ) : (
+                        <p>No hay imágenes en tu portafolio.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default ProfilePortfolio;

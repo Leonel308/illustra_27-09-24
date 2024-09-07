@@ -1,16 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, collection, getDocs, query, where, limit, updateDoc, getDoc } from 'firebase/firestore';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaSearch, FaBars, FaPlus } from 'react-icons/fa';
 import UserContext from '../context/UserContext';
 import { logout, db } from '../firebaseConfig';
 import Notifications from './Notifications';
-import '../Styles/Header.css';
 import AddBalanceModal from './addBalance';
+import '../Styles/Header.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
-const Header = () => {
+export default function Header() {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -23,6 +23,7 @@ const Header = () => {
   const [profilePic, setProfilePic] = useState(defaultProfilePic);
   const [showAddBalanceModal, setShowAddBalanceModal] = useState(false);
   const [animateBell, setAnimateBell] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -130,6 +131,7 @@ const Header = () => {
             value={searchQuery}
             onChange={handleSearchChange}
           />
+          <FaSearch className="search-icon" />
           {searchResults.length > 0 && (
             <div className="header-search-dropdown">
               {searchResults.map((result) => (
@@ -139,9 +141,7 @@ const Header = () => {
                   onClick={() => navigate(`/profile/${result.id}`)}
                 >
                   <img src={result.photoURL || defaultProfilePic} alt={result.username} />
-                  <div className="header-search-result-info">
-                    <h3>{result.username}</h3>
-                  </div>
+                  <span>{result.username}</span>
                 </div>
               ))}
             </div>
@@ -169,7 +169,7 @@ const Header = () => {
                 {dropdownVisible && (
                   <div className="header-dropdown">
                     <div className="header-dropdown-item balance">
-                      Balance: {balance.toFixed(2)}$ <button className="add-balance-btn" onClick={handleAddBalanceClick}>+</button>
+                      Balance: {balance.toFixed(2)}$ <button className="add-balance-btn" onClick={handleAddBalanceClick}><FaPlus /></button>
                     </div>
                     <div className="header-dropdown-item pending">Pendiente: {pendingBalance.toFixed(2)}$</div>
                     <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>
@@ -193,7 +193,36 @@ const Header = () => {
             </div>
           )}
         </nav>
+        <button className="mobile-menu-button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <FaBars />
+        </button>
       </div>
+
+      {mobileMenuOpen && (
+        <div className="mobile-menu">
+          <Link to="/explore-posts" className="mobile-menu-item">Explorar</Link>
+          {user ? (
+            <>
+              <button className="mobile-menu-item" onClick={() => navigate('/create-post')}>Crear Publicación</button>
+              <Link to={`/profile/${user.uid}`} className="mobile-menu-item">Perfil</Link>
+              <Link to="/workbench" className="mobile-menu-item">Mesa de trabajo</Link>
+              {user.role === 'admin' ? (
+                <Link to="/admin-dashboard" className="mobile-menu-item">Admin Dashboard</Link>
+              ) : (
+                <Link to="/dashboard" className="mobile-menu-item">Dashboard</Link>
+              )}
+              <Link to="/configuration" className="mobile-menu-item">Configuración</Link>
+              <Link to="/donations" className="mobile-menu-item">Donaciones</Link>
+              <button onClick={handleLogout} className="mobile-menu-item logout-button">Log out</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="mobile-menu-item">Log In</Link>
+              <Link to="/register" className="mobile-menu-item">Register</Link>
+            </>
+          )}
+        </div>
+      )}
 
       {showAddBalanceModal && (
         <AddBalanceModal 
@@ -203,6 +232,4 @@ const Header = () => {
       )}
     </header>
   );
-};
-
-export default Header;
+}

@@ -1,37 +1,33 @@
 /* General Sidebar Styling */
 .sidebar-left {
-    width: 280px;
+    width: 180px; /* Manteniendo el ancho reducido */
     height: 100vh;
     background-color: #f8f9fa;
-    padding: 1.5rem;
+    padding: 1rem; /* Manteniendo el padding reducido */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     transition: all 0.3s ease;
+    margin-left: 0; /* Asegurarse de que no haya margen izquierdo */
+    border-left: 1px solid #e6e6e6; /* Añadir un borde para separar visualmente */
 }
 
 /* Search Input Styling */
 .filter-search {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.5rem; /* Manteniendo el padding reducido */
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.9rem; /* Manteniendo el tamaño de fuente reducido */
+    margin-bottom: 1rem; /* Manteniendo el margen inferior reducido */
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.filter-search:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 /* NSFW Toggle Styling */
 .nsfw-toggle {
     display: flex;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding: 0.75rem;
+    margin-bottom: 1rem; /* Manteniendo el margen inferior reducido */
+    padding: 0.5rem; /* Manteniendo el padding reducido */
     background-color: #e9ecef;
     border-radius: 0.25rem;
     transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -43,18 +39,18 @@
 }
 
 .nsfw-toggle input[type="checkbox"] {
-    margin-right: 0.75rem;
+    margin-right: 0.5rem; /* Manteniendo el margen reducido */
     cursor: pointer;
 }
 
 /* Filter Category Titles */
 .filter-category {
-    font-size: 1.25rem;
+    font-size: 1rem; /* Manteniendo el tamaño de fuente reducido */
     color: #495057;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 0.5rem;
+    margin-top: 1rem; /* Manteniendo el margen superior reducido */
+    margin-bottom: 0.75rem; /* Manteniendo el margen inferior reducido */
+    border-bottom: 1px solid #dee2e6; /* Manteniendo el borde inferior ajustado */
+    padding-bottom: 0.25rem; /* Manteniendo el padding inferior reducido */
 }
 
 /* Filter List Styling */
@@ -65,14 +61,14 @@
 }
 
 .filter-list li {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem; /* Manteniendo el margen entre elementos reducido */
 }
 
 .filter-list label {
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.25rem; /* Manteniendo el padding reducido */
     border-radius: 0.25rem;
     transition: background-color 0.15s ease-in-out;
 }
@@ -82,17 +78,14 @@
 }
 
 .filter-list input[type="checkbox"] {
-    margin-right: 0.75rem;
+    margin-right: 0.5rem; /* Manteniendo el margen reducido */
     cursor: pointer;
 }
 
 /* Custom Checkbox Styling */
 .filter-list input[type="checkbox"] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1rem; /* Manteniendo el tamaño del checkbox reducido */
+    height: 1rem; /* Manteniendo el tamaño del checkbox reducido */
     border: 2px solid #ced4da;
     border-radius: 0.25rem;
     outline: none;
@@ -108,7 +101,7 @@
 
 .filter-list input[type="checkbox"]:checked::after {
     content: '\2714';
-    font-size: 1rem;
+    font-size: 0.75rem; /* Manteniendo el tamaño del check reducido */
     color: white;
     position: absolute;
     top: 50%;
@@ -122,11 +115,11 @@
         width: 100%;
         height: auto;
         max-height: 50vh;
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .filter-category {
-        font-size: 1.15rem;
+        font-size: 1rem; /* Ajustado el tamaño de fuente para móviles */
     }
 }
 

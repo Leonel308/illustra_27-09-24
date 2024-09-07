@@ -1,48 +1,51 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import UserContext from '../../context/UserContext';
 import '../../Styles/ProfileStyles/ProfileBio.css';
 
-const ProfileBio = ({ bio, isOwner, setBio, setError }) => {
-  const { user } = useContext(UserContext);
-  const [editingBio, setEditingBio] = useState(false);
+const ProfileBio = ({ bio, isOwner, setBio, userId }) => {
+  const [editedBio, setEditedBio] = useState(bio);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleBioChange = (e) => {
-    setBio(e.target.value);
+    setEditedBio(e.target.value);
   };
 
-  const handleSaveBio = async () => {
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), { bio });
-        setEditingBio(false);
-      } catch (error) {
-        console.error("Error saving bio: ", error);
-        setError('Error saving bio. Please try again.');
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { bio: editedBio });
+      setBio(editedBio);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating bio:', error);
     }
   };
 
-  const handleEditBio = () => {
-    setEditingBio(true);
-  };
-
   return (
-    <div className="bio-container">
-      <div className="bio">
-        {isOwner && editingBio ? (
-          <>
-            <textarea value={bio} onChange={handleBioChange} placeholder="Escribe tu biografía..." maxLength={190} />
-            <button onClick={handleSaveBio}>Guardar</button>
-          </>
-        ) : (
-          <>
-            <p>{bio || "Escribe tu biografía..."}</p>
-            {isOwner && <button onClick={handleEditBio}>Editar</button>}
-          </>
-        )}
-      </div>
+    <div className="profile-bio">
+      <h2>Biografía</h2>
+      {isEditing ? (
+        <form onSubmit={handleSubmit} className="bio-form">
+          <textarea
+            value={editedBio}
+            onChange={handleBioChange}
+            placeholder="Escribe tu biografía aquí..."
+            maxLength={200}
+            className="bio-textarea"
+          />
+          <div className="bio-actions">
+            <button type="submit" className="bio-button save">Guardar</button>
+            <button type="button" onClick={() => setIsEditing(false)} className="bio-button cancel">Cancelar</button>
+          </div>
+        </form>
+      ) : (
+        <div className="bio-content">
+          <p>{bio || 'No hay biografía disponible.'}</p>
+          {isOwner && <button onClick={() => setIsEditing(true)} className="bio-button edit">Editar</button>}
+        </div>
+      )}
     </div>
   );
 };

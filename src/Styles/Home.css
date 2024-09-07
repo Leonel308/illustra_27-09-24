@@ -71,6 +71,18 @@ body {
   gap: 20px;
 }
 
+.sidebar-left {
+  width: 160px;
+  height: 100vh;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  margin-left: -20px; /* Ajuste para moverlo hacia la izquierda */
+  border-right: 1px solid var(--border-color);
+}
+
 .sidebar-right {
   flex: 1;
   max-width: 250px;
@@ -185,6 +197,13 @@ body {
 @media (max-width: 1024px) {
   .home-main-content {
     flex-direction: column;
+  }
+
+  .sidebar-left {
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-left: 0; /* Restablecer el margen en pantallas más pequeñas */
   }
 
   .sidebar-right {

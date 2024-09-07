@@ -1,44 +1,53 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
-import { collection, onSnapshot, doc, getDoc, query, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
 import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
 import PostCreator from '../HomeComponents/PostCreator';
 import '../../Styles/Feed.css';
 
-function Feed({ showNSFW }) {
-  const { user } = useContext(UserContext); // Obtiene el usuario actual desde el contexto
-  const navigate = useNavigate(); // Hook para navegación entre rutas
-  const [posts, setPosts] = useState([]); // Estado para almacenar las publicaciones
-  const [likeProcessing, setLikeProcessing] = useState({}); // Estado para manejar el procesamiento de "me gusta"
+function Feed({ showNSFW, userId }) {
+  const { user } = useContext(UserContext);
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState([]);
+  const [likeProcessing, setLikeProcessing] = useState({});
 
-  // Función para actualizar el feed manualmente después de crear una publicación
+  // Función para obtener los posts
   const updateFeed = () => {
-    // Código para actualizar las publicaciones después de la creación de un post
-    const postsCollection = collection(db, 'PostsCollection'); // Referencia a la colección de publicaciones SFW
-    const nsfwCollection = collection(db, 'PostsCollectionMature'); // Referencia a la colección de publicaciones NSFW
-    const sfwQuery = query(postsCollection, orderBy('timestamp', 'desc')); // Consulta para ordenar las publicaciones SFW por fecha de creación
-    const nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc')); // Consulta para ordenar las publicaciones NSFW por fecha de creación
+    const postsCollection = collection(db, 'PostsCollection');
+    const nsfwCollection = collection(db, 'PostsCollectionMature');
 
-    // Suscripción a la colección de publicaciones SFW
+    // Consultas por SFW y NSFW posts
+    let sfwQuery = query(postsCollection, orderBy('timestamp', 'desc'));
+    let nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc'));
+
+    // Si se proporciona userId, filtramos solo las publicaciones de ese usuario
+    if (userId) {
+      sfwQuery = query(postsCollection, where('userID', '==', userId), orderBy('timestamp', 'desc'));
+      nsfwQuery = query(nsfwCollection, where('userID', '==', userId), orderBy('timestamp', 'desc'));
+    }
+
     const unsubscribeSFW = onSnapshot(sfwQuery, async (snapshot) => {
       const postsList = await Promise.all(
         snapshot.docs.map(async (postDoc) => {
-          const postData = postDoc.data(); // Obtiene los datos de cada publicación
+          const postData = postDoc.data();
+
+          // Verificar campos esenciales para evitar errores
           if (!postData || !postData.userID || !postData.description) {
             console.error('Datos de publicación inválidos', postDoc.id);
             return null;
           }
-          // Obtiene la información del usuario que hizo la publicación
+
+          // Obtener datos del usuario
           const userDocRef = doc(db, 'users', postData.userID);
           const userDoc = await getDoc(userDocRef);
           if (!userDoc.exists()) {
-            console.error('No se encontró documento del usuario', postData.userID);
+            console.error('No se encontró el documento del usuario', postData.userID);
             return null;
           }
+
           const userData = userDoc.data();
-          // Retorna un objeto con los datos de la publicación y del usuario
           return {
             id: postDoc.id,
             ...postData,
@@ -50,26 +59,31 @@ function Feed({ showNSFW }) {
         })
       );
 
-      const validPosts = postsList.filter(post => post !== null); // Filtra publicaciones válidas
-      setPosts(validPosts); // Actualiza el estado con las publicaciones obtenidas
+      // Filtramos publicaciones válidas
+      const validPosts = postsList.filter(post => post !== null);
+      setPosts(validPosts);
     });
 
-    // Suscripción a la colección de publicaciones NSFW (si se selecciona ver contenido NSFW)
     const unsubscribeNSFW = onSnapshot(nsfwQuery, async (snapshot) => {
       if (showNSFW) {
         const postsList = await Promise.all(
           snapshot.docs.map(async (postDoc) => {
             const postData = postDoc.data();
+
+            // Verificar campos esenciales para evitar errores
             if (!postData || !postData.userID || !postData.description) {
               console.error('Datos de publicación inválidos', postDoc.id);
               return null;
             }
+
+            // Obtener datos del usuario
             const userDocRef = doc(db, 'users', postData.userID);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
-              console.error('No se encontró documento del usuario', postData.userID);
+              console.error('No se encontró el documento del usuario', postData.userID);
               return null;
             }
+
             const userData = userDoc.data();
             return {
               id: postDoc.id,
@@ -82,25 +96,25 @@ function Feed({ showNSFW }) {
           })
         );
 
+        // Filtramos publicaciones válidas
         const validPosts = postsList.filter(post => post !== null);
-        setPosts((prevPosts) => [...prevPosts, ...validPosts]); // Combina publicaciones SFW y NSFW
+        setPosts((prevPosts) => [...prevPosts, ...validPosts]);
       }
     });
 
     return () => {
-      unsubscribeSFW(); // Limpia la suscripción a las publicaciones SFW
-      unsubscribeNSFW(); // Limpia la suscripción a las publicaciones NSFW
+      unsubscribeSFW();
+      unsubscribeNSFW();
     };
   };
 
-  // Llama a `updateFeed` cuando el componente se monte o cambie alguna dependencia
-  useEffect(updateFeed, [showNSFW, user?.uid]);
+  useEffect(updateFeed, [showNSFW, userId, user?.uid]);
 
-  // Maneja la acción de dar "me gusta" a una publicación
+  // Función para dar like a una publicación
   const handleLikePost = async (postId, currentLikes, isLiked) => {
     if (likeProcessing[postId]) return;
 
-    setLikeProcessing(prev => ({ ...prev, [postId]: true })); // Marca que el proceso de "me gusta" está en curso
+    setLikeProcessing(prev => ({ ...prev, [postId]: true }));
 
     try {
       const postRef = doc(db, 'PostsCollection', postId);
@@ -114,27 +128,27 @@ function Feed({ showNSFW }) {
     } catch (error) {
       console.error('Error al actualizar likes: ', error);
     } finally {
-      setLikeProcessing(prev => ({ ...prev, [postId]: false })); // Marca que el proceso de "me gusta" ha terminado
+      setLikeProcessing(prev => ({ ...prev, [postId]: false }));
     }
   };
 
-  // Maneja la acción de eliminar una publicación
+  // Función para eliminar una publicación
   const handleDeletePost = async (postId) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")) return;
 
     try {
-      await deleteDoc(doc(db, 'PostsCollection', postId)); // Elimina la publicación de la base de datos
+      await deleteDoc(doc(db, 'PostsCollection', postId));
     } catch (error) {
       console.error('Error al eliminar publicación: ', error);
     }
   };
 
-  // Navega a la vista detallada de la publicación seleccionada
+  // Función para manejar clic en una publicación
   const handlePostClick = (postId) => {
     navigate(`/inspectPost/${postId}`);
   };
 
-  // Maneja la acción de compartir la publicación
+  // Función para compartir una publicación
   const handleSharePost = async (postId) => {
     const postUrl = `${window.location.origin}/inspectPost/${postId}`;
     if (navigator.share) {
@@ -152,10 +166,10 @@ function Feed({ showNSFW }) {
     }
   };
 
-  // Renderiza las publicaciones en el feed
+  // Renderización de las publicaciones
   const renderPosts = () => {
     if (posts.length === 0) {
-      return <div className="feed-empty">No hay publicaciones para mostrar</div>; // Muestra mensaje si no hay publicaciones
+      return <div className="feed-empty">No hay publicaciones para mostrar</div>;
     }
 
     return posts.map(post => (
@@ -218,8 +232,8 @@ function Feed({ showNSFW }) {
 
   return (
     <div className="feed-container">
-      <PostCreator onPostCreated={updateFeed} /> {/* Actualiza el feed al crear una publicación */}
-      {renderPosts()} {/* Renderiza las publicaciones */}
+      <PostCreator onPostCreated={updateFeed} />
+      {renderPosts()}
     </div>
   );
 }

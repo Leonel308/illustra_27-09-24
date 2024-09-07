@@ -1,47 +1,29 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { db, storage } from '../../firebaseConfig';
-import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import '../../Styles/ProfileStyles/profile.css';
+import { useParams } from 'react-router-dom';
+import { db } from '../../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
-import ProfileBanner from './ProfileBanner';
-import ProfilePicture from './ProfilePicture';
 import ProfileBio from './ProfileBio';
-import ProfileTabs from './ProfileTabs';
 import ProfilePortfolio from './ProfilePortfolio';
-import ProfileFeed from './ProfileFeed';
-import ProfileFriends from './ProfileFriends';
 import ProfileServices from './ProfileServices';
-import DonateButton from '../DonateButton';
-import ImageCropperModal from './ImageCropperModal';
+import '../../Styles/ProfileStyles/profile.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
 const Profile = () => {
   const { user } = useContext(UserContext);
   const { userId } = useParams();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [bannerURL, setBannerURL] = useState('');
-  const [photoURL, setPhotoURL] = useState(defaultProfilePic);
-  const [bio, setBio] = useState('');
-  const [portfolio, setPortfolio] = useState([]);
-  const [services, setServices] = useState([]);
-  const [error, setError] = useState('');
+  const [profileData, setProfileData] = useState({
+    photoURL: defaultProfilePic,
+    bio: '',
+    portfolio: [],
+    services: [],
+    username: '',
+    isArtist: false,
+    gender: '',
+    adultContent: 'SFW'
+  });
   const [isOwner, setIsOwner] = useState(false);
-  const [activeTab, setActiveTab] = useState('services');
-  const [username, setUsername] = useState('');
-  const [adultContent, setAdultContent] = useState('');
-  const [isArtist, setIsArtist] = useState(false);
-  const [gender, setGender] = useState('');
-  const [showSponsorModal, setShowSponsorModal] = useState(false);
-  const [donationAmounts, setDonationAmounts] = useState([1000, 5000, 10000, 20000]);
-  const [canReceiveDonations, setCanReceiveDonations] = useState(false);
-  const [backgroundURL, setBackgroundURL] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [imageSrc, setImageSrc] = useState(null);
-  const [buttonColor, setButtonColor] = useState('#6200ea');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -49,204 +31,50 @@ const Profile = () => {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
-          const data = userDoc.data();
-          setBackgroundURL(data.backgroundURL || '');
-          setBannerURL(data.bannerURL || '');
-          setPhotoURL(data.photoURL || defaultProfilePic);
-          setBio(data.bio || '');
-          setPortfolio(data.portfolio || []);
-          setUsername(data.username || '');
-          setAdultContent(data.adultContent === 'NSFW-SFW' ? 'SFW/NSFW' : data.adultContent || '');
+          setProfileData({ ...userDoc.data(), photoURL: userDoc.data().photoURL || defaultProfilePic });
           setIsOwner(user && user.uid === userId);
-          setIsArtist(data.isArtist || false);
-          setGender(data.gender || '');
-          setDonationAmounts(data.donationAmounts || [1000, 5000, 10000, 20000]);
-          setCanReceiveDonations(!!data.mercadoPagoAccessToken);
-          setButtonColor(data.buttonColor || '#6200ea');
-
-          const servicesRef = collection(db, 'users', userId, 'Services');
-          const servicesSnapshot = await getDocs(servicesRef);
-          const servicesData = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setServices(servicesData);
-        } else {
-          setError('Usuario no encontrado');
-          navigate('/home');
         }
       } catch (error) {
-        console.error("Error obteniendo datos del usuario: ", error);
-        setError('Error obteniendo datos del usuario');
-        navigate('/home');
-      } finally {
-        setLoading(false);
+        console.error("Error fetching user data: ", error);
       }
     };
 
     fetchUserData();
-  }, [user, userId, navigate]);
+  }, [user, userId]);
 
-  const handleSponsorClick = () => {
-    setShowSponsorModal(true);
-  };
-
-  const handleCloseSponsorModal = () => {
-    setShowSponsorModal(false);
-  };
-
-  const handleBackgroundChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setImageSrc(reader.result);
-        setShowModal(true);
-      };
+  const getArtistLabel = () => {
+    if (profileData.isArtist) {
+      return profileData.gender === 'female' ? 'ilustradora' : profileData.gender === 'other' ? 'ilustrador/a' : 'ilustrador';
+    } else {
+      return profileData.gender === 'female' ? 'usuaria' : profileData.gender === 'other' ? 'usuario/a' : 'usuario';
     }
   };
-
-  const handleSaveCroppedImage = async (croppedFile) => {
-    if (croppedFile && user) {
-      try {
-        const backgroundRef = ref(storage, `backgrounds/${user.uid}`);
-        await uploadBytes(backgroundRef, croppedFile);
-        const newBackgroundURL = await getDownloadURL(backgroundRef);
-        setBackgroundURL(newBackgroundURL);
-        await updateDoc(doc(db, 'users', user.uid), { backgroundURL: newBackgroundURL });
-      } catch (error) {
-        console.error("Error subiendo fondo: ", error);
-        setError('Error subiendo fondo. Por favor, intenta nuevamente.');
-      } finally {
-        setShowModal(false);
-      }
-    }
-  };
-
-  const handleColorChange = async (newColor) => {
-    setButtonColor(newColor);
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), { buttonColor: newColor });
-      } catch (error) {
-        console.error("Error guardando el color de los botones: ", error);
-      }
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Cargando...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <p className="error">{error}</p>;
-  }
 
   return (
-    <div className="profile-page">
-      {backgroundURL && <div className="background-image" style={{ backgroundImage: `url(${backgroundURL})` }} />}
-      <div className="profile-container" style={{ '--button-color': buttonColor }}>
-        <ProfileBanner
-          bannerURL={bannerURL}
-          isOwner={isOwner}
-          setBannerURL={setBannerURL}
-          setError={setError}
-        />
-        <ProfilePicture
-          photoURL={photoURL}
-          isOwner={isOwner}
-          setPhotoURL={setPhotoURL}
-          setError={setError}
-        />
-        <div className="user-info">
-          <h2>{username}</h2>
-          {isArtist ? (
-            <p className="artist-label">ilustrador{gender === 'female' ? 'a' : gender === 'other' ? 'x' : ''} {adultContent}</p>
-          ) : (
-            <p className="artist-label">usuario</p>
-          )}
+    <div className="profile-page-container">
+      <div className="profile-sidebar">
+        <div className="profile-header">
+          <img src={profileData.photoURL} alt={profileData.username} className="profile-picture" />
+          <h2>{profileData.username}</h2>
+          <p className="user-role">
+            {profileData.isArtist ? '🖌️' : '👤'} {getArtistLabel()}
+          </p>
+          <p className="content-type">
+            🎨 Contenido: {profileData.adultContent}
+          </p>
         </div>
-
-        {!isOwner && canReceiveDonations && (
-          <div className="sponsor-box" onClick={handleSponsorClick}>
-            Patrocinar
-          </div>
-        )}
-
-        {showSponsorModal && (
-          <div className="sponsor-modal">
-            <div className="sponsor-modal-content">
-              <span className="close" onClick={handleCloseSponsorModal}>&times;</span>
-              <h2>Selecciona un monto para donar</h2>
-              {donationAmounts.map((amount, index) => (
-                <DonateButton
-                  key={index}
-                  amount={amount}
-                  description={`Donación a ${username}`}
-                  payerEmail={user.email}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isOwner && (
-          <>
-            <input
-              type="file"
-              accept="image/*"
-              id="backgroundInput"
-              className="background-input"
-              onChange={handleBackgroundChange}
-            />
-            <div className="background-update-button" onClick={() => document.getElementById('backgroundInput').click()}>
-              Actualizar Fondo
-            </div>
-            <div className="color-picker">
-              <label>Cambiar color de botones: </label>
-              <input
-                type="color"
-                value={buttonColor}
-                onChange={(e) => handleColorChange(e.target.value)}
-              />
-            </div>
-          </>
-        )}
-
-        {showModal && (
-          <ImageCropperModal
-            isOpen={showModal}
-            onClose={() => setShowModal(false)}
-            onSave={handleSaveCroppedImage}
-            imageSrc={imageSrc}
-            aspect={16 / 9}
-          />
-        )}
-
-        <ProfileBio
-          bio={bio}
-          isOwner={isOwner}
-          setBio={setBio}
-          setError={setError}
-        />
-        <ProfileTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          buttonColor={buttonColor}
-        />
-        {activeTab === 'services' && (
-          <ProfileServices
-            services={services}
-            isOwner={isOwner}
-            setServices={setServices}
-          />
-        )}
-        {activeTab === 'portfolio' && <ProfilePortfolio portfolio={portfolio} isOwner={isOwner} setPortfolio={setPortfolio} setError={setError} />}
-        {activeTab === 'feed' && <ProfileFeed userId={userId} />}
-        {activeTab === 'friends' && <ProfileFriends userId={userId} />}
+        <ProfileBio bio={profileData.bio} isOwner={isOwner} setBio={(newBio) => setProfileData(prev => ({ ...prev, bio: newBio }))} userId={userId} />
+      </div>
+      <div className="profile-main-content">
+        {/* Cambiar el orden: servicios primero */}
+        <div className="profile-section services-section">
+          <h3>Servicios</h3>
+          <ProfileServices services={profileData.services} isOwner={isOwner} userId={userId} />
+        </div>
+        <div className="profile-section portfolio-section">
+          <h3>Portfolio</h3>
+          <ProfilePortfolio portfolio={profileData.portfolio} isOwner={isOwner} userId={userId} />
+        </div>
       </div>
     </div>
   );

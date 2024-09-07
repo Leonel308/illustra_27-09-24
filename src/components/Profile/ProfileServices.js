@@ -1,174 +1,228 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db, storage } from '../../firebaseConfig';
-import { doc, collection, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'; // Aquí se agrega updateDoc
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import UserContext from '../../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 import '../../Styles/ProfileStyles/ProfileServices.css';
 
-const ProfileServices = ({ services = [], isOwner, setServices }) => {
-  const { user } = useContext(UserContext);
+const ProfileServices = ({ isOwner, userId }) => {
+  const [services, setServices] = useState([]);
   const [serviceTitle, setServiceTitle] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
   const [servicePrice, setServicePrice] = useState('');
   const [serviceImage, setServiceImage] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const navigate = useNavigate();
 
-  const handleServiceImageChange = (e) => {
-    setServiceImage(e.target.files[0]);
-  };
+  // Manejo de cambios en los campos del formulario
+  const handleServiceImageChange = (e) => setServiceImage(e.target.files[0]);
 
   const handleTitleChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= 60) {
-      setServiceTitle(value);
+    if (e.target.value.length <= 60) {
+      setServiceTitle(e.target.value);
     }
   };
 
   const handleDescriptionChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= 240) {
-      setServiceDescription(value);
+    if (e.target.value.length <= 360) {
+      setServiceDescription(e.target.value);
     }
   };
 
-  const handlePriceChange = (e) => {
-    const value = e.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(value) && value.length <= 7) {  // Permite números con hasta dos decimales y un máximo de 7 caracteres
-      setServicePrice(value);
+  const handlePriceChange = (e) => setServicePrice(e.target.value);
+
+  const validateForm = () => {
+    if (!serviceTitle || !serviceDescription || !servicePrice || !serviceImage) {
+      setError('Todos los campos son obligatorios.');
+      return false;
     }
+    if (!/^\d+(\.\d{1,2})?$/.test(servicePrice)) {
+      setError('El precio debe ser un número válido con máximo 2 decimales.');
+      return false;
+    }
+    return true;
   };
 
   const handleAddService = async () => {
-    if (serviceTitle && serviceDescription && servicePrice && serviceImage && user) {
-      setLoading(true);
-      try {
-        const serviceImageRef = ref(storage, `services/${user.uid}/${serviceImage.name}`);
-        await uploadBytes(serviceImageRef, serviceImage);
-        const serviceImageUrl = await getDownloadURL(serviceImageRef);
+    if (!validateForm()) return;
+    setLoading(true);
+    try {
+      const serviceImageRef = ref(storage, `services/${userId}/${serviceImage.name}`);
+      await uploadBytes(serviceImageRef, serviceImage);
+      const serviceImageUrl = await getDownloadURL(serviceImageRef);
 
-        const newService = {
-          illustratorId: user.uid,
-          title: serviceTitle,
-          description: serviceDescription,
-          price: parseFloat(servicePrice),  // Guarda el precio como número
-          imageUrl: serviceImageUrl,
-          createdAt: new Date(),
-        };
+      const newService = {
+        illustratorId: userId,
+        title: serviceTitle,
+        description: serviceDescription,
+        price: parseFloat(servicePrice),
+        imageUrl: serviceImageUrl,
+        serviceID: '', // Aquí se inicializa como vacío y se llenará después de la creación
+        createdAt: new Date(),
+      };
 
-        const servicesRef = collection(db, 'users', user.uid, 'Services');
-        const serviceDocRef = await addDoc(servicesRef, newService);
+      const servicesRef = collection(db, 'users', userId, 'Services');
+      const addedService = await addDoc(servicesRef, newService);
 
-        setServices((prevServices) => [...prevServices, { ...newService, id: serviceDocRef.id }]);
-        setServiceTitle('');
-        setServiceDescription('');
-        setServicePrice('');
-        setServiceImage(null);
-        setError('');
-        setShowForm(false); // Ocultar el formulario después de agregar el servicio
-      } catch (error) {
-        console.error('Error al agregar el servicio:', error);
-        setError('Error al agregar el servicio. Por favor, inténtelo de nuevo.');
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setError('Por favor, complete todos los campos y cargue una imagen.');
+      // Ahora actualizamos el documento recién creado con el ID generado
+      const serviceID = addedService.id;
+      const serviceDocRef = doc(db, 'users', userId, 'Services', serviceID);
+      await updateDoc(serviceDocRef, { serviceID });
+
+      setServices((prev) => [...prev, { ...newService, serviceID }]);
+      resetForm();
+    } catch (error) {
+      console.error('Error al añadir el servicio:', error);
+      setError('Error al añadir el servicio. Inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setServiceTitle('');
+    setServiceDescription('');
+    setServicePrice('');
+    setServiceImage(null);
+    setError('');
+    setShowForm(false);
   };
 
   const handleDeleteService = async (serviceId, imageUrl) => {
-    if (user) {
-      setLoading(true);
-      try {
-        const serviceRef = doc(db, 'users', user.uid, 'Services', serviceId);
-        await deleteDoc(serviceRef);
+    setLoading(true);
+    try {
+      const serviceRef = doc(db, 'users', userId, 'Services', serviceId);
+      await deleteDoc(serviceRef);
+      const imageRef = ref(storage, `services/${userId}/${imageUrl.split('%2F')[2].split('?')[0]}`);
+      await deleteObject(imageRef);
 
-        const serviceImageRef = ref(storage, `services/${user.uid}/${imageUrl.split('%2F')[2].split('?')[0]}`);
-        await deleteObject(serviceImageRef);
-
-        setServices((prevServices) => prevServices.filter((service) => service.id !== serviceId));
-        setError('');
-      } catch (error) {
-        console.error('Error al eliminar el servicio:', error);
-        setError('Error al eliminar el servicio. Por favor, inténtelo de nuevo.');
-      } finally {
-        setLoading(false);
-      }
+      setServices((prev) => prev.filter((service) => service.serviceID !== serviceId));
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error('Error al eliminar el servicio:', error);
+      setError('Error al eliminar el servicio. Inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleHireService = (serviceId, illustratorId) => {
-    navigate(`/service-request/${illustratorId}/${serviceId}`);
-  };
+  const reloadServices = useCallback(async () => {
+    setLoadingServices(true);
+    try {
+      const servicesRef = collection(db, 'users', userId, 'Services');
+      const querySnapshot = await getDocs(servicesRef);
+
+      const servicesList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        price: doc.data().price || 0,
+      }));
+      setServices(servicesList);
+    } catch (error) {
+      console.error('Error al cargar los servicios:', error);
+      setError('Error al cargar los servicios. Inténtalo de nuevo.');
+    } finally {
+      setLoadingServices(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    reloadServices();
+  }, [reloadServices]);
 
   return (
     <div className="services-container">
+      <h2 className="services-title">Mis Servicios</h2>
       {isOwner && (
-        <>
-          <div className="add-service-header" onClick={() => setShowForm(!showForm)}>
-            <h3>AÑADIR SERVICIO <span className={showForm ? 'rotate' : ''}>+</span></h3>
-          </div>
-          {showForm && (
-            <div className="add-service-form">
-              <input 
-                type="text" 
-                value={serviceTitle} 
-                onChange={handleTitleChange} 
-                placeholder="Título del Servicio" 
-              />
-              <p className="char-counter">{serviceTitle.length}/60</p>
-              <textarea 
-                value={serviceDescription} 
-                onChange={handleDescriptionChange} 
-                placeholder="Descripción del Servicio" 
-              />
-              <p className="char-counter">{serviceDescription.length}/240</p>
-              <input 
-                type="text" 
-                value={servicePrice} 
-                onChange={handlePriceChange} 
-                placeholder="Precio del Servicio" 
-              />
-              <p className="char-counter">{servicePrice.length}/7</p>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleServiceImageChange} 
-              />
-              <button onClick={handleAddService} disabled={loading}>
-                {loading ? 'Agregando...' : 'Agregar Servicio'}
-              </button>
-              {error && <p className="error">{error}</p>}
-            </div>
-          )}
-        </>
+        <button className="add-service-button" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Cancelar' : 'Añadir Nuevo Servicio'}
+        </button>
       )}
-      <div className="services-list">
-        {services.map((service) => (
-          <div key={service.id} className="service-item">
-            <img src={service.imageUrl} alt={service.title} />
-            <h4>{service.title}</h4>
-            <p>{service.description}</p>
-            <p className="service-price">${service.price.toFixed(2)}</p>
-            <div className="service-actions">
-              <button onClick={() => handleHireService(service.id, service.illustratorId)}>Contratar</button>
+
+      {showForm && (
+        <div className="add-service-form">
+          <input 
+            type="text" 
+            value={serviceTitle} 
+            onChange={handleTitleChange} 
+            placeholder="Título del Servicio (máx. 60 caracteres)" 
+          />
+          <textarea 
+            value={serviceDescription} 
+            onChange={handleDescriptionChange} 
+            placeholder="Descripción del Servicio (máx. 360 caracteres)" 
+          />
+          <input 
+            type="text" 
+            value={servicePrice} 
+            onChange={handlePriceChange} 
+            placeholder="Precio Inicial" 
+          />
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleServiceImageChange} 
+          />
+          <button onClick={handleAddService} disabled={loading}>
+            {loading ? 'Añadiendo...' : 'Añadir Servicio'}
+          </button>
+          {error && <p className="error">{error}</p>}
+        </div>
+      )}
+
+      <div className="services-grid">
+        {loadingServices ? (
+          <p>Cargando servicios...</p>
+        ) : services.length === 0 ? (
+          <p>No hay servicios disponibles.</p>
+        ) : (
+          services.map((service) => (
+            <div key={service.serviceID} className="service-card">
+              <div className="service-image-container">
+                <img src={service.imageUrl} alt={service.title} className="service-image" />
+              </div>
+              <div className="service-info">
+                <h3>{service.title}</h3>
+                <p className="service-description">{service.description}</p>
+                <p className="service-price">Desde US${service.price.toFixed(2)}</p>
+                {!isOwner && (
+                  <button 
+                    className="hire-button" 
+                    onClick={() => navigate(`/solicitudServicio/${service.serviceID}`)}
+                  >
+                    Contratar
+                  </button>
+                )}
+              </div>
               {isOwner && (
-                <button 
-                  className="delete-button" 
-                  onClick={() => handleDeleteService(service.id, service.imageUrl)}
-                  disabled={loading}
-                >
-                  {loading ? 'Eliminando...' : '-'}
-                </button>
+                <>
+                  <button 
+                    className="delete-button" 
+                    onClick={() => setConfirmDelete(service.serviceID)}
+                    disabled={loading}
+                  >
+                    {loading ? 'Eliminando...' : 'Eliminar'}
+                  </button>
+                  {confirmDelete === service.serviceID && (
+                    <div className="confirm-delete">
+                      <p>¿Estás seguro de que quieres eliminar este servicio?</p>
+                      <button onClick={() => handleDeleteService(service.serviceID, service.imageUrl)}>Confirmar</button>
+                      <button onClick={() => setConfirmDelete(null)}>Cancelar</button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
+      {services.length > 0 && (
+        <button className="view-all-button">Ver todos ({services.length})</button>
+      )}
     </div>
   );
 };
