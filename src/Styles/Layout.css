@@ -20,16 +20,16 @@ header a:hover {
 
 main {
   margin-top: 60px; /* Deja espacio para el header fijo */
-  padding: 20px;
-  width: 100%;
+  width: 100%; /* Asegura que ocupa todo el ancho */
+  padding: 0; /* Elimina padding extra */
   box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
-  background-color: #ffffff; /* Cambia a blanco u otro color si es necesario */
+  background-color: transparent; /* Asegura que el fondo sea transparente */
 }
 
 .container {
-  max-width: 1200px; /* Ancho máximo para la página */
-  margin: 0 auto; /* Centra el contenido */
-  padding: 0 20px;
+  width: 100%; /* Asegura que ocupe todo el ancho de la pantalla */
+  margin: 0 auto; /* Elimina márgenes laterales */
+  padding: 0; /* Elimina padding extra */
 }
 
 .footer {
