@@ -28,7 +28,10 @@ function Feed({ showNSFW, userId }) {
       nsfwQuery = query(nsfwCollection, where('userID', '==', userId), orderBy('timestamp', 'desc'));
     }
 
+    // Ejecuta la consulta SFW y añade publicaciones NSFW si se habilita la opción
     const unsubscribeSFW = onSnapshot(sfwQuery, async (snapshot) => {
+      console.log('SFW Snapshot size: ', snapshot.size); // Depuración
+
       const postsList = await Promise.all(
         snapshot.docs.map(async (postDoc) => {
           const postData = postDoc.data();
@@ -61,11 +64,15 @@ function Feed({ showNSFW, userId }) {
 
       // Filtramos publicaciones válidas
       const validPosts = postsList.filter(post => post !== null);
+      console.log('SFW Valid Posts: ', validPosts); // Depuración
       setPosts(validPosts);
     });
 
+    // Solo añadimos las publicaciones NSFW si showNSFW está activo
     const unsubscribeNSFW = onSnapshot(nsfwQuery, async (snapshot) => {
       if (showNSFW) {
+        console.log('NSFW Snapshot size: ', snapshot.size); // Depuración
+
         const postsList = await Promise.all(
           snapshot.docs.map(async (postDoc) => {
             const postData = postDoc.data();
@@ -96,9 +103,10 @@ function Feed({ showNSFW, userId }) {
           })
         );
 
-        // Filtramos publicaciones válidas
+        // Filtramos publicaciones válidas y añadimos a las publicaciones SFW
         const validPosts = postsList.filter(post => post !== null);
-        setPosts((prevPosts) => [...prevPosts, ...validPosts]);
+        console.log('NSFW Valid Posts: ', validPosts); // Depuración
+        setPosts(prevPosts => [...prevPosts, ...validPosts]);
       }
     });
 

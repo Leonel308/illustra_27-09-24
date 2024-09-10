@@ -4,7 +4,6 @@ import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import '../Styles/Configuration.css';
-import Header from './Header';
 import UserContext from '../context/UserContext';
 import MercadoPagoButton from './MercadoPago/MercadoPagoButton';
 import Spinner from './Spinner';
@@ -39,7 +38,7 @@ const Configuration = () => {
             setCanChangeUsername(diffDays >= 14);
           }
         }
-        setLoading(false);
+        setLoading(false);  // Desactiva el estado de carga después de obtener los datos
       } else {
         navigate('/login');
       }
@@ -149,90 +148,84 @@ const Configuration = () => {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className="main-content">
-          <Spinner />
-        </div>
-      </>
+      <div className="main-content">
+        <Spinner />
+      </div>
     );
   }
 
   return (
-    <>
-      <Header />
-      <div className="main-content">
-        <div className="configuration-container">
-          <h2 className="configuration-header">Editar perfil</h2>
-          
-          <div className="configuration-section">
-            <h3>Usuario</h3>
-            <label>Nombre de usuario</label>
-            <input 
-              type="text" 
-              placeholder="Cambiar nombre de usuario" 
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              disabled={!canChangeUsername}
-            />
-            {usernameChangeDate && !canChangeUsername && (
-              <p className="info-message">
-                No puedes cambiar el nombre de usuario hasta {new Date(usernameChangeDate.getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()}.
-              </p>
-            )}
-            <button onClick={handleUsernameChange} disabled={!canChangeUsername}>
-              Cambiar nombre de usuario
-            </button>
-            <button className="forgot-password-button" onClick={handlePasswordReset}>Olvidé mi contraseña</button>
-          </div>
-          
-          <div className="configuration-section">
-            <h3>Método de pago</h3>
-            <label>Añadir método de pago en dólares</label>
-            <input 
-              type="text" 
-              placeholder="Añadir método de pago en dólares"
-              value={newPaymentMethodUSD}
-              onChange={(e) => setNewPaymentMethodUSD(e.target.value)}
-            />
-            <label>Ingrese el CVU/CBU para recibir tu dinero</label>
-            <input 
-              type="text" 
-              placeholder="Ingrese el CVU/CBU para recibir tu dinero"
-              value={newPaymentMethodARS}
-              onChange={handleCVUChange}
-              maxLength={22}
-            />
-            <MercadoPagoButton />
-          </div>
-          
-          <div className="configuration-section">
-            <h3>Donaciones</h3>
-            {donationAmounts.map((amount, index) => (
-              <div key={index} className="donation-amount">
-                <input
-                  type="text"
-                  value={amount}
-                  onChange={(e) => handleDonationAmountChange(index, e.target.value)}
-                  maxLength={11}
-                />
-                {index !== 0 && (
-                  <button className="delete-button" onClick={() => handleRemoveDonationAmount(index)}>X</button>
-                )}
-              </div>
-            ))}
-            {donationAmounts.length < 5 && (
-              <button onClick={handleAddDonationAmount}>Añadir botón de donación</button>
-            )}
-            {warning && <p className="warning-message">{warning}</p>}
-          </div>
-          
-          <button className="save-button" onClick={handleSaveConfiguration}>Guardar</button>
-          {error && <p className="error-message">{error}</p>}
-          {success && <p className="success-message">{success}</p>}
+    <div className="main-content">
+      <div className="configuration-container">
+        <h2 className="configuration-header">Editar perfil</h2>
+        
+        <div className="configuration-section">
+          <h3>Usuario</h3>
+          <label>Nombre de usuario</label>
+          <input 
+            type="text" 
+            placeholder="Cambiar nombre de usuario" 
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            disabled={!canChangeUsername}
+          />
+          {usernameChangeDate && !canChangeUsername && (
+            <p className="info-message">
+              No puedes cambiar el nombre de usuario hasta {new Date(usernameChangeDate.getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()}.
+            </p>
+          )}
+          <button onClick={handleUsernameChange} disabled={!canChangeUsername}>
+            Cambiar nombre de usuario
+          </button>
+          <button className="forgot-password-button" onClick={handlePasswordReset}>Olvidé mi contraseña</button>
         </div>
+        
+        <div className="configuration-section">
+          <h3>Método de pago</h3>
+          <label>Añadir método de pago en dólares</label>
+          <input 
+            type="text" 
+            placeholder="Añadir método de pago en dólares"
+            value={newPaymentMethodUSD}
+            onChange={(e) => setNewPaymentMethodUSD(e.target.value)}
+          />
+          <label>Ingrese el CVU/CBU para recibir tu dinero</label>
+          <input 
+            type="text" 
+            placeholder="Ingrese el CVU/CBU para recibir tu dinero"
+            value={newPaymentMethodARS}
+            onChange={handleCVUChange}
+            maxLength={22}
+          />
+          <MercadoPagoButton />
+        </div>
+        
+        <div className="configuration-section">
+          <h3>Donaciones</h3>
+          {donationAmounts.map((amount, index) => (
+            <div key={index} className="donation-amount">
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => handleDonationAmountChange(index, e.target.value)}
+                maxLength={11}
+              />
+              {index !== 0 && (
+                <button className="delete-button" onClick={() => handleRemoveDonationAmount(index)}>X</button>
+              )}
+            </div>
+          ))}
+          {donationAmounts.length < 5 && (
+            <button onClick={handleAddDonationAmount}>Añadir botón de donación</button>
+          )}
+          {warning && <p className="warning-message">{warning}</p>}
+        </div>
+        
+        <button className="save-button" onClick={handleSaveConfiguration}>Guardar</button>
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
       </div>
-    </>
+    </div>
   );
 };
 

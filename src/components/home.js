@@ -10,7 +10,8 @@ import Feed from '../components/Feed/Feed';
 const Home = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showNSFW, setShowNSFW] = useState(false);
+  const [showNSFW, setShowNSFW] = useState(false); // Controla si se muestran los posts NSFW
+  const [activeFilters, setActiveFilters] = useState({}); // Guarda los filtros activos
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,8 +33,10 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleFilterChange = (newFilter) => {
-    setShowNSFW(newFilter === 'NSFW');
+  // Maneja el cambio de filtros desde el LeftSidebar
+  const handleFilterChange = ({ showNSFW, activeFilters }) => {
+    setShowNSFW(showNSFW); // Actualiza el estado para mostrar u ocultar NSFW
+    setActiveFilters(activeFilters); // Actualiza los filtros activos
   };
 
   const renderLoadingSpinner = () => (
@@ -72,7 +75,7 @@ const Home = () => {
             Para ver el contenido debes <span onClick={() => navigate('/register')} className="link-text">registrarte</span> o <span onClick={() => navigate('/login')} className="link-text">iniciar sesión</span>.
           </div>
         ) : (
-          <Feed showNSFW={showNSFW} />
+          <Feed showNSFW={showNSFW} activeFilters={activeFilters} userId={user?.uid} />
         )}
       </div>
       <RightSidebar />

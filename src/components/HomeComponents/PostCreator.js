@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { db, storage } from '../../firebaseConfig';
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../../context/UserContext';
 import ImageCropperModal from '../Profile/ImageCropperModal';
@@ -20,7 +20,6 @@ function PostCreator({ onPostCreated }) {
   const [postType, setPostType] = useState('quick'); // Estado para el tipo de post (rápido/completo)
   const [isPosting, setIsPosting] = useState(false); // Estado para mostrar el spinner de carga
 
-  // Definimos las categorías y subcategorías permitidas
   const categories = {
     "SFW": [
       'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
@@ -36,7 +35,6 @@ function PostCreator({ onPostCreated }) {
     ]
   };
 
-  // Función para manejar la creación de una nueva publicación
   const handleNewPost = async () => {
     if (postType === 'quick') {
       if (newPost.trim() === '') {
@@ -60,15 +58,15 @@ function PostCreator({ onPostCreated }) {
 
     setIsPosting(true); // Muestra el spinner de carga
 
-    const isAdultContent = mainCategory === 'NSFW'; // Determina si el contenido es NSFW
-    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection'; // Selecciona la colección correcta en Firestore
+    const isAdultContent = mainCategory === 'NSFW';
+    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
       const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
         title: postType === 'complete' ? title : '',
         description: postType === 'complete' ? description : newPost,
-        category: `${mainCategory} - ${subCategory}`, // Guarda la categoría y subcategoría seleccionadas
+        category: `${mainCategory} - ${subCategory}`,
         isAdultContent,
         timestamp: new Date(),
         likes: 0,
@@ -78,19 +76,20 @@ function PostCreator({ onPostCreated }) {
 
       const postId = postRef.id;
 
-      if (croppedImage) {
+      // Subir imagen solo si es un post completo
+      if (postType === 'complete' && croppedImage) {
         const imageRef = ref(storage, `posts/${user.uid}/${postId}`);
         await uploadBytes(imageRef, croppedImage);
         const imageURL = await getDownloadURL(imageRef);
         await updateDoc(postRef, { imageURL });
       }
 
-      // Aquí forzamos a actualizar el feed después de crear una publicación
+      // Refrescar feed después de publicar
       if (onPostCreated) {
         onPostCreated();
       }
 
-      // Limpiamos los campos después de crear la publicación
+      // Limpiar campos después de la publicación
       setNewPost('');
       setTitle('');
       setDescription('');
@@ -100,33 +99,28 @@ function PostCreator({ onPostCreated }) {
     } catch (error) {
       console.error('Error al agregar publicación: ', error);
     } finally {
-      setIsPosting(false); // Oculta el spinner de carga
+      setIsPosting(false);
     }
   };
 
-  // Aquí controlamos el cambio de imagen y mostramos el cropper
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
-        if (!showCropper) {
-          setImageSrc(reader.result);
-          setShowCropper(true);
-        }
+        setImageSrc(reader.result);
+        setShowCropper(true);
       };
     }
   };
 
-  // Guardamos la imagen recortada y ocultamos el cropper
   const handleSaveCroppedImage = async (croppedFile) => {
     setCroppedImage(croppedFile);
     setImageSrc(URL.createObjectURL(croppedFile));
     setShowCropper(false); 
   };
 
-  // Cancelamos la operación de recorte
   const handleCancelCrop = () => {
     setShowCropper(false);
     setImageSrc(null); 
@@ -174,7 +168,7 @@ function PostCreator({ onPostCreated }) {
               placeholder="Título"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              maxLength={80} // Limitar a 80 caracteres
+              maxLength={80}
               required
             />
             <textarea

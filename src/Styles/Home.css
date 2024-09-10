@@ -4,8 +4,8 @@
   --background-color: #ffffff;
   --text-color: #333;
   --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  --border-color: #e6ecf0; /* Similar to Twitter's border color */
-  --warning-color: #ff6b6b; /* Light red color for warnings */
+  --border-color: #e6ecf0;
+  --warning-color: #ff6b6b;
 }
 
 body {
@@ -79,7 +79,7 @@ body {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: all 0.3s ease;
-  margin-left: -20px; /* Ajuste para moverlo hacia la izquierda */
+  margin-left: -20px;
   border-right: 1px solid var(--border-color);
 }
 
@@ -203,7 +203,7 @@ body {
     position: relative;
     width: 100%;
     height: auto;
-    margin-left: 0; /* Restablecer el margen en pantallas más pequeñas */
+    margin-left: 0;
   }
 
   .sidebar-right {

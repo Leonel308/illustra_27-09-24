@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LeftSideBar.css';
 
-// Definir los filtros disponibles para las categorías SFW y NSFW
+// Filtros por categoría SFW y NSFW
 const filters = {
   SFW: [
     'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
@@ -18,47 +18,45 @@ const filters = {
 };
 
 const LeftSidebar = ({ onFilterChange }) => {
-  // Estados para manejar la visibilidad de NSFW, término de búsqueda y filtros activos
-  const [showNSFW, setShowNSFW] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilters, setActiveFilters] = useState({
-    SFW: [],
-    NSFW: []
-  });
+  const [showNSFW, setShowNSFW] = useState(false); // Estado para manejar la visibilidad del contenido NSFW
+  const [searchTerm, setSearchTerm] = useState(''); // Término de búsqueda en los filtros
+  const [activeFilters, setActiveFilters] = useState({ SFW: [], NSFW: [] }); // Filtros seleccionados
 
+  // Efecto para actualizar los filtros en el componente padre cuando cambian
   useEffect(() => {
-    // Llama a la función onFilterChange para actualizar los filtros en el componente principal
     onFilterChange({ showNSFW, activeFilters });
   }, [showNSFW, activeFilters, onFilterChange]);
 
-  // Maneja el cambio de visibilidad del contenido NSFW
+  // Maneja el cambio de la visibilidad del contenido NSFW
   const handleNSFWToggle = () => {
-    setShowNSFW(!showNSFW);
-    setActiveFilters(prev => ({ ...prev, NSFW: [] }));
+    setShowNSFW(prevShowNSFW => !prevShowNSFW);
+    // Resetea los filtros NSFW al desactivar el contenido NSFW
+    if (!showNSFW) {
+      setActiveFilters(prevFilters => ({ ...prevFilters, NSFW: [] }));
+    }
   };
 
-  // Maneja el cambio de filtros activos
+  // Maneja la selección y deselección de filtros
   const handleFilterChange = (filterType, filter) => {
-    setActiveFilters(prev => {
-      const isFilterActive = prev[filterType].includes(filter);
-      const updatedFilters = isFilterActive
-        ? prev[filterType].filter(f => f !== filter)
-        : [...prev[filterType], filter];
-
-      return { ...prev, [filterType]: updatedFilters };
+    setActiveFilters(prevFilters => {
+      const isActive = prevFilters[filterType].includes(filter);
+      const updatedFilters = isActive
+        ? prevFilters[filterType].filter(f => f !== filter)
+        : [...prevFilters[filterType], filter];
+      return { ...prevFilters, [filterType]: updatedFilters };
     });
   };
 
-  // Renderiza los filtros según la categoría seleccionada
+  // Renderiza los filtros para cada categoría (SFW o NSFW)
   const renderFilters = () => {
-    const filterCategories = showNSFW ? ['SFW', 'NSFW'] : ['SFW'];
-    return filterCategories.map(filterType => (
+    const categories = showNSFW ? ['SFW', 'NSFW'] : ['SFW']; // Muestra NSFW solo si está activado
+    return categories.map(filterType => (
       <div key={filterType}>
         <h3 className="filter-category">{filterType === 'SFW' ? 'Filtros SFW' : 'Filtros NSFW'}</h3>
         <ul className="filter-list">
           {filters[filterType].map(filter => {
-            const lowercaseFilter = filter.toLowerCase();
-            if (lowercaseFilter.includes(searchTerm.toLowerCase())) {
+            const filterLower = filter.toLowerCase();
+            if (filterLower.includes(searchTerm.toLowerCase())) {
               return (
                 <li key={filter}>
                   <label>
@@ -81,6 +79,7 @@ const LeftSidebar = ({ onFilterChange }) => {
 
   return (
     <div className="sidebar-left">
+      {/* Barra de búsqueda para los filtros */}
       <input
         type="text"
         className="filter-search"
@@ -88,6 +87,7 @@ const LeftSidebar = ({ onFilterChange }) => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      {/* Toggle para activar/desactivar contenido NSFW */}
       <label className="nsfw-toggle">
         <input
           type="checkbox"
@@ -96,6 +96,7 @@ const LeftSidebar = ({ onFilterChange }) => {
         />
         Mostrar contenido NSFW
       </label>
+      {/* Renderizado de los filtros */}
       {renderFilters()}
     </div>
   );
