@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db, storage } from '../../firebaseConfig';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'; // Aquí se agrega updateDoc
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'; 
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import '../../Styles/ProfileStyles/ProfileServices.css';
@@ -18,7 +18,6 @@ const ProfileServices = ({ isOwner, userId }) => {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const navigate = useNavigate();
 
-  // Manejo de cambios en los campos del formulario
   const handleServiceImageChange = (e) => setServiceImage(e.target.files[0]);
 
   const handleTitleChange = (e) => {
@@ -61,14 +60,13 @@ const ProfileServices = ({ isOwner, userId }) => {
         description: serviceDescription,
         price: parseFloat(servicePrice),
         imageUrl: serviceImageUrl,
-        serviceID: '', // Aquí se inicializa como vacío y se llenará después de la creación
+        serviceID: '', 
         createdAt: new Date(),
       };
 
       const servicesRef = collection(db, 'users', userId, 'Services');
       const addedService = await addDoc(servicesRef, newService);
 
-      // Ahora actualizamos el documento recién creado con el ID generado
       const serviceID = addedService.id;
       const serviceDocRef = doc(db, 'users', userId, 'Services', serviceID);
       await updateDoc(serviceDocRef, { serviceID });
@@ -192,7 +190,7 @@ const ProfileServices = ({ isOwner, userId }) => {
                 {!isOwner && (
                   <button 
                     className="hire-button" 
-                    onClick={() => navigate(`/solicitudServicio/${service.serviceID}`)}
+                    onClick={() => navigate(`/service-request/${userId}/${service.serviceID}`)}
                   >
                     Contratar
                   </button>

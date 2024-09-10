@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, collection, getDocs, query, where, limit, updateDoc, getDoc } from 'firebase/firestore';
 import { FaBell, FaSearch, FaBars, FaPlus } from 'react-icons/fa';
@@ -14,8 +14,8 @@ export default function Header() {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [balance, setBalance] = useState(0.00);
-  const [pendingBalance, setPendingBalance] = useState(0.00);
+  const [balance, setBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,12 +25,17 @@ export default function Header() {
   const [animateBell, setAnimateBell] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const dropdownRef = useRef(null);
+  const notificationsRef = useRef(null);
+
   const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
+    setDropdownVisible((prev) => !prev);
+    setNotificationsVisible(false);
   };
 
   const toggleNotifications = () => {
-    setNotificationsVisible(!notificationsVisible);
+    setNotificationsVisible((prev) => !prev);
+    setDropdownVisible(false);
   };
 
   const handleLogout = async () => {
@@ -45,16 +50,14 @@ export default function Header() {
   useEffect(() => {
     if (user) {
       const userRef = doc(db, 'users', user.uid);
-
       const unsubscribe = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
           const userData = doc.data();
-          setBalance(userData.balance || 0.00);
-          setPendingBalance(userData.pendingBalance || 0.00);
+          setBalance(userData.balance || 0);
+          setPendingBalance(userData.pendingBalance || 0);
           setProfilePic(userData.photoURL || defaultProfilePic);
         }
       });
-
       return () => unsubscribe();
     }
   }, [user]);
@@ -64,16 +67,29 @@ export default function Header() {
       const notificationsRef = collection(db, 'users', user.uid, 'Notifications');
       const unsubscribe = onSnapshot(notificationsRef, (snapshot) => {
         setHasNotifications(!snapshot.empty);
-
         if (!snapshot.empty) {
           setAnimateBell(true);
           setTimeout(() => setAnimateBell(false), 1000);
         }
       });
-
       return () => unsubscribe();
     }
   }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownVisible(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setNotificationsVisible(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleSearchChange = async (e) => {
     const queryText = e.target.value.trim();
@@ -109,14 +125,14 @@ export default function Header() {
     if (userDoc.exists()) {
       const userData = userDoc.data();
       const newBalance = Number(userData.balance || 0) + amount;
-
       await updateDoc(userRef, { balance: newBalance });
       setBalance(newBalance);
       setShowAddBalanceModal(false);
     }
   };
 
-  const handleAddBalanceClick = () => {
+  const handleAddBalanceClick = (e) => {
+    e.stopPropagation();
     setShowAddBalanceModal(true);
   };
 
@@ -151,25 +167,27 @@ export default function Header() {
           <Link className="header-button" to="/explore-posts">Explorar</Link>
           {user ? (
             <>
-              <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>Crear Publicación</button>
-              <div className="header-notifications" onClick={toggleNotifications}>
+              <button className="header-button create-post-button" onClick={() => navigate('/create-post')}>
+                Crear Publicación
+              </button>
+              <div className="header-notifications" onClick={toggleNotifications} ref={notificationsRef}>
                 <div className={`header-notifications-icon ${animateBell ? 'notification-bounce' : ''}`}>
                   <FaBell size={28} color={hasNotifications ? "#ff1493" : "#000"} />
                   {hasNotifications && <span className="header-notifications-badge"></span>}
                 </div>
                 {notificationsVisible && (
-                  <div className="header-notifications-dropdown">
+                  <div className="header-notifications-dropdown visible">
                     <Notifications />
                   </div>
                 )}
               </div>
-              <div className="header-user" onClick={toggleDropdown}>
+              <div className="header-user" onClick={toggleDropdown} ref={dropdownRef}>
                 <img src={profilePic} alt="Profile" className="header-profile-pic" />
                 <span className="header-username">{user.username}</span>
                 {dropdownVisible && (
-                  <div className="header-dropdown">
-                    <div className="header-dropdown-item balance">
-                      Balance: {balance.toFixed(2)}$ <button className="add-balance-btn" onClick={handleAddBalanceClick}><FaPlus /></button>
+                  <div className="header-dropdown visible">
+                    <div className="header-dropdown-item balance" onClick={handleAddBalanceClick}>
+                      Balance: {balance.toFixed(2)}$ <FaPlus />
                     </div>
                     <div className="header-dropdown-item pending">Pendiente: {pendingBalance.toFixed(2)}$</div>
                     <Link to={`/profile/${user.uid}`} className="header-dropdown-item">Perfil</Link>

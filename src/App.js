@@ -46,6 +46,7 @@ function App() {
           <Route path="/dashboard" element={<Layout><UserDashboard /></Layout>} />
           <Route path="/admin-dashboard" element={<Layout><AdminDashboard /></Layout>} />
           <Route path="/workbench" element={<Layout><Workbench /></Layout>} />
+          {/* Ruta ajustada para la solicitud de servicio */}
           <Route path="/service-request/:illustratorID/:serviceId" element={<Layout><ServiceRequest /></Layout>} />
           <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
           <Route path="/service-details-worker/:requestId/:clientId" element={<Layout><ServiceDetailsWorker /></Layout>} />

@@ -8,7 +8,7 @@ import UserContext from '../../context/UserContext';
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext);
-  const { serviceId, illustratorID } = useParams();
+  const { illustratorID, serviceId } = useParams();
   const navigate = useNavigate();
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState([]);
@@ -21,6 +21,7 @@ const ServiceRequest = () => {
     const fetchServiceDetails = async () => {
       try {
         if (illustratorID && serviceId) {
+          console.log(`Fetching service with ID: ${serviceId} from illustrator: ${illustratorID}`);
           const serviceRef = doc(db, 'users', illustratorID, 'Services', serviceId);
           const serviceDoc = await getDoc(serviceRef);
 
@@ -36,6 +37,8 @@ const ServiceRequest = () => {
           } else {
             setError('El servicio no existe.');
           }
+        } else {
+          setError('Los parámetros de servicio no son válidos.');
         }
       } catch (error) {
         console.error('Error fetching service details:', error);
