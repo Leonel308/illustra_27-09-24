@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
 import { doc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
-import { MessageCircle, Heart, Share2, Trash2, Send } from 'lucide-react';
+import { Heart, Share2, Trash2, Send } from 'lucide-react';
 import './inspectPost.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";

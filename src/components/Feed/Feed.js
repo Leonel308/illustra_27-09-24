@@ -1,52 +1,40 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
-import { collection, onSnapshot, doc, getDoc, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, query, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
 import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
 import PostCreator from '../HomeComponents/PostCreator';
 import '../../Styles/Feed.css';
 
-function Feed({ showNSFW, userId }) {
+function Feed({ showNSFW }) {
   const { user } = useContext(UserContext);
-  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [likeProcessing, setLikeProcessing] = useState({});
 
-  // Función para obtener los posts
+  // Function to fetch posts
   const updateFeed = () => {
     const postsCollection = collection(db, 'PostsCollection');
     const nsfwCollection = collection(db, 'PostsCollectionMature');
 
-    // Consultas por SFW y NSFW posts
+    // Queries for SFW and NSFW posts
     let sfwQuery = query(postsCollection, orderBy('timestamp', 'desc'));
     let nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc'));
 
-    // Si se proporciona userId, filtramos solo las publicaciones de ese usuario
-    if (userId) {
-      sfwQuery = query(postsCollection, where('userID', '==', userId), orderBy('timestamp', 'desc'));
-      nsfwQuery = query(nsfwCollection, where('userID', '==', userId), orderBy('timestamp', 'desc'));
-    }
-
-    // Ejecuta la consulta SFW y añade publicaciones NSFW si se habilita la opción
+    // Execute the SFW query and add NSFW posts if the option is enabled
     const unsubscribeSFW = onSnapshot(sfwQuery, async (snapshot) => {
-      console.log('SFW Snapshot size: ', snapshot.size); // Depuración
-
       const postsList = await Promise.all(
         snapshot.docs.map(async (postDoc) => {
           const postData = postDoc.data();
 
-          // Verificar campos esenciales para evitar errores
+          // Validate essential fields to avoid errors
           if (!postData || !postData.userID || !postData.description) {
-            console.error('Datos de publicación inválidos', postDoc.id);
             return null;
           }
 
-          // Obtener datos del usuario
+          // Get user data
           const userDocRef = doc(db, 'users', postData.userID);
           const userDoc = await getDoc(userDocRef);
           if (!userDoc.exists()) {
-            console.error('No se encontró el documento del usuario', postData.userID);
             return null;
           }
 
@@ -62,32 +50,27 @@ function Feed({ showNSFW, userId }) {
         })
       );
 
-      // Filtramos publicaciones válidas
+      // Filter valid posts and set them in the state
       const validPosts = postsList.filter(post => post !== null);
-      console.log('SFW Valid Posts: ', validPosts); // Depuración
       setPosts(validPosts);
     });
 
-    // Solo añadimos las publicaciones NSFW si showNSFW está activo
+    // Only fetch NSFW posts if showNSFW is true
     const unsubscribeNSFW = onSnapshot(nsfwQuery, async (snapshot) => {
       if (showNSFW) {
-        console.log('NSFW Snapshot size: ', snapshot.size); // Depuración
-
         const postsList = await Promise.all(
           snapshot.docs.map(async (postDoc) => {
             const postData = postDoc.data();
 
-            // Verificar campos esenciales para evitar errores
+            // Validate essential fields to avoid errors
             if (!postData || !postData.userID || !postData.description) {
-              console.error('Datos de publicación inválidos', postDoc.id);
               return null;
             }
 
-            // Obtener datos del usuario
+            // Get user data
             const userDocRef = doc(db, 'users', postData.userID);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
-              console.error('No se encontró el documento del usuario', postData.userID);
               return null;
             }
 
@@ -103,9 +86,8 @@ function Feed({ showNSFW, userId }) {
           })
         );
 
-        // Filtramos publicaciones válidas y añadimos a las publicaciones SFW
+        // Filter valid posts and append to the existing SFW posts
         const validPosts = postsList.filter(post => post !== null);
-        console.log('NSFW Valid Posts: ', validPosts); // Depuración
         setPosts(prevPosts => [...prevPosts, ...validPosts]);
       }
     });
@@ -116,9 +98,9 @@ function Feed({ showNSFW, userId }) {
     };
   };
 
-  useEffect(updateFeed, [showNSFW, userId, user?.uid]);
+  useEffect(updateFeed, [showNSFW, user?.uid]);
 
-  // Función para dar like a una publicación
+  // Function to like a post
   const handleLikePost = async (postId, currentLikes, isLiked) => {
     if (likeProcessing[postId]) return;
 
@@ -134,54 +116,60 @@ function Feed({ showNSFW, userId }) {
           : arrayUnion(user.uid)
       });
     } catch (error) {
-      console.error('Error al actualizar likes: ', error);
+      console.error('Error updating likes:', error);
     } finally {
       setLikeProcessing(prev => ({ ...prev, [postId]: false }));
     }
   };
 
-  // Función para eliminar una publicación
+  // Function to delete a post
   const handleDeletePost = async (postId) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")) return;
 
     try {
       await deleteDoc(doc(db, 'PostsCollection', postId));
     } catch (error) {
-      console.error('Error al eliminar publicación: ', error);
+      console.error('Error deleting post:', error);
     }
   };
 
-  // Función para manejar clic en una publicación
+  // Function to handle click on a post
   const handlePostClick = (postId) => {
-    navigate(`/inspectPost/${postId}`);
+    // Implement navigation logic here if needed
+    console.log("Clicked post with ID:", postId);
   };
 
-  // Función para compartir una publicación
+  // Function to share a post
   const handleSharePost = async (postId) => {
     const postUrl = `${window.location.origin}/inspectPost/${postId}`;
     if (navigator.share) {
-      navigator.share({
-        title: "¡Mira esta publicación!",
-        text: "¡Aquí hay algo interesante!",
-        url: postUrl,
-      }).catch((error) => console.error('Error al compartir', error));
+      try {
+        await navigator.share({
+          title: "¡Mira esta publicación!",
+          text: "¡Aquí hay algo interesante!",
+          url: postUrl,
+        });
+      } catch (error) {
+        console.error('Error sharing post:', error);
+      }
     } else {
-      navigator.clipboard.writeText(postUrl).then(() => {
+      try {
+        await navigator.clipboard.writeText(postUrl);
         alert('Enlace copiado al portapapeles');
-      }, (error) => {
-        console.error('Error al copiar texto', error);
-      });
+      } catch (error) {
+        console.error('Error copying post URL:', error);
+      }
     }
   };
 
-  // Renderización de las publicaciones
+  // Render posts
   const renderPosts = () => {
     if (posts.length === 0) {
       return <div className="feed-empty">No hay publicaciones para mostrar</div>;
     }
 
     return posts.map(post => (
-      <div key={post.id} className="feed-post" onClick={() => handlePostClick(post.id)}>
+      <div key={post.id} className="feed-post">
         <div className="feed-post-header">
           <img src={post.userPhotoURL} alt={post.username} className="feed-user-avatar" />
           <span className="feed-username">{post.username}</span>
@@ -193,7 +181,6 @@ function Feed({ showNSFW, userId }) {
               src={post.imageURL}
               alt={post.description}
               className="feed-post-image"
-              style={{ cursor: 'pointer' }}
             />
           </div>
         )}
@@ -203,7 +190,7 @@ function Feed({ showNSFW, userId }) {
           <div className="feed-post-actions">
             <button
               className={`action-button ${post.isLiked ? 'liked' : ''}`}
-              onClick={(e) => { e.stopPropagation(); handleLikePost(post.id, post.likes, post.isLiked); }}
+              onClick={() => handleLikePost(post.id, post.likes, post.isLiked)}
               disabled={likeProcessing[post.id]}
             >
               <Heart className="action-icon" />
@@ -211,14 +198,14 @@ function Feed({ showNSFW, userId }) {
             </button>
             <button
               className="action-button"
-              onClick={(e) => { e.stopPropagation(); handlePostClick(post.id); }}
+              onClick={() => handlePostClick(post.id)}
             >
               <MessageCircle className="action-icon" />
               <span>Comentar</span>
             </button>
             <button
               className="action-button"
-              onClick={(e) => { e.stopPropagation(); handleSharePost(post.id); }}
+              onClick={() => handleSharePost(post.id)}
             >
               <Share2 className="action-icon" />
               <span>Compartir</span>
@@ -226,7 +213,7 @@ function Feed({ showNSFW, userId }) {
             {user?.role === 'admin' && (
               <button
                 className="action-button delete-button"
-                onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}
+                onClick={() => handleDeletePost(post.id)}
               >
                 <Trash2 className="action-icon" />
                 <span>Eliminar</span>

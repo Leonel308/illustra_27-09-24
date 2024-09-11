@@ -1,0 +1,260 @@
+.explore-posts-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  color: #14171a;
+  border-radius: 10px;
+  border: 1px solid #e1e8ed;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.explore-posts-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.explore-posts-category-filter,
+.explore-posts-search-filter {
+  padding: 8px;
+  border: 1px solid #e1e8ed;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.explore-posts-category-filter {
+  width: 150px;
+}
+
+.explore-posts-search-filter {
+  width: 200px;
+}
+
+.explore-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.explore-post {
+  padding: 15px;
+  background-color: #f5f8fa;
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-post:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajuste del encabezado para alinear el nombre y el botón */
+.explore-post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.explore-post-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.explore-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.explore-username {
+  font-weight: bold;
+  color: #14171a;
+  font-size: 14px;
+}
+
+.explore-post-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #14171a;
+  margin: 10px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.explore-post-image-container {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.explore-post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.explore-post-description {
+  font-size: 12px;
+  color: #657786;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.explore-post-category {
+  font-size: 11px;
+  color: #657786;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nsfw-tag {
+  background-color: #e0245e;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Mejorar el estilo de la fecha */
+.explore-post-creation-date {
+  font-size: 12px;
+  font-weight: bold;
+  color: #1da1f2;
+  text-align: right;
+  margin-top: 10px;
+}
+
+.explore-post-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.explore-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: transparent;
+  border: 1px solid #1da1f2;
+  border-radius: 20px;
+  color: #1da1f2;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+  font-size: 12px;
+  font-weight: 500;
+  flex: 1;
+  max-width: 80px;
+}
+
+.explore-action-button:hover {
+  background-color: #1da1f2;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.explore-action-button.liked {
+  background-color: #1da1f2;
+  color: white;
+}
+
+.explore-delete-button {
+  border-color: #e0245e;
+  color: #e0245e;
+  background-color: transparent;
+  padding: 4px 8px;
+}
+
+.explore-delete-button:hover {
+  background-color: #e0245e;
+  color: white;
+}
+
+.explore-action-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.explore-posts-loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+  color: #657786;
+}
+
+.nsfw-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nsfw-switch input {
+  appearance: none;
+  width: 40px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nsfw-switch input:checked {
+  background-color: #1da1f2;
+}
+
+.nsfw-switch input::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  top: 1px;
+  left: 1px;
+  background-color: white;
+  transition: transform 0.3s;
+}
+
+.nsfw-switch input:checked::before {
+  transform: translateX(20px);
+}
+
+@media (max-width: 768px) {
+  .explore-posts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .explore-posts-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .explore-posts-category-filter,
+  .explore-posts-search-filter {
+    width: 100%;
+  }
+
+  .explore-action-button {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}

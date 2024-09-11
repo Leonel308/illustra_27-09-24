@@ -21,6 +21,7 @@ import Notifications from './components/Notifications';
 import ServiceDetailsWorker from './components/Services/ServiceDetailsWorker';
 import ServiceDetailsUser from './components/Services/ServiceDetailsUser';
 import InspectPost from './components/Feed/inspectPost';
+import ExplorePosts from './components/explorePosts'; // Importamos el nuevo componente
 import { UserProvider } from './context/UserContext';
 import Layout from './components/Layout';
 
@@ -46,12 +47,12 @@ function App() {
           <Route path="/dashboard" element={<Layout><UserDashboard /></Layout>} />
           <Route path="/admin-dashboard" element={<Layout><AdminDashboard /></Layout>} />
           <Route path="/workbench" element={<Layout><Workbench /></Layout>} />
-          {/* Ruta ajustada para la solicitud de servicio */}
           <Route path="/service-request/:illustratorID/:serviceId" element={<Layout><ServiceRequest /></Layout>} />
           <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
           <Route path="/service-details-worker/:requestId/:clientId" element={<Layout><ServiceDetailsWorker /></Layout>} />
           <Route path="/service-details-user/:requestId/:clientId" element={<Layout><ServiceDetailsUser /></Layout>} />
           <Route path="/inspectPost/:postId" element={<Layout><InspectPost /></Layout>} />
+          <Route path="/explore-posts" element={<Layout><ExplorePosts /></Layout>} /> {/* Nueva ruta */}
         </Routes>
       </Router>
     </UserProvider>
