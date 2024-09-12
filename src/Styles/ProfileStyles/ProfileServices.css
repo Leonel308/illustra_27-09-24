@@ -12,7 +12,7 @@
   color: #8a2be2;
 }
 
-.add-service-button {
+.services-add-button {
   background-color: #ff69b4;
   color: white;
   padding: 0.5rem 1rem;
@@ -23,19 +23,19 @@
   margin-bottom: 1rem;
 }
 
-.add-service-button:hover {
+.services-add-button:hover {
   background-color: #ff1493;
 }
 
-.add-service-form {
+.services-form {
   background-color: #f8e1ff;
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 2rem;
 }
 
-.add-service-form input,
-.add-service-form textarea {
+.services-form input,
+.services-form textarea {
   width: 100%;
   padding: 0.5rem;
   margin-bottom: 1rem;
@@ -43,7 +43,7 @@
   border-radius: 4px;
 }
 
-.add-service-form button {
+.services-form button {
   background-color: #8a2be2;
   color: white;
   padding: 0.5rem 1rem;
@@ -52,11 +52,11 @@
   cursor: pointer;
 }
 
-.add-service-form button:hover {
+.services-form button:hover {
   background-color: #9400d3;
 }
 
-.error {
+.services-error {
   color: #ff3e3e;
   margin-top: 0.5rem;
 }
@@ -67,7 +67,7 @@
   gap: 2rem;
 }
 
-.service-card {
+.services-card {
   background-color: white;
   border: 1px solid #e4e5e7;
   border-radius: 4px;
@@ -75,16 +75,16 @@
   transition: box-shadow 0.3s ease;
 }
 
-.service-card:hover {
+.services-card:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.service-image-container {
+.services-image-container {
   position: relative;
   padding-top: 56.25%; /* 16:9 aspect ratio */
 }
 
-.service-image {
+.services-image {
   position: absolute;
   top: 0;
   left: 0;
@@ -93,29 +93,29 @@
   object-fit: cover;
 }
 
-.service-info {
+.services-info {
   padding: 1rem;
 }
 
-.service-info h3 {
+.services-info h3 {
   font-size: 18px;
   margin-bottom: 0.5rem;
   color: #8a2be2;
 }
 
-.service-description {
+.services-description {
   font-size: 14px;
   color: #666;
   margin-bottom: 0.5rem;
 }
 
-.service-price {
+.services-price {
   font-weight: bold;
   color: #ff69b4;
   margin-bottom: 0.5rem;
 }
 
-.hire-button {
+.services-hire-button {
   width: 100%;
   padding: 0.5rem;
   background-color: #8a2be2;
@@ -126,11 +126,11 @@
   transition: background-color 0.3s ease;
 }
 
-.hire-button:hover {
+.services-hire-button:hover {
   background-color: #9400d3;
 }
 
-.delete-button {
+.services-delete-button {
   width: 100%;
   padding: 0.5rem;
   background-color: #ff69b4;
@@ -139,11 +139,11 @@
   cursor: pointer;
 }
 
-.delete-button:hover {
+.services-delete-button:hover {
   background-color: #ff1493;
 }
 
-.confirm-delete {
+.services-confirm-delete {
   background-color: #ffe0e0;
   padding: 1rem;
   border-radius: 4px;
@@ -152,23 +152,23 @@
   justify-content: space-between;
 }
 
-.confirm-delete button {
+.services-confirm-delete button {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.confirm-delete button:first-of-type {
+.services-confirm-delete button:first-of-type {
   background-color: #ff3e3e;
   color: white;
 }
 
-.confirm-delete button:last-of-type {
+.services-confirm-delete button:last-of-type {
   background-color: #ccc;
 }
 
-.view-all-button {
+.services-view-all-button {
   display: block;
   margin: 2rem auto 0;
   padding: 0.5rem 1rem;
@@ -180,7 +180,7 @@
   font-size: 16px;
 }
 
-.view-all-button:hover {
+.services-view-all-button:hover {
   background-color: #8a2be2;
   color: white;
 }

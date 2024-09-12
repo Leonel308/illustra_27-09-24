@@ -4,8 +4,8 @@ import { db } from '../firebaseConfig';
 import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import UserContext from '../context/UserContext';
 import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
+import { format } from 'date-fns';
 import '../Styles/ExplorePosts.css';
-import { format } from 'date-fns'; // Usamos date-fns para formatear las fechas
 
 function ExplorePosts() {
   const { user } = useContext(UserContext);
@@ -18,13 +18,11 @@ function ExplorePosts() {
   const [likeProcessing, setLikeProcessing] = useState({});
   const [showNSFW, setShowNSFW] = useState(false);
 
-  // Memoiza handleSnapshot para evitar problemas de dependencia en useEffect
   const handleSnapshot = useCallback(async (snapshot, isNSFW) => {
     const postsList = await Promise.all(
       snapshot.docs.map(async (postDoc) => {
         const postData = postDoc.data();
 
-        // Ignorar posts que no tienen userID o son plantillas sin mostrar errores en consola
         if (!postData.userID || postDoc.id.includes('Template')) {
           return null;
         }
@@ -34,7 +32,6 @@ function ExplorePosts() {
           const userDoc = await getDoc(userDocRef);
           const userData = userDoc.exists() ? userDoc.data() : {};
 
-          // Formateamos la fecha de creación (timestamp)
           const creationDate = postData.timestamp ? format(postData.timestamp.toDate(), 'dd/MM/yyyy') : 'Fecha desconocida';
 
           return {
@@ -44,7 +41,7 @@ function ExplorePosts() {
             userPhotoURL: userData.photoURL || '',
             isLiked: postData.likedBy?.includes(user?.uid) || false,
             isNSFW: isNSFW,
-            creationDate: creationDate // Agregamos la fecha de creación
+            creationDate: creationDate
           };
         } catch (error) {
           return null;
@@ -55,9 +52,9 @@ function ExplorePosts() {
     const validPosts = postsList.filter(post => post !== null);
 
     if (isNSFW) {
-      setNSFWPosts(validPosts); // Guardamos los posts NSFW separados
+      setNSFWPosts(validPosts);
     } else {
-      setPosts(validPosts); // Guardamos los posts normales
+      setPosts(validPosts);
     }
 
     setLoading(false);
@@ -204,7 +201,7 @@ function ExplorePosts() {
               Categoría: {post.category}
               {post.isNSFW && <span className="nsfw-tag">NSFW</span>}
             </p>
-            <p className="explore-post-creation-date">{post.creationDate}</p> {/* Fecha sin "Publicado el" */}
+            <p className="explore-post-creation-date">{post.creationDate}</p>
             <div className="explore-post-actions">
               <button
                 className={`explore-action-button ${post.isLiked ? 'liked' : ''}`}
@@ -218,14 +215,14 @@ function ExplorePosts() {
                 className="explore-action-button"
                 onClick={(e) => { e.stopPropagation(); handlePostClick(post.id); }}
               >
-                <MessageCircle className="explore-action-icon" />
+                <MessageCircle className="explore-action-icon" data-icon="message-circle" />
                 <span>Comentar</span>
               </button>
               <button
                 className="explore-action-button"
                 onClick={(e) => { e.stopPropagation(); handleSharePost(post.id); }}
               >
-                <Share2 className="explore-action-icon" />
+                <Share2 className="explore-action-icon" data-icon="share" />
                 <span>Compartir</span>
               </button>
             </div>

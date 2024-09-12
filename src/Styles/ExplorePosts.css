@@ -2,63 +2,73 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #ffffff;
+  background-color: #f7f9fa;
   color: #14171a;
-  border-radius: 10px;
-  border: 1px solid #e1e8ed;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .explore-posts-filters {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .explore-posts-category-filter,
 .explore-posts-search-filter {
-  padding: 8px;
+  padding: 10px 12px;
   border: 1px solid #e1e8ed;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.explore-posts-category-filter:focus,
+.explore-posts-search-filter:focus {
+  outline: none;
+  border-color: #1da1f2;
+  box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.2);
 }
 
 .explore-posts-category-filter {
-  width: 150px;
+  width: 180px;
 }
 
 .explore-posts-search-filter {
-  width: 200px;
+  width: 240px;
 }
 
 .explore-posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 
 .explore-post {
-  padding: 15px;
-  background-color: #f5f8fa;
-  border-radius: 8px;
+  background-color: #ffffff;
+  border-radius: 12px;
   border: 1px solid #e1e8ed;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
+  transition: box-shadow 0.3s, transform 0.3s;
+  overflow: hidden;
 }
 
 .explore-post:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
-/* Ajuste del encabezado para alinear el nombre y el botón */
 .explore-post-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 16px;
+  border-bottom: 1px solid #e1e8ed;
 }
 
 .explore-post-header-left {
@@ -70,20 +80,21 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 12px;
+  object-fit: cover;
 }
 
 .explore-username {
-  font-weight: bold;
+  font-weight: 600;
   color: #14171a;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .explore-post-title {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 700;
   color: #14171a;
-  margin: 10px 0;
+  margin: 16px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,22 +102,25 @@
 
 .explore-post-image-container {
   width: 100%;
-  height: 150px;
+  height: 200px;
   overflow: hidden;
-  border-radius: 8px;
-  margin-bottom: 10px;
 }
 
 .explore-post-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.explore-post:hover .explore-post-image {
+  transform: scale(1.05);
 }
 
 .explore-post-description {
-  font-size: 12px;
+  font-size: 14px;
   color: #657786;
-  margin-bottom: 10px;
+  margin: 16px;
   word-wrap: break-word;
   overflow-wrap: break-word;
   display: -webkit-box;
@@ -116,9 +130,9 @@
 }
 
 .explore-post-category {
-  font-size: 11px;
+  font-size: 12px;
   color: #657786;
-  margin-bottom: 10px;
+  margin: 0 16px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -127,49 +141,49 @@
 .nsfw-tag {
   background-color: #e0245e;
   color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
+  padding: 4px 8px;
+  border-radius: 12px;
   font-size: 10px;
-  font-weight: bold;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-/* Mejorar el estilo de la fecha */
 .explore-post-creation-date {
   font-size: 12px;
-  font-weight: bold;
-  color: #1da1f2;
+  color: #657786;
   text-align: right;
-  margin-top: 10px;
+  margin: 0 16px 16px;
 }
 
 .explore-post-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: auto;
+  padding: 12px 16px;
+  background-color: #f7f9fa;
+  border-top: 1px solid #e1e8ed;
 }
 
 .explore-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 8px 14px;
   background-color: transparent;
   border: 1px solid #1da1f2;
   border-radius: 20px;
   color: #1da1f2;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s, transform 0.2s;
-  font-size: 12px;
-  font-weight: 500;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 600;
   flex: 1;
-  max-width: 80px;
+  max-width: 110px;
 }
 
 .explore-action-button:hover {
   background-color: #1da1f2;
   color: white;
-  transform: translateY(-2px);
 }
 
 .explore-action-button.liked {
@@ -180,8 +194,7 @@
 .explore-delete-button {
   border-color: #e0245e;
   color: #e0245e;
-  background-color: transparent;
-  padding: 4px 8px;
+  padding: 6px 10px;
 }
 
 .explore-delete-button:hover {
@@ -190,29 +203,43 @@
 }
 
 .explore-action-icon {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
+}
+
+.explore-action-button .explore-action-icon[data-icon="message-circle"],
+.explore-action-button .explore-action-icon[data-icon="share"] {
+  width: 28px;
+  height: 28px;
+}
+
+.explore-action-button:has(.explore-action-icon[data-icon="message-circle"]),
+.explore-action-button:has(.explore-action-icon[data-icon="share"]) {
+  padding: 6px 12px;
 }
 
 .explore-posts-loading {
   text-align: center;
-  padding: 20px;
+  padding: 40px;
   font-size: 18px;
   color: #657786;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .nsfw-switch {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .nsfw-switch input {
   appearance: none;
-  width: 40px;
-  height: 20px;
+  width: 48px;
+  height: 24px;
   background-color: #ccc;
-  border-radius: 20px;
+  border-radius: 24px;
   position: relative;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -225,27 +252,31 @@
 .nsfw-switch input::before {
   content: '';
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  top: 1px;
-  left: 1px;
+  top: 2px;
+  left: 2px;
   background-color: white;
   transition: transform 0.3s;
 }
 
 .nsfw-switch input:checked::before {
-  transform: translateX(20px);
+  transform: translateX(24px);
 }
 
 @media (max-width: 768px) {
+  .explore-posts-container {
+    padding: 16px;
+  }
+
   .explore-posts-grid {
     grid-template-columns: 1fr;
   }
 
   .explore-posts-filters {
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
 
   .explore-posts-category-filter,
@@ -253,8 +284,19 @@
     width: 100%;
   }
 
+  .explore-action-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .explore-action-button .explore-action-icon[data-icon="message-circle"],
+  .explore-action-button .explore-action-icon[data-icon="share"] {
+    width: 24px;
+    height: 24px;
+  }
+
   .explore-action-button {
-    font-size: 10px;
-    padding: 4px 8px;
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }

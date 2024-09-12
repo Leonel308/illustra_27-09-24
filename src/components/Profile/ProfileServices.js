@@ -6,16 +6,16 @@ import { useNavigate } from 'react-router-dom';
 import '../../Styles/ProfileStyles/ProfileServices.css';
 
 const ProfileServices = ({ isOwner, userId }) => {
-  const [services, setServices] = useState([]);
+  const [servicesList, setServicesList] = useState([]);
   const [serviceTitle, setServiceTitle] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
   const [servicePrice, setServicePrice] = useState('');
   const [serviceImage, setServiceImage] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [loadingServices, setLoadingServices] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [serviceError, setServiceError] = useState('');
+  const [loadingService, setLoadingService] = useState(false);
+  const [loadingServicesList, setLoadingServicesList] = useState(true);
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [confirmServiceDelete, setConfirmServiceDelete] = useState(null);
   const navigate = useNavigate();
 
   const handleServiceImageChange = (e) => setServiceImage(e.target.files[0]);
@@ -34,21 +34,21 @@ const ProfileServices = ({ isOwner, userId }) => {
 
   const handlePriceChange = (e) => setServicePrice(e.target.value);
 
-  const validateForm = () => {
+  const validateServiceForm = () => {
     if (!serviceTitle || !serviceDescription || !servicePrice || !serviceImage) {
-      setError('Todos los campos son obligatorios.');
+      setServiceError('Todos los campos son obligatorios.');
       return false;
     }
     if (!/^\d+(\.\d{1,2})?$/.test(servicePrice)) {
-      setError('El precio debe ser un número válido con máximo 2 decimales.');
+      setServiceError('El precio debe ser un número válido con máximo 2 decimales.');
       return false;
     }
     return true;
   };
 
   const handleAddService = async () => {
-    if (!validateForm()) return;
-    setLoading(true);
+    if (!validateServiceForm()) return;
+    setLoadingService(true);
     try {
       const serviceImageRef = ref(storage, `services/${userId}/${serviceImage.name}`);
       await uploadBytes(serviceImageRef, serviceImage);
@@ -71,78 +71,78 @@ const ProfileServices = ({ isOwner, userId }) => {
       const serviceDocRef = doc(db, 'users', userId, 'Services', serviceID);
       await updateDoc(serviceDocRef, { serviceID });
 
-      setServices((prev) => [...prev, { ...newService, serviceID }]);
-      resetForm();
+      setServicesList((prev) => [...prev, { ...newService, serviceID }]);
+      resetServiceForm();
     } catch (error) {
       console.error('Error al añadir el servicio:', error);
-      setError('Error al añadir el servicio. Inténtalo de nuevo.');
+      setServiceError('Error al añadir el servicio. Inténtalo de nuevo.');
     } finally {
-      setLoading(false);
+      setLoadingService(false);
     }
   };
 
-  const resetForm = () => {
+  const resetServiceForm = () => {
     setServiceTitle('');
     setServiceDescription('');
     setServicePrice('');
     setServiceImage(null);
-    setError('');
-    setShowForm(false);
+    setServiceError('');
+    setShowServiceForm(false);
   };
 
   const handleDeleteService = async (serviceId, imageUrl) => {
-    setLoading(true);
+    setLoadingService(true);
     try {
       const serviceRef = doc(db, 'users', userId, 'Services', serviceId);
       await deleteDoc(serviceRef);
       const imageRef = ref(storage, `services/${userId}/${imageUrl.split('%2F')[2].split('?')[0]}`);
       await deleteObject(imageRef);
 
-      setServices((prev) => prev.filter((service) => service.serviceID !== serviceId));
-      setConfirmDelete(null);
+      setServicesList((prev) => prev.filter((service) => service.serviceID !== serviceId));
+      setConfirmServiceDelete(null);
     } catch (error) {
       console.error('Error al eliminar el servicio:', error);
-      setError('Error al eliminar el servicio. Inténtalo de nuevo.');
+      setServiceError('Error al eliminar el servicio. Inténtalo de nuevo.');
     } finally {
-      setLoading(false);
+      setLoadingService(false);
     }
   };
 
-  const reloadServices = useCallback(async () => {
-    setLoadingServices(true);
+  const reloadServicesList = useCallback(async () => {
+    setLoadingServicesList(true);
     try {
       const servicesRef = collection(db, 'users', userId, 'Services');
       const querySnapshot = await getDocs(servicesRef);
 
-      const servicesList = querySnapshot.docs.map((doc) => ({
+      const servicesData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         price: doc.data().price || 0,
       }));
-      setServices(servicesList);
+      setServicesList(servicesData);
     } catch (error) {
       console.error('Error al cargar los servicios:', error);
-      setError('Error al cargar los servicios. Inténtalo de nuevo.');
+      setServiceError('Error al cargar los servicios. Inténtalo de nuevo.');
     } finally {
-      setLoadingServices(false);
+      setLoadingServicesList(false);
     }
   }, [userId]);
 
   useEffect(() => {
-    reloadServices();
-  }, [reloadServices]);
+    reloadServicesList();
+  }, [reloadServicesList]);
 
   return (
     <div className="services-container">
       <h2 className="services-title">Mis Servicios</h2>
       {isOwner && (
-        <button className="add-service-button" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : 'Añadir Nuevo Servicio'}
+        <button className="services-add-button" onClick={() => setShowServiceForm(!showServiceForm)}>
+          {showServiceForm ? 'Cancelar' : 'Añadir Nuevo Servicio'}
         </button>
       )}
 
-      {showForm && (
-        <div className="add-service-form">
+      {showServiceForm && (
+        <div className="services-form">
           <input 
             type="text" 
             value={serviceTitle} 
@@ -165,31 +165,31 @@ const ProfileServices = ({ isOwner, userId }) => {
             accept="image/*" 
             onChange={handleServiceImageChange} 
           />
-          <button onClick={handleAddService} disabled={loading}>
-            {loading ? 'Añadiendo...' : 'Añadir Servicio'}
+          <button onClick={handleAddService} disabled={loadingService}>
+            {loadingService ? 'Añadiendo...' : 'Añadir Servicio'}
           </button>
-          {error && <p className="error">{error}</p>}
+          {serviceError && <p className="services-error">{serviceError}</p>}
         </div>
       )}
 
       <div className="services-grid">
-        {loadingServices ? (
+        {loadingServicesList ? (
           <p>Cargando servicios...</p>
-        ) : services.length === 0 ? (
+        ) : servicesList.length === 0 ? (
           <p>No hay servicios disponibles.</p>
         ) : (
-          services.map((service) => (
-            <div key={service.serviceID} className="service-card">
-              <div className="service-image-container">
-                <img src={service.imageUrl} alt={service.title} className="service-image" />
+          servicesList.map((service) => (
+            <div key={service.serviceID} className="services-card">
+              <div className="services-image-container">
+                <img src={service.imageUrl} alt={service.title} className="services-image" />
               </div>
-              <div className="service-info">
+              <div className="services-info">
                 <h3>{service.title}</h3>
-                <p className="service-description">{service.description}</p>
-                <p className="service-price">Desde US${service.price.toFixed(2)}</p>
+                <p className="services-description">{service.description}</p>
+                <p className="services-price">Desde US${service.price.toFixed(2)}</p>
                 {!isOwner && (
                   <button 
-                    className="hire-button" 
+                    className="services-hire-button" 
                     onClick={() => navigate(`/service-request/${userId}/${service.serviceID}`)}
                   >
                     Contratar
@@ -199,17 +199,17 @@ const ProfileServices = ({ isOwner, userId }) => {
               {isOwner && (
                 <>
                   <button 
-                    className="delete-button" 
-                    onClick={() => setConfirmDelete(service.serviceID)}
-                    disabled={loading}
+                    className="services-delete-button" 
+                    onClick={() => setConfirmServiceDelete(service.serviceID)}
+                    disabled={loadingService}
                   >
-                    {loading ? 'Eliminando...' : 'Eliminar'}
+                    {loadingService ? 'Eliminando...' : 'Eliminar'}
                   </button>
-                  {confirmDelete === service.serviceID && (
-                    <div className="confirm-delete">
+                  {confirmServiceDelete === service.serviceID && (
+                    <div className="services-confirm-delete">
                       <p>¿Estás seguro de que quieres eliminar este servicio?</p>
                       <button onClick={() => handleDeleteService(service.serviceID, service.imageUrl)}>Confirmar</button>
-                      <button onClick={() => setConfirmDelete(null)}>Cancelar</button>
+                      <button onClick={() => setConfirmServiceDelete(null)}>Cancelar</button>
                     </div>
                   )}
                 </>
@@ -218,8 +218,8 @@ const ProfileServices = ({ isOwner, userId }) => {
           ))
         )}
       </div>
-      {services.length > 0 && (
-        <button className="view-all-button">Ver todos ({services.length})</button>
+      {servicesList.length > 0 && (
+        <button className="services-view-all-button">Ver todos ({servicesList.length})</button>
       )}
     </div>
   );

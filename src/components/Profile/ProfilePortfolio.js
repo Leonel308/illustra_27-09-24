@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db, storage } from '../../firebaseConfig';
-import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { Trash2 } from 'lucide-react';
 import '../../Styles/ProfileStyles/ProfilePortfolio.css';
 
 const ProfilePortfolio = ({ isOwner, userId }) => {
@@ -48,7 +49,24 @@ const ProfilePortfolio = ({ isOwner, userId }) => {
         }
     };
 
-    // Definir fetchPortfolioImages con useCallback para evitar recreación en cada render
+    const handleDeleteImage = async (imageURL) => {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar esta imagen?")) return;
+
+        try {
+            const imageRef = ref(storage, imageURL);
+            await deleteObject(imageRef);
+
+            const userDoc = doc(db, 'users', userId);
+            await updateDoc(userDoc, {
+                portfolio: arrayRemove({ url: imageURL })
+            });
+
+            fetchPortfolioImages(); // Refrescar las imágenes después de la eliminación
+        } catch (error) {
+            console.error("Error deleting image:", error);
+        }
+    };
+
     const fetchPortfolioImages = useCallback(async () => {
         try {
             const userDoc = doc(db, 'users', userId);
@@ -66,7 +84,6 @@ const ProfilePortfolio = ({ isOwner, userId }) => {
         }
     }, [userId]);
 
-    // useEffect con fetchPortfolioImages como dependencia
     useEffect(() => {
         fetchPortfolioImages();
     }, [fetchPortfolioImages]);
@@ -74,20 +91,20 @@ const ProfilePortfolio = ({ isOwner, userId }) => {
     return (
         <div className="portfolio-uploader">
             {isOwner && (
-                <button onClick={toggleModal} className="upload-button">
+                <button onClick={toggleModal} className="portfolio-upload-button">
                     Subir Imagen
                 </button>
             )}
 
             {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <span className="close-modal" onClick={toggleModal}>×</span>
+                <div className="portfolio-modal-overlay">
+                    <div className="portfolio-modal-content">
+                        <span className="portfolio-close-modal" onClick={toggleModal}>×</span>
                         <h2>Subir Imagen al Portafolio</h2>
                         <input type="file" accept="image/*" onChange={handleImageChange} />
 
                         {imagePreview && (
-                            <div className="image-preview">
+                            <div className="portfolio-image-preview">
                                 <img src={imagePreview} alt="Preview de la imagen" />
                             </div>
                         )}
@@ -95,7 +112,7 @@ const ProfilePortfolio = ({ isOwner, userId }) => {
                         {uploading ? (
                             <p>Subiendo imagen...</p>
                         ) : (
-                            <button onClick={handleUpload} disabled={!imageFile} className="upload-button">
+                            <button onClick={handleUpload} disabled={!imageFile} className="portfolio-upload-button">
                                 Subir Imagen
                             </button>
                         )}
@@ -112,6 +129,14 @@ const ProfilePortfolio = ({ isOwner, userId }) => {
                         portfolioImages.map((imageURL, index) => (
                             <div key={index} className="portfolio-item">
                                 <img src={imageURL} alt={`Portafolio ${index}`} />
+                                {isOwner && (
+                                    <button
+                                        className="portfolio-delete-button"
+                                        onClick={() => handleDeleteImage(imageURL)}
+                                    >
+                                        <Trash2 className="portfolio-delete-icon" />
+                                    </button>
+                                )}
                             </div>
                         ))
                     ) : (

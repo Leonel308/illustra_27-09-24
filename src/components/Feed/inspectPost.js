@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
-import { doc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, arrayRemove, arrayUnion, query, orderBy } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
-import { Heart, Share2, Trash2, Send } from 'lucide-react';
+import { Heart, Share2, Trash2, Send, MessageCircle } from 'lucide-react';
 import './inspectPost.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
@@ -11,6 +11,7 @@ const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-
 export default function InspectPost() {
   const { user } = useContext(UserContext);
   const { postId } = useParams();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +34,8 @@ export default function InspectPost() {
           const userDoc = await getDoc(userDocRef);
           const userData = userDoc.exists() ? userDoc.data() : {};
           const commentsCollection = collection(db, `${postDoc.ref.path}/comments`);
-          const commentsSnapshot = await getDocs(commentsCollection);
+          const commentsQuery = query(commentsCollection, orderBy('timestamp', 'desc'));
+          const commentsSnapshot = await getDocs(commentsQuery);
           const comments = commentsSnapshot.docs.map(commentDoc => ({
             id: commentDoc.id,
             ...commentDoc.data()
@@ -71,12 +73,13 @@ export default function InspectPost() {
         timestamp: new Date(),
         user: user.username,
         userPhotoURL: user.photoURL || defaultProfilePic,
+        userId: user.uid,
       };
       const postCollectionPath = post.isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
-      await addDoc(collection(db, `${postCollectionPath}/${postId}/comments`), comment);
+      const commentRef = await addDoc(collection(db, `${postCollectionPath}/${postId}/comments`), comment);
       setPost(prevPost => ({
         ...prevPost,
-        comments: [...(prevPost.comments || []), comment],
+        comments: [{ id: commentRef.id, ...comment }, ...(prevPost.comments || [])],
       }));
       setNewComment('');
     } catch (error) {
@@ -100,6 +103,11 @@ export default function InspectPost() {
   };
 
   const handleLike = async () => {
+    if (!user) {
+      alert('Please log in to like posts.');
+      return;
+    }
+
     try {
       const postCollectionPath = post.isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
       const postRef = doc(db, postCollectionPath, postId);
@@ -140,6 +148,7 @@ export default function InspectPost() {
     try {
       const postCollectionPath = post.isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
       await deleteDoc(doc(db, postCollectionPath, postId));
+      navigate('/');
     } catch (error) {
       console.error('Error deleting post:', error);
     }
@@ -158,52 +167,47 @@ export default function InspectPost() {
   }
 
   return (
-    <div className="inspect-post-page">
+    <div className="inspect-post-container">
       <div className="inspect-post-main">
         <div className="inspect-post-header">
           <div className="inspect-post-author">
-            <img src={post.userPhotoURL} alt={post.username} className="inspect-user-photo" />
-            <span className="inspect-user-name">{post.username}</span>
+            <img src={post.userPhotoURL} alt={post.username} className="inspect-user-avatar" />
+            <span className="inspect-username">{post.username}</span>
           </div>
-        </div>
-        <h2 className="inspect-post-title">{post.title}</h2>
-        <p className="inspect-post-category">Categoría: {post.category}</p>
-        {post.imageURL && (
-          <img src={post.imageURL} alt={post.title} className="inspect-post-image" />
-        )}
-        <p className="inspect-post-description">{post.description}</p>
-        <div className="inspect-post-actions">
-          <button className={`action-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
-            <Heart className="action-icon" />
-            <span>{likes}</span>
-          </button>
-          <button className="action-button" onClick={handleShare}>
-            <Share2 className="action-icon" />
-            <span>Compartir</span>
-          </button>
           {user?.role === 'admin' && (
-            <button className="action-button delete-button" onClick={handleDeletePost}>
-              <Trash2 className="action-icon" />
+            <button className="inspect-action-button inspect-delete-button" onClick={handleDeletePost}>
+              <Trash2 className="inspect-action-icon" />
               <span>Eliminar</span>
             </button>
           )}
         </div>
+        <h2 className="inspect-post-title">{post.title}</h2>
+        <p className="inspect-post-category">
+          Categoría: {post.category}
+          {post.isAdultContent && <span className="nsfw-tag">NSFW</span>}
+        </p>
+        {post.imageURL && (
+          <div className="inspect-post-image-container">
+            <img src={post.imageURL} alt={post.title} className="inspect-post-image" />
+          </div>
+        )}
+        <p className="inspect-post-description">{post.description}</p>
+        <div className="inspect-post-actions">
+          <button className={`inspect-action-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
+            <Heart className="inspect-action-icon" />
+            <span>{likes}</span>
+          </button>
+          <button className="inspect-action-button">
+            <MessageCircle className="inspect-action-icon" />
+            <span>{post.comments?.length || 0}</span>
+          </button>
+          <button className="inspect-action-button" onClick={handleShare}>
+            <Share2 className="inspect-action-icon" />
+            <span>Compartir</span>
+          </button>
+        </div>
         <div className="inspect-comments-section">
           <h3>Comentarios</h3>
-          {post.comments?.map((comment, index) => (
-            <div key={index} className="inspect-comment">
-              <img src={comment.userPhotoURL || defaultProfilePic} alt={comment.user} className="comment-user-photo" />
-              <div className="comment-content">
-                <strong>{comment.user}</strong>
-                <p>{comment.comment}</p>
-              </div>
-              {user?.role === 'admin' && (
-                <button className="delete-comment-button" onClick={() => handleDeleteComment(comment.id)}>
-                  <Trash2 size={18} />
-                </button>
-              )}
-            </div>
-          ))}
           {user && (
             <div className="inspect-add-comment">
               <textarea
@@ -214,13 +218,29 @@ export default function InspectPost() {
               />
               <div className="comment-meta">
                 <span>{newComment.length}/320</span>
-                <button onClick={handleAddComment}>
-                  <Send size={18} />
+                <button onClick={handleAddComment} className="inspect-action-button">
+                  <Send className="inspect-action-icon" />
                   Comentar
                 </button>
               </div>
             </div>
           )}
+          {post.comments?.map((comment) => (
+            <div key={comment.id} className="inspect-comment">
+              <img src={comment.userPhotoURL || defaultProfilePic} alt={comment.user} className="comment-user-avatar" />
+              <div className="comment-content">
+                <strong>{comment.user}</strong>
+                <p>{comment.comment}</p>
+              </div>
+              {(user?.role === 'admin' || user?.uid === comment.userId) && (
+                <div className="delete-comment-container">
+                  <button className="delete-comment-button" onClick={() => handleDeleteComment(comment.id)}>
+                    <Trash2 className="inspect-action-icon" />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
