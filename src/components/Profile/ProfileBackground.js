@@ -3,69 +3,108 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../firebaseConfig';
 import ImageCropperModal from './ImageCropperModal';
 import UserContext from '../../context/UserContext';
+import styles from './ProfileBackground.module.css';
 
-export default function ProfileBackground({ onSave }) {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [showCropper, setShowCropper] = useState(false);
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const ProfileBackground = ({ currentBackgroundUrl, onSave }) => {
   const [imageSrc, setImageSrc] = useState(null);
-  const [croppedImage, setCroppedImage] = useState(null);
+  const [croppedImageBlob, setCroppedImageBlob] = useState(null);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewBackgroundUrl, setPreviewBackgroundUrl] = useState(currentBackgroundUrl);
   const { user } = useContext(UserContext);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageSrc(reader.result); // Muestra la imagen seleccionada en el modal
-        setSelectedFile(file); // Guarda el archivo seleccionado
-        setShowCropper(true); // Abre el modal para recortar
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Limitar el tamaño del archivo (por ejemplo, 5MB)
+    if (file.size > MAX_FILE_SIZE) {
+      alert('El tamaño máximo permitido es de 5MB.');
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageSrc(reader.result);
+      setIsCropperOpen(true); // Open the cropper modal when the file is ready
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSaveCroppedImage = async (croppedBlob) => {
+  const handleSaveCroppedImage = (croppedBlob) => {
+    setCroppedImageBlob(croppedBlob);
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setPreviewBackgroundUrl(previewUrl);
+    setIsCropperOpen(false);
+  };
+
+  const handleUpload = async () => {
+    if (!croppedImageBlob || !user) return;
+
+    setIsUploading(true);
     try {
-      if (croppedBlob && user) {
-        const storageRef = ref(storage, `backgrounds/${user.uid}_${selectedFile.name}`);
-        const croppedFile = new File([croppedBlob], selectedFile.name, { type: 'image/jpeg' });
-        
-        // Sube la imagen recortada a Firebase Storage
-        await uploadBytes(storageRef, croppedFile);
-        const downloadURL = await getDownloadURL(storageRef);
-        
-        // Llama a onSave con la URL de la imagen recortada
-        onSave(downloadURL);
-      }
+      const uniqueImageName = `background_${user.uid}_${Date.now()}.jpg`;
+      const storageRef = ref(storage, `backgrounds/${uniqueImageName}`);
+      const croppedFile = new File([croppedImageBlob], uniqueImageName, {
+        type: 'image/jpeg',
+      });
+
+      // Upload the cropped image to Firebase Storage
+      await uploadBytes(storageRef, croppedFile);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Call onSave with the new background URL
+      onSave(downloadURL);
+      setPreviewBackgroundUrl(downloadURL);
+      setCroppedImageBlob(null);
     } catch (error) {
-      console.error("Error uploading cropped image: ", error);
+      console.error('Error uploading cropped image: ', error);
+      alert('Hubo un error al subir la imagen. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsUploading(false);
     }
-    setShowCropper(false); // Cierra el modal de recorte después de guardar
   };
 
   return (
-    <div className="mt-4">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="w-full mb-2 text-sm text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
-      />
-      {showCropper && (
+    <div className={styles.profileBackgroundContainer}>
+      <div
+        className={styles.profileBackground}
+        style={{ backgroundImage: `url(${previewBackgroundUrl})` }}
+      >
+        <label className={styles.backgroundUploadLabel}>
+          Cambiar Fondo
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className={styles.backgroundUploadInput}
+          />
+        </label>
+      </div>
+
+      {isCropperOpen && (
         <ImageCropperModal
-          isOpen={showCropper}
-          imageSrc={imageSrc}
-          onClose={() => setShowCropper(false)}
+          isOpen={isCropperOpen}
+          onClose={() => setIsCropperOpen(false)}
           onSave={handleSaveCroppedImage}
-          aspectRatio={16 / 9} // Relación de aspecto para la imagen de fondo
+          imageSrc={imageSrc}
+          aspect={16 / 9} // Set the desired aspect ratio
         />
       )}
-      <button
-        onClick={handleSaveCroppedImage}
-        className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300"
-      >
-        Save Background
-      </button>
+
+      {croppedImageBlob && (
+        <button
+          onClick={handleUpload}
+          className={styles.saveButton}
+          disabled={isUploading}
+        >
+          {isUploading ? 'Subiendo...' : 'Guardar Fondo'}
+        </button>
+      )}
     </div>
   );
-}
+};
+
+export default ProfileBackground;

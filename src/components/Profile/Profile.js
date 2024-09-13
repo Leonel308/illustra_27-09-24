@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { db } from '../../firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 import UserContext from '../../context/UserContext';
 import ProfileBio from './ProfileBio';
 import ProfilePortfolio from './ProfilePortfolio';
 import ProfileServices from './ProfileServices';
 import ProfileBackground from './ProfileBackground';
-import '../../Styles/ProfileStyles/profile.css';
+import styles from '../../Styles/ProfileStyles/Profile.module.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
 
@@ -40,57 +40,74 @@ const Profile = () => {
         console.error("Error fetching user data: ", error);
       }
     };
-
     fetchUserData();
   }, [user, userId]);
 
-  const getArtistLabel = () => {
+  const getArtistLabel = useMemo(() => {
     if (profileData.isArtist) {
-      return profileData.gender === 'female' ? 'ilustradora' : profileData.gender === 'other' ? 'ilustrador/a' : 'ilustrador';
-    } else {
-      return profileData.gender === 'female' ? 'usuaria' : profileData.gender === 'other' ? 'usuario/a' : 'usuario';
+      return profileData.gender === 'female'
+        ? 'ilustradora'
+        : profileData.gender === 'other'
+        ? 'ilustrador/a'
+        : 'ilustrador';
     }
-  };
+    return profileData.gender === 'female'
+      ? 'usuaria'
+      : profileData.gender === 'other'
+      ? 'usuario/a'
+      : 'usuario';
+  }, [profileData.isArtist, profileData.gender]);
 
-  const handleSaveBackground = async (backgroundURL) => {
+  const handleSaveBackground = useCallback(async (backgroundURL) => {
     try {
       const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { backgroundURL }); // Guarda la URL de la imagen de fondo
-      setProfileData(prev => ({ ...prev, backgroundURL }));
+      await updateDoc(userRef, { backgroundURL });
+      setProfileData((prev) => ({ ...prev, backgroundURL }));
     } catch (error) {
       console.error("Error updating background image: ", error);
     }
-  };
+  }, [userId]);
 
   return (
-    <div className="profile-page-container" style={{ backgroundImage: `url(${profileData.backgroundURL})` }}>
-      <div className="profile-content">
-        <div className="profile-sidebar">
-          <div className="profile-header">
-            <img src={profileData.photoURL} alt={profileData.username} className="profile-picture" />
+    <div className={styles.profilePageContainer} style={{ backgroundImage: `url(${profileData.backgroundURL})` }}>
+      <div className={styles.profileContent}>
+        <aside className={styles.profileSidebar}>
+          <header className={styles.profileHeader}>
+            <img src={profileData.photoURL} alt={profileData.username} className={styles.profilePicture} />
             <h2>{profileData.username}</h2>
-            <p className="user-role">
-              {profileData.isArtist ? '🖌️' : '👤'} {getArtistLabel()}
+            <p className={styles.userRole}>
+              {profileData.isArtist ? '🖌️' : '👤'} {getArtistLabel}
             </p>
-            <p className="content-type">
+            <p className={styles.contentType}>
               🎨 Contenido: {profileData.adultContent}
             </p>
-          </div>
-          <div className="profile-bio">
-            <ProfileBio bio={profileData.bio} isOwner={isOwner} setBio={(newBio) => setProfileData(prev => ({ ...prev, bio: newBio }))} userId={userId} />
-          </div>
-          {isOwner && <ProfileBackground onSave={handleSaveBackground} />}
-        </div>
-        <div className="profile-main-content">
-          <div className="profile-section services-section">
+          </header>
+
+          <ProfileBio
+            bio={profileData.bio}
+            isOwner={isOwner}
+            setBio={(newBio) => setProfileData((prev) => ({ ...prev, bio: newBio }))}
+            userId={userId}
+          />
+
+          {isOwner && (
+            <div className={styles.profileBackgroundContainer}>
+              <ProfileBackground onSave={handleSaveBackground} />
+            </div>
+          )}
+        </aside>
+
+        <main className={styles.profileMainContent}>
+          <section className={styles.profileSection}>
             <h3>Servicios</h3>
             <ProfileServices services={profileData.services} isOwner={isOwner} userId={userId} />
-          </div>
-          <div className="profile-section portfolio-section">
+          </section>
+
+          <section className={styles.profileSection}>
             <h3>Portfolio</h3>
             <ProfilePortfolio portfolio={profileData.portfolio} isOwner={isOwner} userId={userId} />
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
     </div>
   );

@@ -1,0 +1,133 @@
+:root {
+  --primary-color: #6a0dad;
+  --secondary-color: #ff6b6b;
+  --accent-color: #4ecdc4;
+  --background-color: rgba(247, 247, 247, 0.6);
+  --text-color: #333;
+}
+
+/* Normalización de márgenes y padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: var(--background-color);
+}
+
+.profilePageContainer {
+  min-height: 100vh;
+  width: 100vw;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: var(--text-color);
+}
+
+.profileContent {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.profileSidebar {
+  width: 300px;
+  background: linear-gradient(135deg, rgba(106, 13, 173, 0.9), rgba(255, 107, 107, 0.9));
+  color: white;
+  padding: 2rem;
+  border-radius: 15px 0 0 15px;
+}
+
+.profileHeader {
+  text-align: center;
+}
+
+.profilePicture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 5px solid var(--accent-color);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.profilePicture:hover {
+  transform: scale(1.05);
+}
+
+.profileSidebar h2 {
+  margin-top: 1rem;
+  font-size: 1.8rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.userRole, .contentType {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.profileMainContent {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.profileBackgroundContainer {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.profileSection {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profileSection h3 {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 0.5rem;
+}
+
+.profileBackgroundContainer .saveButton {
+  margin-top: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.profileBackgroundContainer .saveButton:hover {
+  background-color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+  .profileContent {
+    flex-direction: column;
+  }
+
+  .profileSidebar {
+    width: 100%;
+    border-radius: 15px 15px 0 0;
+  }
+}
