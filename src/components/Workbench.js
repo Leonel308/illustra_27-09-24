@@ -15,7 +15,7 @@ const Workbench = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       if (user) {
-        // Fetch received service requests
+        // Fetch received service requests (requests made by clients to the logged-in illustrator)
         const receivedRef = collection(db, 'users', user.uid, 'ServiceRequests');
         const receivedSnapshot = await getDocs(receivedRef);
 
@@ -30,14 +30,15 @@ const Workbench = () => {
         );
         setReceivedRequests(requestsWithUsernames);
 
-        // Fetch hired services
+        // Fetch hired services (requests made by the logged-in user to other illustrators)
         const hiredRef = collection(db, 'users', user.uid, 'ServiceHired');
         const hiredSnapshot = await getDocs(hiredRef);
 
         const hiredWithUsernames = await Promise.all(
           hiredSnapshot.docs.map(async (docSnapshot) => {
             const requestData = docSnapshot.data();
-            const illustratorRef = doc(db, 'users', requestData.illustratorId);
+            const illustratorHiredId = requestData.illustratorHiredId || requestData.illustratorId; // Use illustratorHiredId or fallback to illustratorId
+            const illustratorRef = doc(db, 'users', illustratorHiredId);
             const illustratorDoc = await getDoc(illustratorRef);
             const illustratorUsername = illustratorDoc.exists() ? illustratorDoc.data().username : 'Usuario desconocido';
             return { id: docSnapshot.id, ...requestData, illustratorUsername };
@@ -59,7 +60,7 @@ const Workbench = () => {
 
       await updateDoc(doc(db, 'users', clientId, 'ServiceHired', requestId), {
         status: 'in progress',
-        acceptedByClient: false, // Asegurar que este campo se agregue
+        acceptedByClient: false, // Ensure this field is added
       });
 
       setReceivedRequests(receivedRequests.map(request =>
