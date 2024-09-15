@@ -16,15 +16,13 @@ const allowedOrigins = ['https://illustra.app', 'http://localhost:3000'];
 
 // Configurar CORS para permitir solicitudes desde orígenes específicos
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  }
+  origin: allowedOrigins,
+  methods: 'GET, POST, OPTIONS',
+  allowedHeaders: 'Content-Type',
 }));
+
+// Middleware para manejar OPTIONS preflight requests
+app.options('*', cors());
 
 // Configuración de las credenciales de Mercado Pago desde variables de entorno o configuración de Firebase
 const MERCADO_PAGO_CLIENT_ID = process.env.MERCADOPAGO_CLIENT_ID || functions.config().mercadopago.client_id;
@@ -38,7 +36,7 @@ app.post('/createPayment', async (req, res) => {
 
   // Validar los campos requeridos
   if (!amount || !description || !payerEmail || !serviceId || !illustratorID || !clientId) {
-    return res.status(400).send("Missing required fields: amount, description, payerEmail, serviceId, illustratorID, clientId");
+    return res.status(400).json({ error: "Missing required fields: amount, description, payerEmail, serviceId, illustratorID, clientId" });
   }
 
   // Crear la preferencia de pago
@@ -86,30 +84,18 @@ app.post('/createPayment', async (req, res) => {
     res.json({ init_point: response.data.init_point });
   } catch (error) {
     console.error("Error creating preference:", error);
-    res.status(500).send("Error creating preference");
+    res.status(500).json({ error: "Error creating preference" });
   }
 });
 
 // Función para manejar el token de autorización de Mercado Pago
 app.get('/mercadoPagoToken', async (req, res) => {
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Origin', 'https://illustra.app');
-    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    res.set('Access-Control-Max-Age', '3600');
-    res.status(204).send('');
-    return;
-  }
-
   const { code, state } = req.query;
-
-  console.log("Received code:", code);
-  console.log("Received state:", state);
 
   // Validar los parámetros requeridos
   if (!code || !state) {
     console.error("Parámetros de URL inválidos: ", req.query);
-    return res.status(400).send("Parámetros de URL inválidos.");
+    return res.status(400).json({ error: "Parámetros de URL inválidos." });
   }
 
   try {
@@ -133,11 +119,10 @@ app.get('/mercadoPagoToken', async (req, res) => {
       mercadoPagoRefreshToken: refresh_token,
     });
 
-    res.set('Access-Control-Allow-Origin', 'https://illustra.app');
     res.json(response.data);
   } catch (error) {
     console.error("Error al obtener tokens de Mercado Pago:", error.response ? error.response.data : error.message);
-    res.status(500).send("Error al obtener tokens de Mercado Pago");
+    res.status(500).json({ error: "Error al obtener tokens de Mercado Pago" });
   }
 });
 
@@ -146,7 +131,7 @@ app.get('/unlinkMercadoPago', async (req, res) => {
   const { uid } = req.query;
 
   if (!uid) {
-    return res.status(400).send("Parámetros de URL inválidos. No se pudo desvincular Mercado Pago.");
+    return res.status(400).json({ error: "Parámetros de URL inválidos. No se pudo desvincular Mercado Pago." });
   }
 
   try {
@@ -156,10 +141,10 @@ app.get('/unlinkMercadoPago', async (req, res) => {
       mercadoPagoAccessToken: admin.firestore.FieldValue.delete(),
       mercadoPagoRefreshToken: admin.firestore.FieldValue.delete(),
     });
-    res.send("Cuenta de Mercado Pago desvinculada.");
+    res.json({ message: "Cuenta de Mercado Pago desvinculada." });
   } catch (error) {
     console.error("Error al desvincular cuenta de Mercado Pago:", error);
-    res.status(500).send("Error al desvincular Mercado Pago.");
+    res.status(500).json({ error: "Error al desvincular Mercado Pago." });
   }
 });
 
@@ -168,7 +153,7 @@ app.post('/approvePayment', async (req, res) => {
   const { userId, amount } = req.body;
 
   if (!userId || !amount) {
-    return res.status(400).send("Missing required fields: userId, amount");
+    return res.status(400).json({ error: "Missing required fields: userId, amount" });
   }
 
   try {
@@ -177,7 +162,7 @@ app.post('/approvePayment', async (req, res) => {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ error: "User not found" });
     }
 
     const userData = userDoc.data();
@@ -208,13 +193,13 @@ app.post('/approvePayment', async (req, res) => {
         pendingBalance: admin.firestore.FieldValue.increment(-amount)
       });
 
-      res.send("Payment approved and processed");
+      res.json({ message: "Payment approved and processed" });
     } else {
       throw new Error('Payment not approved');
     }
   } catch (error) {
     console.error("Error approving payment:", error);
-    res.status(500).send("Error approving payment");
+    res.status(500).json({ error: "Error approving payment" });
   }
 });
 
@@ -250,7 +235,7 @@ app.post('/paymentNotification', async (req, res) => {
       res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
-      res.status(500).send('Error handling webhook');
+      res.status(500).json({ error: 'Error handling webhook' });
     }
   } else {
     res.sendStatus(200);
@@ -262,7 +247,7 @@ app.post('/updatePendingBalance', async (req, res) => {
   const { userId, amount, action } = req.body;
 
   if (!userId || !amount || !action) {
-    return res.status(400).send("Missing required fields: userId, amount, action");
+    return res.status(400).json({ error: "Missing required fields: userId, amount, action" });
   }
 
   try {
@@ -281,10 +266,10 @@ app.post('/updatePendingBalance', async (req, res) => {
       });
     }
 
-    res.send("Pending balance updated successfully");
+    res.json({ message: "Pending balance updated successfully" });
   } catch (error) {
     console.error("Error updating pending balance:", error);
-    res.status(500).send("Error updating pending balance");
+    res.status(500).json({ error: "Error updating pending balance" });
   }
 });
 

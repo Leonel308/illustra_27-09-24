@@ -24,6 +24,8 @@ body {
   line-height: 1.6;
   color: var(--text-color);
   background-color: var(--background-alt);
+  margin: 0;
+  padding: 0;
 }
 
 .header {
@@ -318,14 +320,13 @@ body {
   display: flex;
   align-items: center;
   font-weight: 500;
-  /* Agregamos animación suave al pasar el mouse */
   transition: background-color 0.3s ease, padding-left 0.3s ease;
 }
 
 .header-dropdown-item:hover {
   background-color: var(--background-alt);
   color: var(--primary-color);
-  padding-left: 1.25rem; /* Añade animación de padding suave */
+  padding-left: 1.25rem;
 }
 
 .header-dropdown-item.balance {
@@ -333,13 +334,13 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem;
-  color: var(--success-color); /* Verde por defecto */
+  color: var(--success-color);
   transition: all var(--transition-speed) ease;
 }
 
 .header-dropdown-item.balance:hover {
-  background-color: rgba(76, 175, 80, 0.1); /* Fondo verde claro en hover */
-  color: var(--primary-color); /* Cambia el color del texto en hover a violeta */
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--primary-color);
 }
 
 .header-dropdown-item svg {
@@ -347,14 +348,13 @@ body {
   font-size: 1.25rem;
 }
 
-/* El ícono "+" tendrá también color verde */
 .add-balance-btn {
   background: none;
   border: none;
-  color: var(--success-color); /* Verde por defecto */
+  color: var(--success-color);
   cursor: pointer;
-  margin-left: 5px; /* Margen pequeño para separar del texto */
-  font-size: 0.85rem; /* Ajustar el tamaño del ícono */
+  margin-left: 5px;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -362,18 +362,18 @@ body {
 }
 
 .add-balance-btn:hover {
-  color: var(--primary-color); /* Cambia el ícono "+" a violeta en hover */
-  transform: scale(1.1); /* Efecto de escala en hover */
+  color: var(--primary-color);
+  transform: scale(1.1);
 }
 
 .logout-button {
-  color: var(--notification-color); /* Cambiar a rosa */
+  color: var(--notification-color);
   background-color: transparent;
 }
 
 .logout-button:hover {
   background-color: transparent;
-  color: var(--notification-color); /* Mantiene el color rosa en hover */
+  color: var(--notification-color);
 }
 
 .mobile-menu-button {
@@ -392,6 +392,7 @@ body {
 }
 
 .mobile-menu {
+  display: none;
   position: absolute;
   top: 100%;
   left: 0;
@@ -464,6 +465,22 @@ body {
   .header-title {
     font-size: 1.5rem;
   }
+
+  .mobile-menu {
+    display: block;
+  }
+
+  .header-user {
+    margin-left: 0;
+  }
+
+  .header-username {
+    display: none;
+  }
+
+  .header-notifications {
+    margin-left: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -478,5 +495,39 @@ body {
 
   .mobile-menu-button {
     font-size: 1.25rem;
+  }
+
+  .header-profile-pic {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-notifications-icon {
+    transform: scale(0.9);
+  }
+
+  .create-post-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-title {
+    font-size: 1.1rem;
+  }
+
+  .header-profile-pic {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header-notifications-icon {
+    transform: scale(0.8);
+  }
+
+  .create-post-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 }

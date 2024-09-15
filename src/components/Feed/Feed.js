@@ -20,6 +20,7 @@ function Feed({ showNSFW }) {
     let sfwQuery = query(postsCollection, orderBy('timestamp', 'desc'));
     let nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc'));
 
+    // Actualizar feed de contenido SFW
     const unsubscribeSFW = onSnapshot(sfwQuery, async (snapshot) => {
       const postsList = await Promise.all(
         snapshot.docs.map(async (postDoc) => {
@@ -48,9 +49,15 @@ function Feed({ showNSFW }) {
       );
 
       const validPosts = postsList.filter(post => post !== null);
-      setPosts(validPosts);
+
+      // Actualiza solo los posts SFW
+      setPosts(prevPosts => {
+        const nsfwPosts = prevPosts.filter(post => post.isNSFW); // Mantiene los posts NSFW si están presentes
+        return [...validPosts, ...nsfwPosts].sort((a, b) => b.timestamp - a.timestamp);
+      });
     });
 
+    // Actualizar feed de contenido NSFW si está activado
     const unsubscribeNSFW = showNSFW ? onSnapshot(nsfwQuery, async (snapshot) => {
       const postsList = await Promise.all(
         snapshot.docs.map(async (postDoc) => {
@@ -79,8 +86,13 @@ function Feed({ showNSFW }) {
       );
 
       const validPosts = postsList.filter(post => post !== null);
-      setPosts(prevPosts => [...prevPosts, ...validPosts].sort((a, b) => b.timestamp - a.timestamp));
-    }) : null;
+
+      // Actualiza solo los posts NSFW
+      setPosts(prevPosts => {
+        const sfwPosts = prevPosts.filter(post => !post.isNSFW); // Mantiene los posts SFW si están presentes
+        return [...sfwPosts, ...validPosts].sort((a, b) => b.timestamp - a.timestamp);
+      });
+    }) : setPosts(prevPosts => prevPosts.filter(post => !post.isNSFW)); // Si se desactiva, filtra los posts NSFW
 
     return () => {
       unsubscribeSFW();

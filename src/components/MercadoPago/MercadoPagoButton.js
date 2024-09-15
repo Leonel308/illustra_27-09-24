@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Verifica si es necesario
 import { db } from '../../firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
@@ -8,7 +8,6 @@ const MercadoPagoButton = () => {
   const { user } = useContext(UserContext);
   const [isLinked, setIsLinked] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const checkMercadoPagoLinked = async () => {
@@ -20,7 +19,6 @@ const MercadoPagoButton = () => {
         }
       }
     };
-
     checkMercadoPagoLinked();
   }, [user]);
 
@@ -36,9 +34,7 @@ const MercadoPagoButton = () => {
     try {
       const response = await fetch(`https://us-central1-illustra-6ca8a.cloudfunctions.net/api/unlinkMercadoPago?uid=${user.uid}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) {

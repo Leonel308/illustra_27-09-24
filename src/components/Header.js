@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, collection, getDocs, query, where, limit, updateDoc, getDoc } from 'firebase/firestore';
-import { FaBell, FaSearch, FaBars, FaPlus } from 'react-icons/fa';
+import { FaBell, FaSearch, FaBars, FaPlus, FaTimes } from 'react-icons/fa';
 import UserContext from '../context/UserContext';
 import { logout, db } from '../firebaseConfig';
 import Notifications from './Notifications';
@@ -136,6 +136,10 @@ export default function Header() {
     setShowAddBalanceModal(true);
   };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
     <header className="header">
       <div className="header-content">
@@ -211,36 +215,43 @@ export default function Header() {
             </div>
           )}
         </nav>
-        <button className="mobile-menu-button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          <FaBars />
+        <button className="mobile-menu-button" onClick={toggleMobileMenu}>
+          {mobileMenuOpen ? <FaTimes /> : <FaBars />}
         </button>
       </div>
 
-      {mobileMenuOpen && (
-        <div className="mobile-menu">
-          <Link to="/explore-posts" className="mobile-menu-item">Explorar</Link>
-          {user ? (
-            <>
-              <button className="mobile-menu-item" onClick={() => navigate('/create-post')}>Crear Publicación</button>
-              <Link to={`/profile/${user.uid}`} className="mobile-menu-item">Perfil</Link>
-              <Link to="/workbench" className="mobile-menu-item">Mesa de trabajo</Link>
-              {user.role === 'admin' ? (
-                <Link to="/admin-dashboard" className="mobile-menu-item">Admin Dashboard</Link>
-              ) : (
-                <Link to="/dashboard" className="mobile-menu-item">Dashboard</Link>
-              )}
-              <Link to="/configuration" className="mobile-menu-item">Configuración</Link>
-              <Link to="/donations" className="mobile-menu-item">Donaciones</Link>
-              <button onClick={handleLogout} className="mobile-menu-item logout-button">Log out</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="mobile-menu-item">Log In</Link>
-              <Link to="/register" className="mobile-menu-item">Register</Link>
-            </>
-          )}
+      <div className={`mobile-menu ${mobileMenuOpen ? 'visible' : ''}`}>
+        <div className="mobile-search-bar">
+          <input
+            type="text"
+            placeholder="Buscar usuario..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+          <FaSearch className="search-icon" />
         </div>
-      )}
+        <Link to="/explore-posts" className="mobile-menu-item">Explorar</Link>
+        {user ? (
+          <>
+            <button className="mobile-menu-item" onClick={() => navigate('/create-post')}>Crear Publicación</button>
+            <Link to={`/profile/${user.uid}`} className="mobile-menu-item">Perfil</Link>
+            <Link to="/workbench" className="mobile-menu-item">Mesa de trabajo</Link>
+            {user.role === 'admin' ? (
+              <Link to="/admin-dashboard" className="mobile-menu-item">Admin Dashboard</Link>
+            ) : (
+              <Link to="/dashboard" className="mobile-menu-item">Dashboard</Link>
+            )}
+            <Link to="/configuration" className="mobile-menu-item">Configuración</Link>
+            <Link to="/donations" className="mobile-menu-item">Donaciones</Link>
+            <button onClick={handleLogout} className="mobile-menu-item logout-button">Log out</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="mobile-menu-item">Log In</Link>
+            <Link to="/register" className="mobile-menu-item">Register</Link>
+          </>
+        )}
+      </div>
 
       {showAddBalanceModal && (
         <AddBalanceModal 
