@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Verifica si es necesario
+// import { useNavigate } from 'react-router-dom'; // Verifica si es necesario
 import { db } from '../../firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import UserContext from '../../context/UserContext';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
-import { doc, getDoc, updateDoc, setDoc, deleteDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, deleteDoc} from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
 import '../../Styles/ServiceDetailsUser.css';
 
