@@ -118,6 +118,7 @@ const ProfileServices = ({ isOwner, userId }) => {
         title: serviceTitle,
         description: serviceDescription,
         price: parseFloat(servicePrice),
+        currency: 'ARS', // Set currency to ARS
         imageUrl: serviceImageUrl,
         imagePath: imagePath,
         createdAt: new Date(),
@@ -129,8 +130,6 @@ const ProfileServices = ({ isOwner, userId }) => {
       const serviceID = addedService.id;
       const serviceDocRef = doc(db, 'users', userId, 'Services', serviceID);
       await updateDoc(serviceDocRef, { serviceID });
-
-      // Eliminamos la actualización manual de servicesList para evitar duplicados
 
       resetServiceForm();
     } catch (error) {
@@ -158,9 +157,6 @@ const ProfileServices = ({ isOwner, userId }) => {
       await deleteDoc(serviceRef);
       const imageRef = ref(storage, imagePath);
       await deleteObject(imageRef);
-
-      // No es necesario actualizar manualmente servicesList; onSnapshot lo manejará
-
       setConfirmServiceDelete(null);
     } catch (error) {
       console.error('Error al eliminar el servicio:', error);
@@ -217,7 +213,7 @@ const ProfileServices = ({ isOwner, userId }) => {
           />
           <p>{serviceDescription.length}/360 caracteres</p>
 
-          <label htmlFor="service-price">Precio Inicial</label>
+          <label htmlFor="service-price">Precio Inicial (ARS$)</label>
           <input
             id="service-price"
             type="number"
@@ -287,7 +283,7 @@ const ProfileServices = ({ isOwner, userId }) => {
                   {service.description}
                 </p>
                 <p className={styles.servicesPrice}>
-                  Desde US${Number(service.price).toFixed(2)}
+                  Desde ARS${Number(service.price).toFixed(2)}
                 </p>
                 {!isOwner && (
                   <button

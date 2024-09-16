@@ -7,6 +7,7 @@ import ProfileBio from './ProfileBio';
 import ProfilePortfolio from './ProfilePortfolio';
 import ProfileServices from './ProfileServices';
 import ProfileBackground from './ProfileBackground';
+import ProfilePicture from './ProfilePicture'; // Asegúrate de que la ruta es correcta
 import styles from '../../Styles/ProfileStyles/Profile.module.css';
 
 const defaultProfilePic = "https://firebasestorage.googleapis.com/v0/b/illustra-6ca8a.appspot.com/o/non_profile_pic.png?alt=media&token=9ef84cb8-bae5-48cf-aed9-f80311cc2886";
@@ -73,7 +74,11 @@ const Profile = () => {
       <div className={styles.profileContent}>
         <aside className={styles.profileSidebar}>
           <header className={styles.profileHeader}>
-            <img src={profileData.photoURL} alt={profileData.username} className={styles.profilePicture} />
+            <ProfilePicture 
+              photoURL={profileData.photoURL} 
+              isOwner={isOwner} 
+              setPhotoURL={(newPhotoURL) => setProfileData((prev) => ({ ...prev, photoURL: newPhotoURL }))} 
+            />
             <h2>{profileData.username}</h2>
             <p className={styles.userRole}>
               {profileData.isArtist ? '🖌️' : '👤'} {getArtistLabel}

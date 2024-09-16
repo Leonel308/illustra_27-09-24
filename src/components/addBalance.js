@@ -3,7 +3,7 @@ import UserContext from '../context/UserContext';
 import TermsAndConditions from './TermsAndConditions';
 import '../Styles/addBalance.css';
 
-const AddBalance = () => {
+const AddBalance = ({ onClose }) => {
   const { user } = useContext(UserContext);
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
@@ -27,6 +27,7 @@ const AddBalance = () => {
     }
 
     try {
+      // Hacer la solicitud para crear el pago en el backend
       const response = await fetch('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createAddBalancePayment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,12 +36,24 @@ const AddBalance = () => {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
+
+      // Redirigir al usuario a la página de pago
       window.location.href = data.init_point;
+
     } catch (err) {
       setError(err.message || 'Error al crear el pago. Por favor, intenta de nuevo.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    // Limpiar los datos ingresados
+    setAmount('');
+    setAcceptedTerms(false);
+    setError('');
+    // Cerrar el modal
+    onClose();
   };
 
   return (
@@ -79,7 +92,7 @@ const AddBalance = () => {
           </div>
         </div>
         <div className="modal-footer">
-          <button onClick={() => setAmount('')}>Cancelar</button>
+          <button onClick={handleCancel}>Cancelar</button>
           <button onClick={handleAddBalance} disabled={loading || !amount || !acceptedTerms}>
             {loading ? (
               <>

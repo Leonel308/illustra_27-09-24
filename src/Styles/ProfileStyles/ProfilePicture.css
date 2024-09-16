@@ -1,13 +1,13 @@
 .profile-pic-container {
-  position: absolute;
-  top: 130px; /* Ajusta este valor según sea necesario */
-  left: 50%;
-  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px; /* Ajusta este valor según sea necesario */
 }
 
 .profile-pic {
-  width: 100px;
-  height: 100px;
+  width: 150px; /* Ajuste para que sea más grande acorde al diseño */
+  height: 150px;
   border-radius: 50%;
   overflow: hidden;
   border: 5px solid white;

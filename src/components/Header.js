@@ -127,7 +127,7 @@ export default function Header() {
       const newBalance = Number(userData.balance || 0) + amount;
       await updateDoc(userRef, { balance: newBalance });
       setBalance(newBalance);
-      setShowAddBalanceModal(false);
+      setShowAddBalanceModal(false);  // Close modal after adding balance
     }
   };
 
@@ -256,7 +256,7 @@ export default function Header() {
       {showAddBalanceModal && (
         <AddBalanceModal 
           onClose={() => setShowAddBalanceModal(false)} 
-          onAddBalance={handleAddBalance} 
+          onAddBalance={handleAddBalance}  // Pass the handleAddBalance function
         />
       )}
     </header>

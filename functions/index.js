@@ -92,11 +92,6 @@ app.post('/createAddBalancePayment', async (req, res) => {
       }
     });
 
-    // Actualizar saldo pendiente si es una recarga
-    await admin.firestore().collection('users').doc(uid).update({
-      pendingBalance: admin.firestore.FieldValue.increment(parseFloat(amount))
-    });
-
     // Guardar la transacción
     await saveTransaction(uid, 'recharge', parseFloat(amount), 'pending');
 
@@ -108,7 +103,7 @@ app.post('/createAddBalancePayment', async (req, res) => {
   }
 });
 
-// Función para verificar el estado del pago
+// Función para verificar el estado del pago y actualizar balance/pending balance
 app.post('/verifyPayment', async (req, res) => {
   const { uid, paymentId } = req.body;
 
