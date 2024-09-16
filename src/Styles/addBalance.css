@@ -1,83 +1,132 @@
-/* AddBalanceModal.css */
+/* Estilos para el modal de añadir saldo */
 
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro transparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 420px;
+  max-width: 95%;
+  padding: 25px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+  text-align: center;
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.modal-body {
+  margin-bottom: 20px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.terms-section {
+  margin-top: 15px;
+  text-align: left;
+}
+
+.terms-scrollable {
+  height: 300px; /* Aumentar la altura para facilitar la lectura */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  font-size: 0.9rem;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  margin-bottom: 20px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.checkbox-container label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.modal-footer button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.modal-footer button:first-child {
+  background-color: #f1f1f1;
+  color: #555;
+}
+
+.modal-footer button:last-child {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+}
+
+.modal-footer button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.alert-danger {
+  color: red;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.loader {
+  margin-right: 8px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  
-  .modal-container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
-    max-width: 80%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .modal-container h2 {
-    margin-top: 0;
-    font-size: 1.5rem;
-    color: #333;
-    text-align: center;
-  }
-  
-  .modal-container input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-  
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .modal-buttons button {
-    flex: 1;
-    padding: 10px;
-    margin: 0 5px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .modal-buttons button:first-child {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  .modal-buttons button:last-child {
-    background-color: #f44336;
-    color: white;
-  }
-  
-  .modal-buttons button:hover {
-    opacity: 0.8;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
+}

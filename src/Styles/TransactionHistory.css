@@ -1,0 +1,61 @@
+/* TransactionHistory.css */
+.transaction-history {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .transaction-history h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #333;
+  }
+  
+  .transaction-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .transaction-item:last-child {
+    border-bottom: none;
+  }
+  
+  .transaction-type {
+    font-weight: bold;
+    width: 20%;
+  }
+  
+  .transaction-amount {
+    width: 20%;
+    text-align: right;
+  }
+  
+  .transaction-date {
+    width: 40%;
+    text-align: center;
+    color: #666;
+  }
+  
+  .transaction-status {
+    width: 20%;
+    text-align: right;
+  }
+  
+  .loading, .error {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+    color: #666;
+  }
+  
+  .error {
+    color: #f44336;
+  }

@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 // Cargar variables de entorno desde el archivo .env
 dotenv.config(); 
 
-// Inicializar la aplicación de Firebase Admin
+// Inicializar Firebase Admin
 admin.initializeApp();
 
 const app = express();
@@ -24,67 +24,120 @@ app.use(cors({
 // Middleware para manejar OPTIONS preflight requests
 app.options('*', cors());
 
-// Configuración de las credenciales de Mercado Pago desde variables de entorno o configuración de Firebase
+// Credenciales de Mercado Pago desde variables de entorno o configuración de Firebase
 const MERCADO_PAGO_CLIENT_ID = process.env.MERCADOPAGO_CLIENT_ID || functions.config().mercadopago.client_id;
 const MERCADO_PAGO_CLIENT_SECRET = process.env.MERCADOPAGO_CLIENT_SECRET || functions.config().mercadopago.client_secret;
 const REDIRECT_URI = process.env.MERCADOPAGO_REDIRECT_URI || functions.config().mercadopago.redirect_uri;
 const ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || functions.config().mercadopago.access_token;
 
-// Función para crear un pago en Mercado Pago
-app.post('/createPayment', async (req, res) => {
-  const { amount, description, payerEmail, serviceId, illustratorID, clientId } = req.body;
+// Función para guardar una transacción
+const saveTransaction = async (uid, type, amount, status) => {
+  try {
+    const userRef = admin.firestore().collection('users').doc(uid);
+    await userRef.collection('transactions').add({
+      type,
+      amount,
+      status,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error al guardar la transacción:', error);
+  }
+};
+
+// Función para crear un pago en Mercado Pago (también usada para añadir saldo)
+app.post('/createAddBalancePayment', async (req, res) => {
+  const { amount, uid } = req.body;
 
   // Validar los campos requeridos
-  if (!amount || !description || !payerEmail || !serviceId || !illustratorID || !clientId) {
-    return res.status(400).json({ error: "Missing required fields: amount, description, payerEmail, serviceId, illustratorID, clientId" });
+  if (!amount || !uid) {
+    return res.status(400).json({ error: "Faltan campos requeridos: amount, uid" });
   }
 
-  // Crear la preferencia de pago
-  const preference = {
-    items: [
-      {
-        title: description,
-        unit_price: parseFloat(amount),
-        quantity: 1,
-      },
-    ],
-    payer: {
-      email: payerEmail,
-    },
-    back_urls: {
-      success: `https://illustra.app/success?serviceId=${serviceId}&illustratorID=${illustratorID}&clientId=${clientId}`,
-      failure: "https://illustra.app/failure",
-      pending: "https://illustra.app/pending",
-    },
-    auto_return: "approved",
-  };
-
   try {
-    // Enviar la solicitud a la API de Mercado Pago
+    // Obtener los datos del usuario desde Firestore
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const userData = userDoc.data();
+    const payerEmail = userData.email; // Obtener el correo del usuario
+
+    // Crear la preferencia de pago en Mercado Pago
+    const preference = {
+      items: [
+        {
+          title: 'Recarga de saldo',
+          unit_price: parseFloat(amount),
+          quantity: 1,
+        },
+      ],
+      payer: {
+        email: payerEmail,
+      },
+      back_urls: {
+        success: `https://illustra.app/success?uid=${uid}`,
+        failure: "https://illustra.app/failure",
+        pending: "https://illustra.app/pending",
+      },
+      auto_return: "approved",
+    };
+
+    // Enviar la solicitud a Mercado Pago
     const response = await axios.post("https://api.mercadopago.com/checkout/preferences", preference, {
       headers: {
         Authorization: `Bearer ${ACCESS_TOKEN}`
       }
     });
 
-    // Almacenar los detalles del pago en Firestore
-    await admin.firestore().collection('users').doc(illustratorID).collection('ServiceRequests').doc(serviceId).update({
-      paymentId: response.data.id,
-      status: 'pending'
+    // Actualizar saldo pendiente si es una recarga
+    await admin.firestore().collection('users').doc(uid).update({
+      pendingBalance: admin.firestore.FieldValue.increment(parseFloat(amount))
     });
 
-    // Enviar notificación al ilustrador
-    const notificationsRef = admin.firestore().collection('users').doc(illustratorID).collection('Notifications');
-    await notificationsRef.add({
-      message: `Has recibido una nueva solicitud de servicio para "${description}".`,
-      timestamp: new Date(),
-      read: false,
-    });
+    // Guardar la transacción
+    await saveTransaction(uid, 'recharge', parseFloat(amount), 'pending');
 
+    // Devolver la URL de Mercado Pago
     res.json({ init_point: response.data.init_point });
   } catch (error) {
-    console.error("Error creating preference:", error);
-    res.status(500).json({ error: "Error creating preference" });
+    console.error("Error al crear la preferencia de pago:", error.message);
+    res.status(500).json({ error: "Error al crear la preferencia de pago" });
+  }
+});
+
+// Función para verificar el estado del pago
+app.post('/verifyPayment', async (req, res) => {
+  const { uid, paymentId } = req.body;
+
+  if (!uid || !paymentId) {
+    return res.status(400).json({ error: "Faltan campos requeridos: uid, paymentId" });
+  }
+
+  try {
+    const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+
+    if (paymentResponse.data.status === 'approved') {
+      const userRef = admin.firestore().collection('users').doc(uid);
+      await userRef.update({
+        balance: admin.firestore.FieldValue.increment(paymentResponse.data.transaction_amount),
+        pendingBalance: admin.firestore.FieldValue.increment(-paymentResponse.data.transaction_amount)
+      });
+
+      // Actualizar el estado de la transacción
+      await saveTransaction(uid, 'recharge', paymentResponse.data.transaction_amount, 'completed');
+
+      res.json({ success: true, message: "Pago verificado y balance actualizado" });
+    } else {
+      res.json({ success: false, message: "El pago no ha sido aprobado" });
+    }
+  } catch (error) {
+    console.error('Error al verificar el pago:', error);
+    res.status(500).json({ error: 'Error al verificar el pago' });
   }
 });
 
@@ -92,14 +145,13 @@ app.post('/createPayment', async (req, res) => {
 app.get('/mercadoPagoToken', async (req, res) => {
   const { code, state } = req.query;
 
-  // Validar los parámetros requeridos
   if (!code || !state) {
     console.error("Parámetros de URL inválidos: ", req.query);
     return res.status(400).json({ error: "Parámetros de URL inválidos." });
   }
 
   try {
-    // Enviar la solicitud para obtener el token de acceso
+    // Solicitar el token de acceso
     const response = await axios.post("https://api.mercadopago.com/oauth/token", {
       grant_type: "authorization_code",
       client_id: MERCADO_PAGO_CLIENT_ID,
@@ -107,8 +159,6 @@ app.get('/mercadoPagoToken', async (req, res) => {
       code: code,
       redirect_uri: REDIRECT_URI,
     });
-
-    console.log("Mercado Pago response:", response.data);
 
     const { access_token, refresh_token } = response.data;
 
@@ -126,7 +176,7 @@ app.get('/mercadoPagoToken', async (req, res) => {
   }
 });
 
-// Función para desvincular una cuenta de Mercado Pago
+// Función para desvincular Mercado Pago
 app.get('/unlinkMercadoPago', async (req, res) => {
   const { uid } = req.query;
 
@@ -135,7 +185,7 @@ app.get('/unlinkMercadoPago', async (req, res) => {
   }
 
   try {
-    // Eliminar los tokens de Mercado Pago en Firestore
+    // Eliminar los tokens de Firestore
     const userRef = admin.firestore().collection('users').doc(uid);
     await userRef.update({
       mercadoPagoAccessToken: admin.firestore.FieldValue.delete(),
@@ -148,21 +198,21 @@ app.get('/unlinkMercadoPago', async (req, res) => {
   }
 });
 
-// Función para aprobar pagos a usuarios en Mercado Pago
+// Función para aprobar pagos a usuarios
 app.post('/approvePayment', async (req, res) => {
-  const { userId, amount } = req.body;
+  const { uid, amount } = req.body;
 
-  if (!userId || !amount) {
-    return res.status(400).json({ error: "Missing required fields: userId, amount" });
+  if (!uid || !amount) {
+    return res.status(400).json({ error: "Faltan campos requeridos: uid, amount" });
   }
 
   try {
-    // Obtener el token de acceso del usuario desde Firestore
-    const userRef = admin.firestore().collection('users').doc(userId);
+    // Obtener el token de acceso desde Firestore
+    const userRef = admin.firestore().collection('users').doc(uid);
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     const userData = userDoc.data();
@@ -171,15 +221,15 @@ app.post('/approvePayment', async (req, res) => {
     // Crear la solicitud de pago
     const paymentData = {
       transaction_amount: amount,
-      reason: "Withdrawal",
+      reason: "Retiro",
       payment_method_id: "account_money",
       payer: {
         type: "customer",
-        id: userId
+        id: uid
       }
     };
 
-    // Enviar la solicitud de pago a la API de Mercado Pago
+    // Enviar la solicitud de pago a Mercado Pago
     const paymentResponse = await axios.post("https://api.mercadopago.com/v1/payments", paymentData, {
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -187,19 +237,22 @@ app.post('/approvePayment', async (req, res) => {
     });
 
     if (paymentResponse.data && paymentResponse.data.status === "approved") {
-      // Actualizar el balance del usuario en Firestore
+      // Actualizar el balance en Firestore
       await userRef.update({
         balance: admin.firestore.FieldValue.increment(-amount),
         pendingBalance: admin.firestore.FieldValue.increment(-amount)
       });
 
-      res.json({ message: "Payment approved and processed" });
+      // Guardar la transacción
+      await saveTransaction(uid, 'withdrawal', amount, 'completed');
+
+      res.json({ message: "Pago aprobado y procesado" });
     } else {
-      throw new Error('Payment not approved');
+      throw new Error('El pago no fue aprobado');
     }
   } catch (error) {
-    console.error("Error approving payment:", error);
-    res.status(500).json({ error: "Error approving payment" });
+    console.error("Error al aprobar el pago:", error);
+    res.status(500).json({ error: "Error al aprobar el pago" });
   }
 });
 
@@ -210,48 +263,52 @@ app.post('/paymentNotification', async (req, res) => {
   if (type === 'payment') {
     try {
       const paymentId = data.id;
-      // Obtener la información del pago desde la API de Mercado Pago
+
+      // Obtener la información del pago desde Mercado Pago
       const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
         headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
       });
 
       const paymentStatus = paymentResponse.data.status;
-      const userId = paymentResponse.data.payer.id;
+      const uid = paymentResponse.data.payer.id;
       const amount = paymentResponse.data.transaction_amount;
 
       if (paymentStatus === 'approved') {
-        const withdrawalRequestRef = admin.firestore().collection('withdrawalRequests').doc(userId);
+        const withdrawalRequestRef = admin.firestore().collection('withdrawalRequests').doc(uid);
         await withdrawalRequestRef.update({ status: 'approved' });
         await withdrawalRequestRef.delete();
 
-        // Actualizar el balance del usuario en Firestore
-        const userRef = admin.firestore().collection('users').doc(userId);
+        // Actualizar el balance del usuario
+        const userRef = admin.firestore().collection('users').doc(uid);
         await userRef.update({
           balance: admin.firestore.FieldValue.increment(-amount),
           pendingBalance: admin.firestore.FieldValue.increment(-amount)
         });
+
+        // Guardar la transacción
+        await saveTransaction(uid, 'withdrawal', amount, 'completed');
       }
 
       res.sendStatus(200);
     } catch (error) {
-      console.error('Error handling webhook:', error);
-      res.status(500).json({ error: 'Error handling webhook' });
+      console.error('Error al manejar el webhook:', error);
+      res.status(500).json({ error: 'Error al manejar el webhook' });
     }
   } else {
     res.sendStatus(200);
   }
 });
 
-// Función para actualizar el pendingBalance cuando se deniega una solicitud o se transfiere al ilustrador
+// Función para actualizar el pendingBalance
 app.post('/updatePendingBalance', async (req, res) => {
-  const { userId, amount, action } = req.body;
+  const { uid, amount, action } = req.body;
 
-  if (!userId || !amount || !action) {
-    return res.status(400).json({ error: "Missing required fields: userId, amount, action" });
+  if (!uid || !amount || !action) {
+    return res.status(400).json({ error: "Faltan campos requeridos: uid, amount, action" });
   }
 
   try {
-    const userRef = admin.firestore().collection('users').doc(userId);
+    const userRef = admin.firestore().collection('users').doc(uid);
     
     if (action === 'refund') {
       // Devolver saldo al balance y reducir el pendingBalance
@@ -259,27 +316,31 @@ app.post('/updatePendingBalance', async (req, res) => {
         balance: admin.firestore.FieldValue.increment(amount),
         pendingBalance: admin.firestore.FieldValue.increment(-amount)
       });
+      // Guardar la transacción de reembolso
+      await saveTransaction(uid, 'refund', amount, 'completed');
     } else if (action === 'transfer') {
-      // Reducir el pendingBalance (ya que se transfiere al ilustrador)
+      // Reducir el pendingBalance
       await userRef.update({
         pendingBalance: admin.firestore.FieldValue.increment(-amount)
       });
+      // Guardar la transacción de transferencia
+      await saveTransaction(uid, 'transfer', amount, 'completed');
     }
 
-    res.json({ message: "Pending balance updated successfully" });
+    res.json({ message: "Pending balance actualizado exitosamente" });
   } catch (error) {
-    console.error("Error updating pending balance:", error);
-    res.status(500).json({ error: "Error updating pending balance" });
+    console.error("Error al actualizar el pending balance:", error);
+    res.status(500).json({ error: "Error al actualizar el pending balance" });
   }
 });
 
 // Función para actualizar imágenes en Firebase Storage y eliminar las anteriores
-const updateProfileImage = async (userId, newImagePath, type) => {
-  const userRef = admin.firestore().collection('users').doc(userId);
+const updateProfileImage = async (uid, newImagePath, type) => {
+  const userRef = admin.firestore().collection('users').doc(uid);
   const userDoc = await userRef.get();
 
   if (!userDoc.exists) {
-    throw new Error('User not found');
+    throw new Error('Usuario no encontrado');
   }
 
   const userData = userDoc.data();
@@ -303,34 +364,34 @@ const updateProfileImage = async (userId, newImagePath, type) => {
     });
   }
 
-  // Si hay una imagen anterior, eliminarla del almacenamiento
+  // Eliminar la imagen anterior
   if (oldImagePath) {
     const oldFile = admin.storage().bucket().file(oldImagePath);
     await oldFile.delete();
-    console.log(`Deleted old image: ${oldImagePath}`);
+    console.log(`Imagen eliminada: ${oldImagePath}`);
   }
 
-  console.log(`Updated ${type} image for user: ${userId}`);
+  console.log(`Imagen actualizada: ${type} para el usuario: ${uid}`);
 };
 
 // Función que se ejecuta cuando se actualiza un documento de usuario en Firestore
-exports.uploadImage = functions.firestore.document('users/{userId}').onUpdate(async (change, context) => {
+exports.uploadImage = functions.firestore.document('users/{uid}').onUpdate(async (change, context) => {
   const newValue = change.after.data();
   const previousValue = change.before.data();
 
   // Verificar si la imagen de perfil ha cambiado
   if (newValue.photoURL !== previousValue.photoURL) {
-    await updateProfileImage(context.params.userId, newValue.photoURL, 'profile');
+    await updateProfileImage(context.params.uid, newValue.photoURL, 'profile');
   }
 
   // Verificar si el banner ha cambiado
   if (newValue.bannerURL !== previousValue.bannerURL) {
-    await updateProfileImage(context.params.userId, newValue.bannerURL, 'banner');
+    await updateProfileImage(context.params.uid, newValue.bannerURL, 'banner');
   }
 
-  // Verificar si el fondo de pantalla ha cambiado
+  // Verificar si el fondo ha cambiado
   if (newValue.backgroundURL !== previousValue.backgroundURL) {
-    await updateProfileImage(context.params.userId, newValue.backgroundURL, 'background');
+    await updateProfileImage(context.params.uid, newValue.backgroundURL, 'background');
   }
 });
 

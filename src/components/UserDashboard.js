@@ -3,6 +3,7 @@ import UserContext from '../context/UserContext';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import '../Styles/UserDashboard.css';
+import TransactionHistory from './TransactionHistory';
 
 const UserDashboard = () => {
   const { user, setUser } = useContext(UserContext);
@@ -29,7 +30,6 @@ const UserDashboard = () => {
     }
 
     try {
-      // Crear la solicitud de retiro
       await addDoc(collection(db, 'withdrawalRequests'), {
         userId: user.uid,
         username: user.username,
@@ -39,11 +39,9 @@ const UserDashboard = () => {
         createdAt: new Date()
       });
 
-      // Actualizar el balance del usuario en Firestore
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { balance: 0 });
 
-      // Actualizar el balance del usuario en el estado
       setUser({ ...user, balance: 0 });
 
       alert('Solicitud de retiro enviada.');
@@ -61,6 +59,7 @@ const UserDashboard = () => {
       <button onClick={handleWithdrawalRequest}>Retirar</button>
       {error && <p className="error">{error}</p>}
       <p className="info">Los retiros pueden tardar hasta 24 horas</p>
+      <TransactionHistory userId={user ? user.uid : null} />
     </div>
   );
 };
