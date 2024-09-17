@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
@@ -10,8 +10,8 @@ import Feed from '../components/Feed/Feed';
 const Home = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showNSFW, setShowNSFW] = useState(false); // Controla si se muestran los posts NSFW
-  const [activeFilters, setActiveFilters] = useState({}); // Guarda los filtros activos
+  const [showNSFW, setShowNSFW] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,11 +19,19 @@ const Home = () => {
       setLoading(true);
       if (user) {
         const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          console.log('User Data:', userDoc.data());
+        try {
+          const userDoc = await getDoc(userRef);
+          if (userDoc.exists()) {
+            console.log('User Data:', userDoc.data());
+            setUser({ ...user, ...userDoc.data() });
+          } else {
+            console.log('No such document!');
+            setUser(user);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setUser(user);
         }
-        setUser(user);
       } else {
         setUser(null);
       }
@@ -33,11 +41,10 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  // Maneja el cambio de filtros desde el LeftSidebar
-  const handleFilterChange = ({ showNSFW, activeFilters }) => {
-    setShowNSFW(showNSFW); // Actualiza el estado para mostrar u ocultar NSFW
-    setActiveFilters(activeFilters); // Actualiza los filtros activos
-  };
+  const handleFilterChange = useCallback(({ showNSFW, activeFilters }) => {
+    setShowNSFW(showNSFW);
+    setActiveFilters(activeFilters);
+  }, []);
 
   const renderLoadingSpinner = () => (
     <div className="home-loading-container">
@@ -72,7 +79,7 @@ const Home = () => {
         <h2>Feed de Publicaciones</h2>
         {!user ? (
           <div className="feed-warning">
-            Para ver el contenido debes <span onClick={() => navigate('/register')} className="link-text">registrarte</span> o <span onClick={() => navigate('/login')} className="link-text">iniciar sesión</span>.
+            Para ver el contenido debes <button onClick={() => navigate('/register')} className="link-button">registrarte</button> o <button onClick={() => navigate('/login')} className="link-button">iniciar sesión</button>.
           </div>
         ) : (
           <Feed showNSFW={showNSFW} activeFilters={activeFilters} userId={user?.uid} />
@@ -91,7 +98,7 @@ const Home = () => {
       {renderWelcomeBox()}
       {renderMainContent()}
       <footer className="home-footer">
-        <p>© 2024 Illustra. Todos los derechos reservados.</p>
+        <p>© {new Date().getFullYear()} Illustra. Todos los derechos reservados.</p>
         <p>Contact: <a href="mailto:support@illustra.app">support@illustra.app</a></p>
       </footer>
     </div>

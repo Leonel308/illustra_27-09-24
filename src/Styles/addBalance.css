@@ -1,6 +1,5 @@
-/* Estilos para el modal de añadir saldo */
-
-.modal-overlay {
+/* Asegurándonos de que todas las clases sean específicas para el modal de añadir saldo */
+.modal-addBalance-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -13,33 +12,33 @@
   z-index: 9999;
 }
 
-.modal-content {
+.modal-addBalance-content {
   background: #ffffff;
   border-radius: 12px;
   width: 420px;
   max-width: 95%;
   padding: 25px;
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease-in-out;
+  animation: modal-addBalance-fadeIn 0.3s ease-in-out;
   text-align: center;
 }
 
-.modal-header {
+.modal-addBalance-header {
   text-align: center;
   margin-bottom: 20px;
 }
 
-.modal-header h3 {
+.modal-addBalance-header h3 {
   font-size: 1.5rem;
   color: #333;
   margin: 0;
 }
 
-.modal-body {
+.modal-addBalance-body {
   margin-bottom: 20px;
 }
 
-.form-input {
+.modal-addBalance-input {
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;
@@ -48,12 +47,12 @@
   font-size: 1rem;
 }
 
-.terms-section {
+.modal-addBalance-terms-section {
   margin-top: 15px;
   text-align: left;
 }
 
-.terms-scrollable {
+.modal-addBalance-terms-scrollable {
   height: 300px; /* Aumentar la altura para facilitar la lectura */
   overflow-y: auto;
   border: 1px solid #ddd;
@@ -64,29 +63,29 @@
   font-size: 0.9rem;
 }
 
-.checkbox-container {
+.modal-addBalance-checkbox-container {
   display: flex;
   align-items: center;
   justify-content: left;
   margin-bottom: 20px;
 }
 
-.checkbox-container input[type="checkbox"] {
+.modal-addBalance-checkbox-container input[type="checkbox"] {
   margin-right: 8px;
 }
 
-.checkbox-container label {
+.modal-addBalance-checkbox-container label {
   font-size: 0.9rem;
   color: #333;
 }
 
-.modal-footer {
+.modal-addBalance-footer {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
 }
 
-.modal-footer button {
+.modal-addBalance-footer button {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -94,33 +93,33 @@
   font-size: 1rem;
 }
 
-.modal-footer button:first-child {
+.modal-addBalance-footer button:first-child {
   background-color: #f1f1f1;
   color: #555;
 }
 
-.modal-footer button:last-child {
+.modal-addBalance-footer button:last-child {
   background-color: #4CAF50;
   color: #fff;
   border: none;
 }
 
-.modal-footer button[disabled] {
+.modal-addBalance-footer button[disabled] {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.alert-danger {
+.modal-addBalance-alert-danger {
   color: red;
   margin-bottom: 15px;
   text-align: center;
 }
 
-.loader {
+.modal-addBalance-loader {
   margin-right: 8px;
 }
 
-@keyframes fadeIn {
+@keyframes modal-addBalance-fadeIn {
   from {
     opacity: 0;
     transform: translateY(-10px);

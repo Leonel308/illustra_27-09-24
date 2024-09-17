@@ -4,9 +4,13 @@
   --accent-color: #4ecdc4;
   --background-color: rgba(247, 247, 247, 0.6);
   --text-color: #333;
+  --sidebar-width: 300px;
+  --sidebar-gradient: linear-gradient(135deg, rgba(106, 13, 173, 0.9), rgba(255, 107, 107, 0.9));
+  --card-background: rgba(255, 255, 255, 0.8);
+  --transition-speed: 0.3s;
+  --header-height: 60px;
 }
 
-/* Normalización de márgenes y padding */
 * {
   margin: 0;
   padding: 0;
@@ -17,11 +21,9 @@ html, body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
-}
-
-body {
   font-family: 'Arial', sans-serif;
   background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .profilePageContainer {
@@ -33,21 +35,29 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  color: var(--text-color);
+  padding-top: var(--header-height);
 }
 
 .profileContent {
   display: flex;
   width: 100%;
   max-width: 1200px;
+  margin-left: var(--sidebar-width);
 }
 
 .profileSidebar {
-  width: 300px;
-  background: linear-gradient(135deg, rgba(106, 13, 173, 0.9), rgba(255, 107, 107, 0.9));
+  width: var(--sidebar-width);
+  background: var(--sidebar-gradient);
   color: white;
   padding: 2rem;
   border-radius: 15px 0 0 15px;
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+  z-index: 99;
+  transition: transform var(--transition-speed) ease;
 }
 
 .profileHeader {
@@ -60,7 +70,7 @@ body {
   border-radius: 50%;
   border: 5px solid var(--accent-color);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-speed) ease;
 }
 
 .profilePicture:hover {
@@ -86,13 +96,8 @@ body {
   gap: 2rem;
 }
 
-.profileBackgroundContainer {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
 .profileSection {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--card-background);
   border-radius: 15px;
   padding: 2rem;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -114,11 +119,47 @@ body {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color var(--transition-speed) ease;
 }
 
 .profileBackgroundContainer .saveButton:hover {
   background-color: var(--secondary-color);
+}
+
+.loadingSpinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.errorMessage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: var(--secondary-color);
+}
+
+@media (max-width: 1024px) {
+  .profileContent {
+    margin-left: 0;
+  }
+
+  .profileSidebar {
+    transform: translateX(-100%);
+  }
+
+  .profileSidebar.active {
+    transform: translateX(0);
+  }
+
+  .profileMainContent {
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -128,6 +169,22 @@ body {
 
   .profileSidebar {
     width: 100%;
+    position: relative;
+    top: 0;
+    height: auto;
+    z-index: 1;
     border-radius: 15px 15px 0 0;
+  }
+
+  .profileMainContent {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profilePicture,
+  .profileSidebar,
+  .profileBackgroundContainer .saveButton {
+    transition: none;
   }
 }

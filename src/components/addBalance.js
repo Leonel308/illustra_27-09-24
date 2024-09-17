@@ -11,9 +11,11 @@ const AddBalance = ({ onClose }) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleAddBalance = async () => {
+    // Limpiamos errores previos y activamos el estado de carga
     setError('');
     setLoading(true);
 
+    // Validamos que el usuario esté autenticado y que haya aceptado los términos
     if (!user?.uid) {
       setError('Error: el UID no está disponible.');
       setLoading(false);
@@ -27,76 +29,83 @@ const AddBalance = ({ onClose }) => {
     }
 
     try {
-      // Hacer la solicitud para crear el pago en el backend
-      const response = await fetch('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createAddBalancePayment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, uid: user.uid })
-      });
+      // Realizamos la solicitud para generar el pago en el backend
+      const response = await fetch(
+        'https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createAddBalancePayment',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, uid: user.uid })
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
 
-      // Redirigir al usuario a la página de pago
+      // Redirigimos al usuario a la página de pago si todo está correcto
       window.location.href = data.init_point;
 
+      // Retornamos para asegurar que el flujo termina aquí si la redirección ocurre
+      return;
     } catch (err) {
+      // Mostramos el error si ocurre un problema al crear el pago
       setError(err.message || 'Error al crear el pago. Por favor, intenta de nuevo.');
     } finally {
+      // Desactivamos el estado de carga al finalizar
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    // Limpiar los datos ingresados
+    // Limpiamos los datos ingresados y los estados
     setAmount('');
     setAcceptedTerms(false);
     setError('');
-    // Cerrar el modal
+    // Llamamos la función onClose para cerrar el modal
     onClose();
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
+    <div className="modal-addBalance-overlay">
+      <div className="modal-addBalance-content">
+        <div className="modal-addBalance-header">
           <h3>Añadir Saldo</h3>
         </div>
-        <div className="modal-body">
+        <div className="modal-addBalance-body">
           {error && (
-            <div className="alert alert-danger">
+            <div className="modal-addBalance-alert-danger">
               <strong>Error:</strong> {error}
             </div>
           )}
-          <input 
-            type="number" 
-            placeholder="Ingrese el monto" 
-            value={amount} 
+          <input
+            type="number"
+            placeholder="Ingrese el monto"
+            value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="form-input" 
+            className="modal-addBalance-input"
           />
 
-          <div className="terms-section">
-            <div className="terms-scrollable">
+          <div className="modal-addBalance-terms-section">
+            <div className="modal-addBalance-terms-scrollable">
               <TermsAndConditions />
             </div>
-            <div className="checkbox-container">
-              <input 
-                type="checkbox" 
-                id="terms" 
-                checked={acceptedTerms} 
-                onChange={(e) => setAcceptedTerms(e.target.checked)} 
+            <div className="modal-addBalance-checkbox-container">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
               />
               <label htmlFor="terms">He leído y acepto los términos y condiciones</label>
             </div>
           </div>
         </div>
-        <div className="modal-footer">
+        <div className="modal-addBalance-footer">
           <button onClick={handleCancel}>Cancelar</button>
           <button onClick={handleAddBalance} disabled={loading || !amount || !acceptedTerms}>
             {loading ? (
               <>
-                <span className="loader" />Procesando
+                <span className="modal-addBalance-loader" />Procesando
               </>
             ) : (
               'Añadir'

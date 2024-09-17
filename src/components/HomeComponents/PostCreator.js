@@ -35,6 +35,15 @@ function PostCreator({ onPostCreated }) {
     ]
   };
 
+  const resetForm = () => {
+    setNewPost('');
+    setTitle('');
+    setDescription('');
+    setCharacterCount(0);
+    setImageSrc(null);
+    setCroppedImage(null);
+  };
+
   const handleNewPost = async () => {
     if (postType === 'quick') {
       if (newPost.trim() === '') {
@@ -90,12 +99,7 @@ function PostCreator({ onPostCreated }) {
       }
 
       // Limpiar campos después de la publicación
-      setNewPost('');
-      setTitle('');
-      setDescription('');
-      setCharacterCount(0);
-      setImageSrc(null);
-      setCroppedImage(null);
+      resetForm();
     } catch (error) {
       console.error('Error al agregar publicación: ', error);
     } finally {
@@ -207,14 +211,7 @@ function PostCreator({ onPostCreated }) {
           <button onClick={handleNewPost} className="publish-button">
             {isPosting ? <div className="spinner"></div> : "Publicar"}
           </button>
-          <button onClick={() => {
-            setNewPost('');
-            setTitle('');
-            setDescription('');
-            setCharacterCount(0);
-            setImageSrc(null);
-            setCroppedImage(null);
-          }} className="clear-button">
+          <button onClick={resetForm} className="clear-button">
             Limpiar
           </button>
         </div>

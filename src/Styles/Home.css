@@ -1,11 +1,12 @@
 :root {
   --primary-color: #6a0dad;
   --secondary-color: #ffd700;
-  --background-color: #ffffff;
+  --background-color: #f0f2f5;
   --text-color: #333;
   --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   --border-color: #e6ecf0;
   --warning-color: #ff6b6b;
+  --transition-speed: 0.3s;
 }
 
 body {
@@ -34,12 +35,17 @@ body {
   margin-bottom: 20px;
   text-align: center;
   border: 1px solid var(--border-color);
+  transition: transform var(--transition-speed) ease;
+}
+
+.home-welcome-box:hover {
+  transform: translateY(-5px);
 }
 
 .home-welcome-box h2 {
   color: var(--primary-color);
-  font-size: 24px;
-  margin-bottom: 10px;
+  font-size: 26px;
+  margin-bottom: 15px;
 }
 
 .home-welcome-box p {
@@ -48,20 +54,37 @@ body {
   margin-bottom: 20px;
 }
 
+.home-create-account-box {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  padding: 25px;
+}
+
+.home-create-account-box h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
 .home-create-account-box .cta-button {
-  background-color: var(--warning-color);
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
+  padding: 15px 25px;
+  border-radius: 25px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 16px;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  margin-top: 10px;
+  font-size: 18px;
+  transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+  margin-top: 15px;
+  display: block;
+  width: 100%;
 }
 
 .home-create-account-box .cta-button:hover {
+  background-color: var(--secondary-color);
+  color: white; /* Aseguramos que el texto siga siendo blanco */
   transform: scale(1.05);
 }
 
@@ -72,15 +95,16 @@ body {
 }
 
 .sidebar-left {
-  width: 160px;
-  height: 100vh;
-  background-color: #f8f9fa;
+  width: 200px;
+  height: calc(100vh - 40px);
+  background-color: white;
   padding: 1rem;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   overflow-y: auto;
-  transition: all 0.3s ease;
-  margin-left: -20px;
-  border-right: 1px solid var(--border-color);
+  transition: all var(--transition-speed) ease;
+  border-radius: 15px;
+  position: sticky;
+  top: 20px;
 }
 
 .sidebar-right {
@@ -91,6 +115,9 @@ body {
   padding: 20px;
   box-sizing: border-box;
   border: 1px solid var(--border-color);
+  position: sticky;
+  top: 20px;
+  height: fit-content;
 }
 
 .sidebar-right nav ul {
@@ -105,10 +132,15 @@ body {
   padding: 10px 0;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-speed) ease;
 }
 
 .sidebar-right nav ul li:last-child {
   border-bottom: none;
+}
+
+.sidebar-right nav ul li:hover {
+  background-color: var(--background-color);
 }
 
 .sidebar-right nav ul li svg {
@@ -135,35 +167,60 @@ body {
 .feed-warning {
   color: var(--warning-color);
   background-color: #ffe6e6;
-  padding: 15px;
+  padding: 25px;
   border-radius: 10px;
   text-align: center;
   font-weight: bold;
 }
 
-.feed-warning .link-text {
-  color: var(--primary-color);
+.feed-warning button {
+  background: var(--primary-color);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
   cursor: pointer;
-  text-decoration: underline;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+  margin: 5px;
 }
 
-.feed-warning .link-text:hover {
-  color: darken(var(--primary-color), 10%);
+.feed-warning button:hover {
+  background-color: var(--secondary-color);
+  color: white; /* El color del texto se mantiene blanco al hacer hover */
+  transform: scale(1.05);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: white;  /* Color del texto fijo en blanco */
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+  transition: color var(--transition-speed) ease;
+}
+
+.link-button:hover {
+  color: var(--secondary-color);
 }
 
 .home-footer {
   background-color: var(--primary-color);
   color: white;
   text-align: center;
-  padding: 10px;
+  padding: 15px;
   border-radius: 15px;
   margin-top: 20px;
 }
 
 .home-footer a {
-  color: #007bff;
+  color: var(--secondary-color);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color var(--transition-speed) ease;
 }
 
 .home-footer a:hover {
@@ -199,19 +256,38 @@ body {
     flex-direction: column;
   }
 
-  .sidebar-left {
-    position: relative;
+  .sidebar-left, .sidebar-right {
+    position: static;
     width: 100%;
-    height: auto;
-    margin-left: 0;
-  }
-
-  .sidebar-right {
     max-width: 100%;
+    height: auto;
     margin-bottom: 20px;
   }
 
   .feed-container {
     max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 10px;
+  }
+
+  .home-welcome-box {
+    padding: 20px;
+  }
+
+  .home-welcome-box h2 {
+    font-size: 20px;
+  }
+
+  .home-welcome-box p {
+    font-size: 14px;
+  }
+
+  .home-create-account-box .cta-button {
+    font-size: 14px;
+    padding: 8px 16px;
   }
 }

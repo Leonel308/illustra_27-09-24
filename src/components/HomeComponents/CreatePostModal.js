@@ -34,6 +34,18 @@ const CreatePostModal = ({ isOpen, onClose }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
 
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setMainCategory('SFW');
+    setSubCategory('OC');
+    setImageSrc(null);
+    setCroppedImage(null);
+    setError('');
+    setIsExpanded(false);
+    setShowCropper(false);
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -87,7 +99,8 @@ const CreatePostModal = ({ isOpen, onClose }) => {
         await updateDoc(postRef, { imageURL });
       }
 
-      onClose();
+      resetForm(); // Restablecer formulario
+      onClose();  // Cerrar el modal al completar la publicación
     } catch (error) {
       console.error("Error creating post: ", error);
       setError('Error al crear la publicación. Por favor, inténtalo de nuevo.');
@@ -153,7 +166,15 @@ const CreatePostModal = ({ isOpen, onClose }) => {
               <button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Publicando...' : 'Publicar'}
               </button>
-              <button type="button" onClick={onClose}>Cerrar</button>
+              <button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+              >
+                Cerrar
+              </button>
             </div>
           </form>
 
