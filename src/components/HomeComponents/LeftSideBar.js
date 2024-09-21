@@ -1,105 +1,101 @@
 import React, { useState, useEffect } from 'react';
-import './LeftSideBar.css';
+import styles from './LeftSideBar.module.css';
 
-// Filtros por categoría SFW y NSFW
-const filters = {
-  SFW: [
-    'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
-    'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
-    'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
-    'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
-    'Fantasía', 'Cyberpunk', 'Retro'
-  ],
-  NSFW: [
-    'General', 'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
-    'Futanari', 'Tentáculos', 'Furry NSFW',
-    'Monstruos', 'Femdom', 'Maledom'
-  ]
-};
+const SFW_CATEGORIES = [
+  'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+  'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+  'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+  'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+  'Fantasía', 'Cyberpunk', 'Retro'
+];
 
-const LeftSidebar = ({ onFilterChange }) => {
-  const [showNSFW, setShowNSFW] = useState(false); // Estado para manejar la visibilidad del contenido NSFW
-  const [searchTerm, setSearchTerm] = useState(''); // Término de búsqueda en los filtros
-  const [activeFilters, setActiveFilters] = useState({ SFW: [], NSFW: [] }); // Filtros seleccionados
+const NSFW_CATEGORIES = [
+  'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
+  'Futanari', 'Tentáculos', 'Furry NSFW',
+  'Monstruos', 'Femdom', 'Maledom'
+];
 
-  // Efecto para actualizar los filtros en el componente padre cuando cambian
+function LeftSideBar({ onFilterChange }) {
+  const [showNSFW, setShowNSFW] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilters, setActiveFilters] = useState([]);
+
   useEffect(() => {
-    onFilterChange({ showNSFW, activeFilters });
-  }, [showNSFW, activeFilters, onFilterChange]);
+    onFilterChange({ showNSFW, activeFilters, searchTerm });
+  }, [showNSFW, activeFilters, searchTerm, onFilterChange]);
 
-  // Maneja el cambio de la visibilidad del contenido NSFW
   const handleNSFWToggle = () => {
     setShowNSFW(prevShowNSFW => !prevShowNSFW);
-    // Resetea los filtros NSFW al desactivar el contenido NSFW
-    if (!showNSFW) {
-      setActiveFilters(prevFilters => ({ ...prevFilters, NSFW: [] }));
+    if (showNSFW) {
+      setActiveFilters(prevFilters => prevFilters.filter(filter => !NSFW_CATEGORIES.includes(filter)));
     }
   };
 
-  // Maneja la selección y deselección de filtros
-  const handleFilterChange = (filterType, filter) => {
+  const handleFilterChange = (filter) => {
     setActiveFilters(prevFilters => {
-      const isActive = prevFilters[filterType].includes(filter);
-      const updatedFilters = isActive
-        ? prevFilters[filterType].filter(f => f !== filter)
-        : [...prevFilters[filterType], filter];
-      return { ...prevFilters, [filterType]: updatedFilters };
+      if (prevFilters.includes(filter)) {
+        return prevFilters.filter(f => f !== filter);
+      } else {
+        return [...prevFilters, filter];
+      }
     });
   };
 
-  // Renderiza los filtros para cada categoría (SFW o NSFW)
-  const renderFilters = () => {
-    const categories = showNSFW ? ['SFW', 'NSFW'] : ['SFW']; // Muestra NSFW solo si está activado
-    return categories.map(filterType => (
-      <div key={filterType}>
-        <h3 className="filter-category">{filterType === 'SFW' ? 'Filtros SFW' : 'Filtros NSFW'}</h3>
-        <ul className="filter-list">
-          {filters[filterType].map(filter => {
-            const filterLower = filter.toLowerCase();
-            if (filterLower.includes(searchTerm.toLowerCase())) {
-              return (
-                <li key={filter}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={activeFilters[filterType].includes(filter)}
-                      onChange={() => handleFilterChange(filterType, filter)}
-                    />
-                    {filter}
-                  </label>
-                </li>
-              );
-            }
-            return null;
-          })}
-        </ul>
-      </div>
-    ));
+  const filterCategories = (categories) => {
+    return categories.filter(category =>
+      category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
 
   return (
-    <div className="sidebar-left">
-      {/* Barra de búsqueda para los filtros */}
-      <input
-        type="text"
-        className="filter-search"
-        placeholder="Buscar filtros..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      {/* Toggle para activar/desactivar contenido NSFW */}
-      <label className="nsfw-toggle">
+    <div className={styles.leftSidebar}>
+      <div className={styles.sidebarContent}>
         <input
-          type="checkbox"
-          checked={showNSFW}
-          onChange={handleNSFWToggle}
+          type="text"
+          placeholder="Buscar categorías..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={styles.searchInput}
         />
-        Mostrar contenido NSFW
-      </label>
-      {/* Renderizado de los filtros */}
-      {renderFilters()}
+        <button
+          className={styles.nsfwToggle}
+          onClick={handleNSFWToggle}
+        >
+          {showNSFW ? 'Ocultar NSFW' : 'Mostrar NSFW'}
+        </button>
+        <div className={styles.categorySection}>
+          <h3 className={styles.categoryTitle}>Categorías SFW</h3>
+          <div className={styles.categoryList}>
+            {filterCategories(SFW_CATEGORIES).map(category => (
+              <button
+                key={category}
+                className={`${styles.categoryButton} ${activeFilters.includes(category) ? styles.active : ''}`}
+                onClick={() => handleFilterChange(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+        {showNSFW && (
+          <div className={styles.categorySection}>
+            <h3 className={styles.categoryTitle}>Categorías NSFW</h3>
+            <div className={styles.categoryList}>
+              {filterCategories(NSFW_CATEGORIES).map(category => (
+                <button
+                  key={category}
+                  className={`${styles.categoryButton} ${activeFilters.includes(category) ? styles.active : ''}`}
+                  onClick={() => handleFilterChange(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-};
+}
 
-export default LeftSidebar;
+export default LeftSideBar;

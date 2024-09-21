@@ -1,0 +1,22 @@
+/* src/components/Footer.css */
+
+.home-footer {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 15px;
+    border-radius: 15px;
+    margin-top: 20px;
+  }
+  
+  .home-footer a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+  }
+  
+  .home-footer a:hover {
+    color: white;
+    text-decoration: underline;
+  }
+  

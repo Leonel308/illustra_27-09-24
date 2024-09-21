@@ -7,33 +7,28 @@ import ImageCropperModal from '../Profile/ImageCropperModal';
 import './PostCreator.css';
 
 function PostCreator({ onPostCreated }) {
-  const { user } = useContext(UserContext); // Obtenemos el usuario actual desde el contexto
-  const [newPost, setNewPost] = useState(''); // Estado para el contenido de un post rápido
-  const [title, setTitle] = useState(''); // Estado para el título de un post completo
-  const [description, setDescription] = useState(''); // Estado para la descripción de un post completo
-  const [mainCategory, setMainCategory] = useState('SFW'); // Estado para la categoría principal (SFW/NSFW)
-  const [subCategory, setSubCategory] = useState('General'); // Estado para la subcategoría
-  const [imageSrc, setImageSrc] = useState(null); // Estado para la imagen original seleccionada
-  const [croppedImage, setCroppedImage] = useState(null); // Estado para la imagen recortada
-  const [showCropper, setShowCropper] = useState(false); // Estado para mostrar u ocultar el cropper de imagen
-  const [characterCount, setCharacterCount] = useState(0); // Estado para el contador de caracteres
-  const [postType, setPostType] = useState('quick'); // Estado para el tipo de post (rápido/completo)
-  const [isPosting, setIsPosting] = useState(false); // Estado para mostrar el spinner de carga
+  const { user } = useContext(UserContext);
+  const [newPost, setNewPost] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('General');
+  const [isNSFW, setIsNSFW] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [characterCount, setCharacterCount] = useState(0);
+  const [postType, setPostType] = useState('quick');
+  const [isPosting, setIsPosting] = useState(false);
 
-  const categories = {
-    "SFW": [
-      'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
-      'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
-      'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
-      'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
-      'Fantasía', 'Cyberpunk', 'Retro'
-    ],
-    "NSFW": [
-      'General', 'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
-      'Futanari', 'Tentáculos', 'Furry NSFW',
-      'Monstruos', 'Femdom', 'Maledom'
-    ]
-  };
+  const categories = [
+    'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+    'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+    'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+    'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+    'Fantasía', 'Cyberpunk', 'Retro', 'Hentai', 'Yuri', 'Yaoi', 'Gore',
+    'Bondage', 'Futanari', 'Tentáculos', 'Furry NSFW',
+    'Monstruos', 'Femdom', 'Maledom'
+  ];
 
   const resetForm = () => {
     setNewPost('');
@@ -42,6 +37,8 @@ function PostCreator({ onPostCreated }) {
     setCharacterCount(0);
     setImageSrc(null);
     setCroppedImage(null);
+    setCategory('General');
+    setIsNSFW(false);
   };
 
   const handleNewPost = async () => {
@@ -65,18 +62,17 @@ function PostCreator({ onPostCreated }) {
       }
     }
 
-    setIsPosting(true); // Muestra el spinner de carga
+    setIsPosting(true);
 
-    const isAdultContent = mainCategory === 'NSFW';
-    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
+    const collectionName = isNSFW ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
       const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
         title: postType === 'complete' ? title : '',
         description: postType === 'complete' ? description : newPost,
-        category: `${mainCategory} - ${subCategory}`,
-        isAdultContent,
+        category,
+        isNSFW,
         timestamp: new Date(),
         likes: 0,
         likedBy: [],
@@ -85,7 +81,6 @@ function PostCreator({ onPostCreated }) {
 
       const postId = postRef.id;
 
-      // Subir imagen solo si es un post completo
       if (postType === 'complete' && croppedImage) {
         const imageRef = ref(storage, `posts/${user.uid}/${postId}`);
         await uploadBytes(imageRef, croppedImage);
@@ -93,12 +88,10 @@ function PostCreator({ onPostCreated }) {
         await updateDoc(postRef, { imageURL });
       }
 
-      // Refrescar feed después de publicar
       if (onPostCreated) {
         onPostCreated();
       }
 
-      // Limpiar campos después de la publicación
       resetForm();
     } catch (error) {
       console.error('Error al agregar publicación: ', error);
@@ -122,12 +115,12 @@ function PostCreator({ onPostCreated }) {
   const handleSaveCroppedImage = async (croppedFile) => {
     setCroppedImage(croppedFile);
     setImageSrc(URL.createObjectURL(croppedFile));
-    setShowCropper(false); 
+    setShowCropper(false);
   };
 
   const handleCancelCrop = () => {
     setShowCropper(false);
-    setImageSrc(null); 
+    setImageSrc(null);
   };
 
   const handlePostTypeChange = (type) => {
@@ -150,7 +143,7 @@ function PostCreator({ onPostCreated }) {
           Post Completo
         </button>
       </div>
-      
+
       <>
         {postType === 'quick' ? (
           <>
@@ -186,23 +179,29 @@ function PostCreator({ onPostCreated }) {
               required
             />
             <small>{characterCount}/360 caracteres</small>
-            <select
-              value={mainCategory}
-              onChange={(e) => setMainCategory(e.target.value)}
-              required
-            >
-              <option value="SFW">SFW</option>
-              <option value="NSFW">NSFW</option>
-            </select>
-            <select
-              value={subCategory}
-              onChange={(e) => setSubCategory(e.target.value)}
-              required
-            >
-              {categories[mainCategory].map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+            <label>
+              Clasificación de contenido:
+              <select
+                value={isNSFW ? 'NSFW' : 'SFW'}
+                onChange={(e) => setIsNSFW(e.target.value === 'NSFW')}
+                required
+              >
+                <option value="SFW">SFW</option>
+                <option value="NSFW">NSFW</option>
+              </select>
+            </label>
+            <label>
+              Categoría:
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </label>
             <input type="file" accept="image/*" onChange={handleImageChange} />
             {imageSrc && <img src={imageSrc} alt="Preview" className="image-preview" />}
           </>

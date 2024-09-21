@@ -6,27 +6,22 @@ import UserContext from '../../context/UserContext';
 import ImageCropperModal from '../../components/Profile/ImageCropperModal';
 import '../../components/HomeComponents/CreatePostModal.css';
 
-const categories = {
-  "SFW": [
-    'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
-    'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art', 
-    'Cómic', 'Abstracto', 'Minimalista', 'Chibi', 
-    'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
-    'Fantasía', 'Cyberpunk', 'Retro'
-  ],
-  "NSFW": [
-    'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage', 
-    'Futanari', 'Tentáculos', 'Furry NSFW', 
-    'Monstruos', 'Femdom', 'Maledom'
-  ]
-};
+const categories = [
+  'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+  'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+  'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+  'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+  'Fantasía', 'Cyberpunk', 'Retro', 'Hentai', 'Yuri', 'Yaoi',
+  'Gore', 'Bondage', 'Futanari', 'Tentáculos', 'Furry NSFW',
+  'Monstruos', 'Femdom', 'Maledom'
+];
 
 const CreatePostModal = ({ isOpen, onClose }) => {
   const { user } = useContext(UserContext);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [mainCategory, setMainCategory] = useState('SFW');
-  const [subCategory, setSubCategory] = useState('OC');
+  const [category, setCategory] = useState('OC');
+  const [isNSFW, setIsNSFW] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [error, setError] = useState('');
@@ -37,8 +32,8 @@ const CreatePostModal = ({ isOpen, onClose }) => {
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setMainCategory('SFW');
-    setSubCategory('OC');
+    setCategory('OC');
+    setIsNSFW(false);
     setImageSrc(null);
     setCroppedImage(null);
     setError('');
@@ -77,16 +72,15 @@ const CreatePostModal = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
 
-    const isAdultContent = mainCategory === 'NSFW';
-    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
+    const collectionName = isNSFW ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
       const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
         title: isExpanded ? title : description.substring(0, 60),
         description,
-        category: `${mainCategory} - ${subCategory}`,
-        isAdultContent,
+        category,
+        isNSFW,
         timestamp: Timestamp.fromDate(new Date()),
       });
 
@@ -129,28 +123,31 @@ const CreatePostModal = ({ isOpen, onClose }) => {
                   onChange={(e) => setTitle(e.target.value)}
                   required={isExpanded}
                 />
-                <select
-                  value={mainCategory}
-                  onChange={(e) => {
-                    setMainCategory(e.target.value);
-                    setSubCategory(categories[e.target.value][0]);
-                  }}
-                  required
-                >
-                  <option value="SFW">SFW</option>
-                  <option value="NSFW">NSFW</option>
-                </select>
-                <select
-                  value={subCategory}
-                  onChange={(e) => setSubCategory(e.target.value)}
-                  required
-                >
-                  {categories[mainCategory].map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                <label>
+                  Clasificación de contenido:
+                  <select
+                    value={isNSFW ? 'NSFW' : 'SFW'}
+                    onChange={(e) => setIsNSFW(e.target.value === 'NSFW')}
+                    required
+                  >
+                    <option value="SFW">SFW</option>
+                    <option value="NSFW">NSFW</option>
+                  </select>
+                </label>
+                <label>
+                  Categoría:
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    required
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <input type="file" accept="image/*" onChange={handleImageChange} />
                 {croppedImage && (
                   <div className="image-preview">

@@ -1,106 +1,133 @@
-import React, { useEffect, useState, useContext } from 'react';
+// Feed.js
+
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
-import { collection, onSnapshot, doc, getDoc, query, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  deleteDoc
+} from 'firebase/firestore';
 import UserContext from '../../context/UserContext';
 import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
 import PostCreator from '../HomeComponents/PostCreator';
 import '../../Styles/Feed.css';
 
-function Feed({ showNSFW }) {
+// Definir categorías SFW y NSFW por separado (opcional, si se necesitan más adelante)
+const SFW_CATEGORIES = [
+  'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+  'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+  'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+  'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+  'Fantasía', 'Cyberpunk', 'Retro'
+];
+
+const NSFW_CATEGORIES = [
+  'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
+  'Futanari', 'Tentáculos', 'Furry NSFW',
+  'Monstruos', 'Femdom', 'Maledom'
+];
+
+function Feed({ filters }) {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [likeProcessing, setLikeProcessing] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  const updateFeed = () => {
-    const postsCollection = collection(db, 'PostsCollection');
-    const nsfwCollection = collection(db, 'PostsCollectionMature');
+  const handleSnapshot = useCallback(async (snapshot, isNSFW) => {
+    const postsList = await Promise.all(
+      snapshot.docs.map(async (postDoc) => {
+        const postData = postDoc.data();
 
-    let sfwQuery = query(postsCollection, orderBy('timestamp', 'desc'));
-    let nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc'));
+        if (!postData.userID || postDoc.id.includes('Template')) {
+          return null;
+        }
 
-    // Actualizar feed de contenido SFW
-    const unsubscribeSFW = onSnapshot(sfwQuery, async (snapshot) => {
-      const postsList = await Promise.all(
-        snapshot.docs.map(async (postDoc) => {
-          const postData = postDoc.data();
-
-          if (!postData || !postData.userID || !postData.description) {
-            return null;
-          }
-
-          const userDocRef = doc(db, 'users', postData.userID);
+        const userDocRef = doc(db, 'users', postData.userID);
+        try {
           const userDoc = await getDoc(userDocRef);
-          if (!userDoc.exists()) {
-            return null;
-          }
+          const userData = userDoc.exists() ? userDoc.data() : {};
 
-          const userData = userDoc.data();
+          const creationDate = postData.timestamp
+            ? new Date(postData.timestamp.seconds * 1000).toLocaleDateString('es-ES')
+            : 'Fecha desconocida';
+
           return {
             id: postDoc.id,
             ...postData,
             username: userData.username || 'Usuario Desconocido',
             userPhotoURL: userData.photoURL || '',
             isLiked: postData.likedBy?.includes(user?.uid) || false,
-            isNSFW: false,
+            isNSFW: isNSFW,
+            creationDate: creationDate,
+            timestamp: postData.timestamp // Mantener el timestamp para ordenar
           };
-        })
-      );
+        } catch (error) {
+          console.error('Error al obtener datos del usuario:', error);
+          return null;
+        }
+      })
+    );
 
-      const validPosts = postsList.filter(post => post !== null);
-
-      // Actualiza solo los posts SFW
-      setPosts(prevPosts => {
-        const nsfwPosts = prevPosts.filter(post => post.isNSFW); // Mantiene los posts NSFW si están presentes
-        return [...validPosts, ...nsfwPosts].sort((a, b) => b.timestamp - a.timestamp);
-      });
+    const validPosts = postsList.filter(post => post !== null);
+    setPosts(prevPosts => {
+      // Combinar las publicaciones nuevas con las existentes, evitando duplicados
+      const combinedPosts = [
+        ...prevPosts.filter(p => p.isNSFW !== isNSFW),
+        ...validPosts
+      ];
+      // Ordenar por timestamp descendente
+      combinedPosts.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+      return combinedPosts;
     });
+    setLoading(false);
+  }, [user?.uid]);
 
-    // Actualizar feed de contenido NSFW si está activado
-    const unsubscribeNSFW = showNSFW ? onSnapshot(nsfwQuery, async (snapshot) => {
-      const postsList = await Promise.all(
-        snapshot.docs.map(async (postDoc) => {
-          const postData = postDoc.data();
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const postsCollection = collection(db, 'PostsCollection');
+      const nsfwCollection = collection(db, 'PostsCollectionMature');
 
-          if (!postData || !postData.userID || !postData.description) {
-            return null;
-          }
+      const postsQuery = query(postsCollection, orderBy('timestamp', 'desc'));
+      const nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc'));
 
-          const userDocRef = doc(db, 'users', postData.userID);
-          const userDoc = await getDoc(userDocRef);
-          if (!userDoc.exists()) {
-            return null;
-          }
+      const unsubscribeSFW = onSnapshot(postsQuery, (snapshot) => handleSnapshot(snapshot, false));
+      const unsubscribeNSFW = filters.showNSFW
+        ? onSnapshot(nsfwQuery, (snapshot) => handleSnapshot(snapshot, true))
+        : null;
 
-          const userData = userDoc.data();
-          return {
-            id: postDoc.id,
-            ...postData,
-            username: userData.username || 'Usuario Desconocido',
-            userPhotoURL: userData.photoURL || '',
-            isLiked: postData.likedBy?.includes(user?.uid) || false,
-            isNSFW: true,
-          };
-        })
-      );
-
-      const validPosts = postsList.filter(post => post !== null);
-
-      // Actualiza solo los posts NSFW
-      setPosts(prevPosts => {
-        const sfwPosts = prevPosts.filter(post => !post.isNSFW); // Mantiene los posts SFW si están presentes
-        return [...sfwPosts, ...validPosts].sort((a, b) => b.timestamp - a.timestamp);
-      });
-    }) : setPosts(prevPosts => prevPosts.filter(post => !post.isNSFW)); // Si se desactiva, filtra los posts NSFW
-
-    return () => {
-      unsubscribeSFW();
-      if (unsubscribeNSFW) unsubscribeNSFW();
+      return () => {
+        unsubscribeSFW();
+        if (unsubscribeNSFW) unsubscribeNSFW();
+      };
     };
-  };
 
-  useEffect(updateFeed, [showNSFW, user?.uid]);
+    fetchPosts();
+  }, [filters.showNSFW, handleSnapshot]);
+
+  const filteredPosts = posts.filter((post) => {
+    // Filtrado por categorías seleccionadas
+    if (filters.activeFilters.length > 0 && !filters.activeFilters.includes(post.category)) {
+      return false;
+    }
+
+    // Filtrado por término de búsqueda
+    const searchMatch = post.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                        post.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+    // Filtrado por NSFW
+    const nsfwMatch = filters.showNSFW || !post.isNSFW;
+
+    return searchMatch && nsfwMatch;
+  });
 
   const handleLikePost = async (postId, currentLikes, isLiked, isNSFW) => {
     if (likeProcessing[postId]) return;
@@ -117,7 +144,7 @@ function Feed({ showNSFW }) {
           : arrayUnion(user.uid)
       });
     } catch (error) {
-      console.error('Error updating likes:', error);
+      console.error('Error al actualizar likes:', error);
     } finally {
       setLikeProcessing(prev => ({ ...prev, [postId]: false }));
     }
@@ -128,8 +155,10 @@ function Feed({ showNSFW }) {
 
     try {
       await deleteDoc(doc(db, isNSFW ? 'PostsCollectionMature' : 'PostsCollection', postId));
+      // Actualizar el estado local para eliminar el post inmediatamente
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error('Error al eliminar publicación:', error);
     }
   };
 
@@ -147,24 +176,28 @@ function Feed({ showNSFW }) {
           url: postUrl,
         });
       } catch (error) {
-        console.error('Error sharing post:', error);
+        console.error('Error al compartir:', error);
       }
     } else {
       try {
         await navigator.clipboard.writeText(postUrl);
         alert('Enlace copiado al portapapeles');
       } catch (error) {
-        console.error('Error copying post URL:', error);
+        console.error('Error al copiar texto:', error);
       }
     }
   };
 
+  if (loading) {
+    return <div className="feed-loading">Cargando...</div>;
+  }
+
   const renderPosts = () => {
-    if (posts.length === 0) {
+    if (filteredPosts.length === 0) {
       return <div className="feed-empty">No hay publicaciones para mostrar</div>;
     }
 
-    return posts.map(post => (
+    return filteredPosts.map(post => (
       <div key={post.id} className="feed-post" onClick={() => handlePostClick(post.id)}>
         <div className="feed-post-header">
           <div className="feed-post-header-left">
@@ -192,6 +225,7 @@ function Feed({ showNSFW }) {
           Categoría: {post.category}
           {post.isNSFW && <span className="nsfw-tag">NSFW</span>}
         </p>
+        <p className="feed-post-creation-date">{post.creationDate}</p>
         <div className="feed-post-actions">
           <button
             className={`feed-action-button ${post.isLiked ? 'liked' : ''}`}
@@ -222,7 +256,7 @@ function Feed({ showNSFW }) {
 
   return (
     <div className="feed-container">
-      <PostCreator onPostCreated={updateFeed} />
+      <PostCreator onPostCreated={() => { /* Opcional: Puedes recargar los posts aquí */ }} />
       {renderPosts()}
     </div>
   );

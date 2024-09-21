@@ -1,0 +1,93 @@
+.leftSidebar {
+  width: 200px; /* Make the sidebar narrower */
+  height: calc(100vh - 80px); /* Adjust the height to account for the header */
+  background-color: #f8f9fa;
+  border-right: 1px solid #e9ecef;
+  overflow-y: auto;
+  position: -webkit-sticky; /* For Safari support */
+  position: sticky; /* Sticky positioning */
+  top: 80px; /* Ensure the sidebar starts below the header */
+}
+
+.sidebarContent {
+  padding: 0.8rem; /* Slightly reduce padding */
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.4rem; /* Reduce padding */
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  font-size: 0.85rem; /* Reduce font size */
+  margin-bottom: 0.8rem;
+}
+
+.nsfwToggle {
+  width: 100%;
+  padding: 0.4rem; /* Reduce padding */
+  margin-bottom: 0.8rem;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.85rem; /* Reduce font size */
+  transition: background-color 0.3s ease;
+  color: #495057;
+}
+
+.nsfwToggle:hover {
+  background-color: #dee2e6;
+}
+
+.categorySection {
+  margin-bottom: 1rem;
+}
+
+.categoryTitle {
+  font-size: 0.9rem; /* Reduce font size */
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #495057;
+}
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem; /* Reduce gap between categories */
+}
+
+.categoryButton {
+  width: 100%;
+  padding: 0.4rem; /* Reduce padding */
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.85rem; /* Reduce font size */
+  transition: all 0.3s ease;
+  color: #495057;
+  text-align: left;
+}
+
+.categoryButton:hover {
+  background-color: #e9ecef;
+}
+
+.categoryButton.active {
+  background-color: #6f42c1;
+  color: #fff;
+  border-color: #6f42c1;
+}
+
+.categoryButton.active:hover {
+  background-color: #5a32a3;
+}
+
+@media (max-width: 768px) {
+  .leftSidebar {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    position: static; /* Remove sticky for mobile */
+  }
+}

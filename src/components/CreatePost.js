@@ -1,39 +1,34 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebaseConfig';
-import { collection, addDoc, Timestamp, updateDoc } from 'firebase/firestore'; // Agregamos updateDoc aquí
+import { collection, addDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserContext from '../context/UserContext';
 import ImageCropperModal from '../components/Profile/ImageCropperModal';
 import '../Styles/CreatePost.css';
 
-const categories = {
-  "SFW": [
-    'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
-    'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art', 
-    'Cómic', 'Abstracto', 'Minimalista', 'Chibi', 
-    'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
-    'Fantasía', 'Cyberpunk', 'Retro'
-  ],
-  "NSFW": [
-    'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage', 
-    'Futanari', 'Tentáculos', 'Furry NSFW', 
-    'Monstruos', 'Femdom', 'Maledom'
-  ]
-};
+const categories = [
+  'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+  'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+  'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+  'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+  'Fantasía', 'Cyberpunk', 'Retro', 'Hentai', 'Yuri', 'Yaoi',
+  'Gore', 'Bondage', 'Futanari', 'Tentáculos', 'Furry NSFW',
+  'Monstruos', 'Femdom', 'Maledom'
+];
 
 const CreatePost = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [mainCategory, setMainCategory] = useState('SFW');
-  const [subCategory, setSubCategory] = useState(categories['SFW'][0]);
-  const [imageSrc, setImageSrc] = useState(null); 
+  const [category, setCategory] = useState('OC');
+  const [isNSFW, setIsNSFW] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -42,25 +37,19 @@ const CreatePost = () => {
       reader.readAsDataURL(file);
       reader.onloadend = () => {
         setImageSrc(reader.result);
-        setShowModal(true); 
+        setShowModal(true);
       };
     }
   };
 
   const handleSaveCroppedImage = async (croppedFile) => {
     setCroppedImage(croppedFile);
-    setShowModal(false); 
+    setShowModal(false);
   };
 
   const handleCancelCrop = () => {
     setShowModal(false);
-    setImageSrc(null); 
-  };
-
-  const handleMainCategoryChange = (e) => {
-    const selectedMainCategory = e.target.value;
-    setMainCategory(selectedMainCategory);
-    setSubCategory(categories[selectedMainCategory][0]);
+    setImageSrc(null);
   };
 
   const handleSubmit = async (e) => {
@@ -72,34 +61,29 @@ const CreatePost = () => {
 
     setIsSubmitting(true);
 
-    const isAdultContent = mainCategory === 'NSFW';
-    const collectionName = isAdultContent ? 'PostsCollectionMature' : 'PostsCollection';
+    const collectionName = isNSFW ? 'PostsCollectionMature' : 'PostsCollection';
 
     try {
-      // Primero crea el documento en Firestore para obtener el ID
       const postRef = await addDoc(collection(db, collectionName), {
         userID: user.uid,
         title,
         description,
-        category: `${mainCategory} - ${subCategory}`,
-        isAdultContent,
-        timestamp: Timestamp.fromDate(new Date())
+        category,
+        isNSFW,
+        timestamp: Timestamp.fromDate(new Date()),
       });
 
       const postId = postRef.id;
 
-      // Luego sube la imagen usando el ID del post como nombre del archivo
       const imageRef = ref(storage, `posts/${user.uid}/${postId}`);
       await uploadBytes(imageRef, croppedImage);
       const imageURL = await getDownloadURL(imageRef);
 
-      // Actualiza el documento con la URL de la imagen
       await updateDoc(postRef, {
         imageURL,
       });
 
-      const navigateTo = isAdultContent ? '/explore-posts-mature' : '/explore-posts';
-      navigate(navigateTo);
+      navigate(isNSFW ? '/explore-posts-mature' : '/explore-posts');
     } catch (error) {
       console.error("Error creating post: ", error);
       setError('Error al crear la publicación. Por favor, inténtalo de nuevo.');
@@ -137,11 +121,11 @@ const CreatePost = () => {
           <small>{description.length}/240 caracteres</small>
         </div>
         <div className="form-group">
-          <label htmlFor="mainCategory">Clasificación de Contenido</label>
+          <label htmlFor="isNSFW">Clasificación de Contenido</label>
           <select
-            id="mainCategory"
-            value={mainCategory}
-            onChange={handleMainCategoryChange}
+            id="isNSFW"
+            value={isNSFW ? 'NSFW' : 'SFW'}
+            onChange={(e) => setIsNSFW(e.target.value === 'NSFW')}
             required
           >
             <option value="SFW">SFW</option>
@@ -149,14 +133,14 @@ const CreatePost = () => {
           </select>
         </div>
         <div className="form-group">
-          <label htmlFor="subCategory">Categoría</label>
+          <label htmlFor="category">Categoría</label>
           <select
-            id="subCategory"
-            value={subCategory}
-            onChange={(e) => setSubCategory(e.target.value)}
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
             required
           >
-            {categories[mainCategory].map((cat) => (
+            {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>

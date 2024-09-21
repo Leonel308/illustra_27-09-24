@@ -1,5 +1,6 @@
+/* Main container for the service request */
 .service-request-container {
-  max-width: 600px;
+  max-width: 900px;
   margin: 50px auto;
   padding: 20px;
   background-color: #ffffff;
@@ -7,35 +8,77 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.service-request-container h2 {
-  font-size: 24px;
+/* Card for service request content */
+.service-request-card {
+  padding: 20px;
+}
+
+/* Title styling */
+.service-request-title {
+  font-size: 28px;
   color: #6a0dad;
   text-align: center;
   margin-bottom: 20px;
   font-weight: bold;
 }
 
-.service-request-container h3 {
-  font-size: 20px;
-  color: #333;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.service-request-container p {
-  font-size: 18px;
-  color: #6a0dad;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
+/* Error message */
 .error-message {
   color: red;
   text-align: center;
   margin-bottom: 10px;
 }
 
-.service-request-container textarea {
+/* Flexbox for service details */
+.service-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+}
+
+.service-info {
+  width: 60%;
+}
+
+/* Styling for service image container */
+.service-image-wrapper {
+  width: 35%;
+  display: flex;
+  justify-content: center;
+}
+
+.service-image {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Service title and description */
+.service-title {
+  font-size: 22px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.service-description-text {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.service-price {
+  font-size: 18px;
+  color: #6a0dad;
+  margin-bottom: 20px;
+}
+
+/* Input textarea for user description */
+.service-description {
   width: 100%;
   height: 120px;
   padding: 15px;
@@ -44,36 +87,80 @@
   font-size: 16px;
   color: #333;
   resize: vertical;
-  box-sizing: border-box;
   margin-bottom: 20px;
-  transition: all 0.3s ease;
 }
 
-.service-request-container textarea:focus {
-  border-color: #6a0dad;
-  outline: none;
-  box-shadow: 0 0 8px rgba(106, 13, 173, 0.2);
+/* File input section */
+.file-input-description {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .file-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: relative;
   margin-bottom: 20px;
 }
 
-.file-input-wrapper input[type="file"] {
-  display: block;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-  font-size: 16px;
+/* Custom styling for the file input */
+.file-input {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.service-request-container button {
+.file-input-label {
+  display: inline-block;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.file-count {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Image preview section */
+.preview-container {
+  margin-top: 20px;
+}
+
+.preview-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Responsive grid layout */
+  gap: 15px;
+  margin-top: 15px;
+  justify-items: center;
+}
+
+.preview-image {
+  width: 100%; /* Use available space */
+  height: 130px; /* Fixed height to maintain uniformity */
+  object-fit: cover; /* Maintain aspect ratio */
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+/* Hover effect for images */
+.preview-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Submit button styling */
+.submit-button {
   display: block;
   width: 100%;
   padding: 15px;
@@ -83,50 +170,20 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  margin-top: 30px;
   transition: background-color 0.3s ease;
-  font-weight: bold;
 }
 
-.service-request-container button:hover {
+.submit-button:hover {
   background-color: #5a008b;
 }
 
-.service-request-container button:disabled {
+.submit-button:disabled {
   background-color: #b67fcc;
   cursor: not-allowed;
 }
 
-.service-request-container .loading {
-  display: block;
-  text-align: center;
-  color: #6a0dad;
-  font-size: 16px;
-}
-
-@media (max-width: 768px) {
-  .service-request-container {
-    padding: 15px;
-  }
-
-  .service-request-container h2 {
-    font-size: 22px;
-  }
-
-  .service-request-container h3 {
-    font-size: 18px;
-  }
-
-  .service-request-container p {
-    font-size: 16px;
-  }
-
-  .service-request-container button {
-    padding: 12px;
-    font-size: 16px;
-  }
-}
-
-/* Estilos adicionales para el modal de método de pago */
+/* Modal for confirming the payment */
 .payment-modal-overlay {
   position: fixed;
   top: 0;
@@ -145,34 +202,23 @@
   padding: 20px;
   border-radius: 8px;
   text-align: center;
-  max-width: 500px;
-  width: 100%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.payment-options button {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.mercado-pago-button {
-  background-color: #00a650;
-  color: #fff;
-}
-
-.mercado-pago-button:hover {
-  background-color: #008f4e;
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .wallet-button {
   background-color: #6a0dad;
   color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .wallet-button:hover {
@@ -180,11 +226,55 @@
 }
 
 .close-button {
-  background-color: #e74c3c;
-  color: #fff;
   margin-top: 20px;
+  padding: 10px;
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .close-button:hover {
-  background-color: #c0392b;
+  background-color: #d32f2f;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .service-request-container {
+    padding: 15px;
+  }
+
+  .service-details {
+    flex-direction: column;
+  }
+
+  .service-info, .service-image-wrapper {
+    width: 100%;
+  }
+
+  .service-request-title {
+    font-size: 24px;
+  }
+
+  .service-title {
+    font-size: 20px;
+  }
+
+  .service-price {
+    font-size: 16px;
+  }
+
+  .submit-button {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .preview-images {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .preview-image {
+    height: 100px;
+  }
 }

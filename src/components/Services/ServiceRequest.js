@@ -8,15 +8,18 @@ import UserContext from '../../context/UserContext';
 
 const ServiceRequest = () => {
   const { user: currentUser } = useContext(UserContext);
-  const { illustratorID, serviceId } = useParams();  // illustratorID es el del servicio contratado
+  const { illustratorID, serviceId } = useParams();
   const navigate = useNavigate();
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
   const [serviceTitle, setServiceTitle] = useState('');
   const [servicePrice, setServicePrice] = useState(0);
   const [serviceDescription, setServiceDescription] = useState('');
+  const [serviceImageUrl, setServiceImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -30,6 +33,7 @@ const ServiceRequest = () => {
             setServiceTitle(serviceData.title);
             setServicePrice(Number(serviceData.price));
             setServiceDescription(serviceData.description);
+            setServiceImageUrl(serviceData.imageUrl);
 
             if (currentUser && currentUser.uid === illustratorID) {
               setError('No puedes contratar tu propio servicio, pero puedes ver los detalles.');
@@ -50,50 +54,58 @@ const ServiceRequest = () => {
   }, [serviceId, illustratorID, currentUser]);
 
   const handleFilesChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 6) {
-      alert('Puedes subir un máximo de 6 imágenes.');
-      setFiles(selectedFiles.slice(0, 6));
-    } else {
-      setFiles(selectedFiles);
+    let selectedFiles = Array.from(e.target.files);
+
+    // Si se seleccionan más de 10 archivos, selecciona 10 archivos aleatorios
+    if (selectedFiles.length > 10) {
+      alert('Puedes subir un máximo de 10 imágenes.');
+      selectedFiles = selectedFiles.sort(() => Math.random() - 0.5).slice(0, 10);
     }
+    
+    setFiles(selectedFiles);
+
+    // Generar vistas previas
+    const previewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
+    setPreviewImages(previewUrls);
   };
 
   const submitServiceRequest = async () => {
-    console.log('Intentando enviar solicitud de servicio...');
-    
-    // Validaciones iniciales
     if (!description) {
       setError('Por favor, completa la descripción.');
-      console.log('Error: Descripción faltante.');
       return;
     }
 
     if (!currentUser) {
       setError('Debes estar logueado para hacer una solicitud.');
-      console.log('Error: Usuario no autenticado.');
       return;
     }
 
     if (currentUser.uid === illustratorID) {
       setError('No puedes contratar tu propio servicio.');
-      console.log('Error: Usuario intentando contratar su propio servicio.');
       return;
     }
 
+    // Mostrar el pop-up para confirmar el uso de la billetera
+    const confirmPayment = window.confirm('Usted va a usar dinero de su billetera virtual, ¿desea continuar?');
+    if (confirmPayment) {
+      setShowModal(true); // Muestra el modal de pago si el usuario acepta continuar
+    }
+  };
+
+  const processPayment = async (paymentMethod) => {
     try {
+      setLoading(true);
+      setError('');
+
       const userRef = doc(db, 'users', currentUser.uid);
       const userDoc = await getDoc(userRef);
       const userData = userDoc.data();
 
-      if (Number(userData.balance) < servicePrice) {
+      if (paymentMethod === 'wallet' && Number(userData.balance) < servicePrice) {
         setError('Saldo insuficiente. Por favor, recarga tu billetera.');
-        console.log('Error: Saldo insuficiente.');
+        setLoading(false);
         return;
       }
-
-      setLoading(true);
-      setError('');
 
       const currentUserId = currentUser.uid;
       const serviceRequestRef = collection(db, 'users', illustratorID, 'ServiceRequests');
@@ -101,20 +113,16 @@ const ServiceRequest = () => {
       let uploadedFiles = [];
 
       if (files.length > 0) {
-        console.log('Subiendo archivos...');
         uploadedFiles = await Promise.all(
           files.map(async (file) => {
-            const uniqueFileName = `${Date.now()}_${file.name}`; // Evitar colisiones
-            const fileRef = ref(storage, `service-requests/${illustratorID}/${uniqueFileName}`);
+            const uniqueFileName = `${Date.now()}_${file.name}`;
+            const fileRef = ref(storage, `service-requests/${currentUserId}/${uniqueFileName}`);
             await uploadBytes(fileRef, file);
-            const downloadURL = await getDownloadURL(fileRef);
-            console.log(`Archivo subido: ${downloadURL}`);
-            return downloadURL;
+            return getDownloadURL(fileRef);
           })
         );
       }
 
-      // Crear el nuevo documento en ServiceRequests
       const newRequest = {
         description,
         files: uploadedFiles,
@@ -124,66 +132,56 @@ const ServiceRequest = () => {
         createdAt: new Date(),
         status: 'pending',
         clientId: currentUserId,
-        clientUsername: currentUser.username || 'Cliente', // Asegúrate de que el username esté disponible
+        clientUsername: currentUser.username || 'Cliente',
         illustratorHiredId: illustratorID,
-        acceptedByClient: false, // Alineado con ServiceHired
-        serviceID: '', // Será llenado después de obtener el ID del documento
+        acceptedByClient: false,
+        serviceID: '',
+        paymentMethod,
       };
 
       const docRef = await addDoc(serviceRequestRef, newRequest);
-      console.log('Solicitud de servicio creada con ID:', docRef.id);
-
-      // Actualizar el campo serviceID en ServiceRequests
       await updateDoc(docRef, { serviceID: docRef.id });
-      console.log('Campo serviceID actualizado en ServiceRequests.');
 
-      // Crear un pago en la subcolección Payments del usuario
       const paymentRef = await addDoc(collection(db, 'users', currentUserId, 'Payments'), {
         amount: servicePrice,
         illustratorHiredId: illustratorID,
-        paymentMethod: 'wallet',
+        paymentMethod,
         serviceID: docRef.id,
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      console.log('Pago creado con ID:', paymentRef.id);
 
-      // Actualizar el request con el ID del pago
       await updateDoc(docRef, { paymentId: paymentRef.id });
-      console.log('Campo paymentId actualizado en ServiceRequests.');
 
-      // Actualizar el balance del cliente
-      await updateDoc(userRef, {
-        balance: Number(userData.balance) - servicePrice,
-        pendingBalance: (userData.pendingBalance || 0) + servicePrice,
-      });
-      console.log('Balance del cliente actualizado.');
+      if (paymentMethod === 'wallet') {
+        await updateDoc(userRef, {
+          balance: Number(userData.balance) - servicePrice,
+          pendingBalance: (userData.pendingBalance || 0) + servicePrice,
+        });
+      }
 
-      // Crear un documento correspondiente en la subcolección ServiceHired del cliente
       const clientServiceHiredRef = doc(db, 'users', currentUserId, 'ServiceHired', docRef.id);
       await setDoc(clientServiceHiredRef, {
         illustratorHiredId: illustratorID,
-        serviceTitle: serviceTitle,
-        serviceDescription: serviceDescription,
-        servicePrice: servicePrice,
-        description: description,
+        serviceTitle,
+        serviceDescription,
+        servicePrice,
+        description,
         files: uploadedFiles,
         status: 'pending',
         createdAt: new Date(),
         serviceID: docRef.id,
         acceptedByClient: false,
+        paymentMethod,
       });
-      console.log('Documento creado en ServiceHired con ID:', docRef.id);
 
-      // Enviar notificación al ilustrador
       const notificationsRef = collection(db, 'users', illustratorID, 'Notifications');
       await addDoc(notificationsRef, {
         message: `Has recibido una nueva solicitud de servicio para "${serviceTitle}".`,
         timestamp: new Date(),
         read: false,
       });
-      console.log('Notificación enviada al ilustrador.');
 
       alert('Solicitud enviada con éxito');
       navigate(`/profile/${currentUserId}`);
@@ -192,32 +190,80 @@ const ServiceRequest = () => {
       setError('Hubo un error al enviar la solicitud. Por favor, inténtelo de nuevo.');
     } finally {
       setLoading(false);
+      setShowModal(false);
     }
   };
 
   return (
     <div className="service-request-container">
-      <h2>Solicitar Servicio</h2>
-      {error && <p className="error-message">{error}</p>}
-      {serviceTitle ? <h3>{serviceTitle}</h3> : <p>Cargando título...</p>}
-      <p>Costo: ${servicePrice ? servicePrice.toLocaleString() : 'Cargando precio...'}</p>
-      <textarea
-        placeholder="Describa lo que necesita"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <div className="file-input-wrapper">
-        <input 
-          type="file" 
-          multiple 
-          accept="image/*" 
-          onChange={handleFilesChange} 
+      <div className="service-request-card">
+        <h2 className="service-request-title">Solicitar Servicio</h2>
+        {error && <p className="error-message">{error}</p>}
+        <div className="service-details">
+          <div className="service-info">
+            <h3 className="service-title">Servicio: {serviceTitle || 'Cargando...'}</h3>
+            <p className="service-description-text">Descripción: {serviceDescription || 'Cargando...'}</p>
+            <p className="service-price">Costo: ${servicePrice ? servicePrice.toLocaleString() : 'Cargando...'}</p>
+          </div>
+          {serviceImageUrl && (
+            <div className="service-image-wrapper">
+              <img src={serviceImageUrl} alt={serviceTitle} className="service-image" />
+            </div>
+          )}
+        </div>
+        <textarea
+          className="service-description"
+          placeholder="Describa lo que necesita"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
-        {files.length > 0 && <p>{files.length} archivo(s) seleccionados</p>}
+        <p className="file-input-description">Seleccione imágenes de referencia, máximo 10.</p>
+        <div className="file-input-wrapper">
+          <input 
+            type="file" 
+            multiple 
+            accept="image/*" 
+            onChange={handleFilesChange} 
+            className="file-input"
+          />
+          <span className="file-input-label">Seleccionar archivos</span>
+          {files.length > 0 && <p className="file-count">{files.length} archivo(s) seleccionados</p>}
+        </div>
+
+        {/* Mostrar la vista previa de las imágenes seleccionadas */}
+        <div className="preview-container">
+          <h4>Vista Previa de Imágenes Seleccionadas</h4>
+          <div className="preview-images">
+            {previewImages.length > 0 && previewImages.map((image, index) => (
+              <img key={index} src={image} alt={`Vista previa ${index + 1}`} className="preview-image" />
+            ))}
+          </div>
+        </div>
+
+        <button 
+          onClick={submitServiceRequest} 
+          disabled={loading || (currentUser?.uid === illustratorID)}
+          className="submit-button"
+        >
+          {loading ? 'Enviando...' : 'Enviar Solicitud'}
+        </button>
       </div>
-      <button onClick={submitServiceRequest} disabled={loading || (currentUser?.uid === illustratorID)}>
-        {loading ? 'Enviando...' : 'Enviar Solicitud'}
-      </button>
+
+      {showModal && (
+        <div className="payment-modal-overlay">
+          <div className="payment-modal">
+            <h3>Selecciona el método de pago</h3>
+            <div className="payment-options">
+              <button onClick={() => processPayment('wallet')} className="wallet-button">
+                Pagar con Billetera
+              </button>
+            </div>
+            <button onClick={() => setShowModal(false)} className="close-button">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

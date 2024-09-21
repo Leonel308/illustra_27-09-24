@@ -19,73 +19,22 @@ body {
 }
 
 .home-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  min-height: 100vh;
 }
 
-.home-welcome-box {
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: var(--box-shadow);
-  padding: 30px;
-  margin-bottom: 20px;
-  text-align: center;
-  border: 1px solid var(--border-color);
-  transition: transform var(--transition-speed) ease;
-}
-
-.home-welcome-box:hover {
-  transform: translateY(-5px);
-}
-
-.home-welcome-box h2 {
-  color: var(--primary-color);
-  font-size: 26px;
-  margin-bottom: 15px;
-}
-
-.home-welcome-box p {
-  font-size: 16px;
-  color: var(--text-color);
-  margin-bottom: 20px;
-}
-
-.home-create-account-box {
-  background-color: var(--background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 15px;
-  padding: 25px;
-}
-
-.home-create-account-box h3 {
-  font-size: 20px;
-  margin-bottom: 10px;
-  color: var(--primary-color);
-}
-
-.home-create-account-box .cta-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 15px 25px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 18px;
-  transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
-  margin-top: 15px;
-  display: block;
+.welcome-box-wrapper {
   width: 100%;
 }
 
-.home-create-account-box .cta-button:hover {
-  background-color: var(--secondary-color);
-  color: white; /* Aseguramos que el texto siga siendo blanco */
-  transform: scale(1.05);
+.home-content-wrapper {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .home-main-content {
@@ -96,7 +45,6 @@ body {
 
 .sidebar-left {
   width: 200px;
-  height: calc(100vh - 40px);
   background-color: white;
   padding: 1rem;
   box-shadow: var(--box-shadow);
@@ -105,6 +53,7 @@ body {
   border-radius: 15px;
   position: sticky;
   top: 20px;
+  height: calc(100vh - 40px);
 }
 
 .sidebar-right {
@@ -188,14 +137,13 @@ body {
 
 .feed-warning button:hover {
   background-color: var(--secondary-color);
-  color: white; /* El color del texto se mantiene blanco al hacer hover */
   transform: scale(1.05);
 }
 
 .link-button {
   background: none;
   border: none;
-  color: white;  /* Color del texto fijo en blanco */
+  color: var(--primary-color);
   padding: 10px 20px;
   border-radius: 20px;
   cursor: pointer;
@@ -213,8 +161,7 @@ body {
   color: white;
   text-align: center;
   padding: 15px;
-  border-radius: 15px;
-  margin-top: 20px;
+  width: 100%;
 }
 
 .home-footer a {
@@ -226,28 +173,6 @@ body {
 .home-footer a:hover {
   color: white;
   text-decoration: underline;
-}
-
-.home-loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-.home-loading-container .home-spinner {
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid var(--primary-color);
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* Responsive design */
@@ -266,28 +191,5 @@ body {
 
   .feed-container {
     max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .home-container {
-    padding: 10px;
-  }
-
-  .home-welcome-box {
-    padding: 20px;
-  }
-
-  .home-welcome-box h2 {
-    font-size: 20px;
-  }
-
-  .home-welcome-box p {
-    font-size: 14px;
-  }
-
-  .home-create-account-box .cta-button {
-    font-size: 14px;
-    padding: 8px 16px;
   }
 }

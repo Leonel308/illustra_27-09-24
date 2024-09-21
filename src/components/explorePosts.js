@@ -1,11 +1,39 @@
+// ExplorePosts.js
+
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  deleteDoc
+} from 'firebase/firestore';
 import UserContext from '../context/UserContext';
 import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import '../Styles/ExplorePosts.css';
+
+// Definir categorías SFW y NSFW por separado
+const SFW_CATEGORIES = [
+  'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
+  'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
+  'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
+  'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
+  'Fantasía', 'Cyberpunk', 'Retro'
+];
+
+const NSFW_CATEGORIES = [
+  'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
+  'Futanari', 'Tentáculos', 'Furry NSFW',
+  'Monstruos', 'Femdom', 'Maledom'
+];
 
 function ExplorePosts() {
   const { user } = useContext(UserContext);
@@ -32,7 +60,9 @@ function ExplorePosts() {
           const userDoc = await getDoc(userDocRef);
           const userData = userDoc.exists() ? userDoc.data() : {};
 
-          const creationDate = postData.timestamp ? format(postData.timestamp.toDate(), 'dd/MM/yyyy') : 'Fecha desconocida';
+          const creationDate = postData.timestamp
+            ? format(postData.timestamp.toDate(), 'dd/MM/yyyy')
+            : 'Fecha desconocida';
 
           return {
             id: postDoc.id,
@@ -40,7 +70,7 @@ function ExplorePosts() {
             username: userData.username || 'Usuario desconocido',
             userPhotoURL: userData.photoURL || '',
             isLiked: postData.likedBy?.includes(user?.uid) || false,
-            isNSFW: isNSFW,
+            isNSFW: postData.isNSFW,
             creationDate: creationDate
           };
         } catch (error) {
@@ -68,7 +98,9 @@ function ExplorePosts() {
       const nsfwQuery = query(nsfwCollection, orderBy('timestamp', 'desc'));
 
       const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => handleSnapshot(snapshot, false));
-      const unsubscribeNSFW = showNSFW ? onSnapshot(nsfwQuery, (snapshot) => handleSnapshot(snapshot, true)) : null;
+      const unsubscribeNSFW = showNSFW
+        ? onSnapshot(nsfwQuery, (snapshot) => handleSnapshot(snapshot, true))
+        : null;
 
       return () => {
         unsubscribePosts();
@@ -81,7 +113,7 @@ function ExplorePosts() {
 
   const filteredPosts = [...posts, ...nsfwPosts].filter((post) => {
     const categoryMatch = selectedCategory === '' || post.category === selectedCategory;
-    const searchMatch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const searchMatch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         post.description.toLowerCase().includes(searchTerm.toLowerCase());
     const nsfwMatch = showNSFW || !post.isNSFW;
     return categoryMatch && searchMatch && nsfwMatch;
@@ -152,9 +184,18 @@ function ExplorePosts() {
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
           <option value="">Todas las categorías</option>
-          <option value="Arte Conceptual">Arte Conceptual</option>
-          <option value="Fan Art">Fan Art</option>
-          <option value="Anime">Anime</option>
+          {showNSFW && NSFW_CATEGORIES.length > 0 && (
+            <optgroup label="NSFW">
+              {NSFW_CATEGORIES.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </optgroup>
+          )}
+          <optgroup label="SFW">
+            {SFW_CATEGORIES.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </optgroup>
         </select>
         <input
           type="text"

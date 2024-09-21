@@ -1,307 +1,279 @@
-/* Contenedor principal */
+/* Paleta de colores violeta */
+:root {
+  --color-primary: #6a1b9a;
+  --color-secondary: #9c27b0;
+  --color-accent: #ab47bc;
+  --color-background: #f3e5f5;
+  --color-text: #212121;
+  --color-white: #ffffff;
+  --color-error: #d32f2f;
+}
+
 .servicesContainer {
-  margin-top: 2rem;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 1rem;
+  padding: 20px;
+  background-color: var(--color-background);
 }
 
-/* Título */
 .servicesTitle {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #8a2be2;
+  color: var(--color-primary);
   text-align: center;
+  margin-bottom: 20px;
 }
 
-/* Botón para añadir servicios */
 .servicesAddButton {
-  background-color: #ff69b4;
-  color: white;
-  padding: 0.5rem 1rem;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px 20px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  margin: 0 auto 20px auto;
+  border-radius: 5px;
 }
 
 .servicesAddButton:hover {
-  background-color: #ff1493;
+  background-color: var(--color-secondary);
 }
 
-/* Formulario de servicios */
-.servicesForm {
-  background-color: #f8e1ff;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 2rem;
+.buttonIcon {
+  margin-right: 8px;
 }
 
-.servicesForm label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.servicesForm input,
-.servicesForm textarea {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #dda0dd;
-  border-radius: 4px;
-}
-
-.servicesForm p {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 1rem;
-}
-
-.servicesForm button {
-  background-color: #8a2be2;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.servicesForm button:hover {
-  background-color: #9400d3;
-}
-
-.servicesError {
-  color: #ff3e3e;
-  margin-top: 0.5rem;
-}
-
-/* Vista previa de la imagen recortada */
-.croppedImagePreview img {
-  max-width: 100%;
-  margin-top: 1rem;
-  border: 1px solid #dda0dd;
-  border-radius: 4px;
-}
-
-/* Grid de servicios */
 .servicesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
-/* Tarjeta de servicio */
-.servicesCard {
-  background-color: white;
-  border: 1px solid #e4e5e7;
-  border-radius: 4px;
+.serviceCard {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-accent);
+  border-radius: 10px;
   overflow: hidden;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-
-.servicesCard:hover {
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  transform: translateY(-5px);
-}
-
-/* Imagen del servicio */
-.servicesImageContainer {
   position: relative;
-  padding-top: 56.25%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.servicesImage {
+.serviceImageContainer {
+  position: relative;
+}
+
+.serviceImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.serviceDisabledOverlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background-color: rgba(106, 27, 154, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  font-size: 1.5em;
 }
 
-/* Información del servicio */
-.servicesInfo {
-  padding: 1rem;
-}
-
-.servicesInfo h3 {
-  font-size: 18px;
-  margin-bottom: 0.5rem;
-  color: #8a2be2;
-}
-
-.servicesDescription {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.servicesPrice {
-  font-weight: bold;
-  color: #ff69b4;
-  margin-bottom: 0.5rem;
-}
-
-/* Botones */
-.servicesHireButton {
-  width: 100%;
-  padding: 0.5rem;
-  background-color: #8a2be2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.servicesHireButton:hover {
-  background-color: #9400d3;
-}
-
-.servicesDeleteButton {
-  width: 100%;
-  padding: 0.5rem;
-  background-color: #ff69b4;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.servicesDeleteButton:hover {
-  background-color: #ff1493;
-}
-
-/* Confirmación de eliminación */
-.servicesConfirmDelete {
-  background-color: #ffe0e0;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
+.serviceInfo {
+  padding: 15px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
 }
 
-.servicesConfirmDelete p {
-  margin: 0 0 1rem 0;
-  color: #ff3e3e;
+.serviceTitle {
+  color: var(--color-primary);
+  margin-bottom: 10px;
 }
 
-.servicesConfirmDelete button {
-  padding: 0.5rem 1rem;
+.serviceDescription {
+  color: var(--color-text);
+  margin-bottom: 10px;
+  flex: 1;
+}
+
+.servicePrice {
+  color: var(--color-secondary);
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.serviceHireButton {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 0.5rem;
+  border-radius: 5px;
+  margin-top: auto;
 }
 
-.servicesConfirmDelete button:last-of-type {
-  margin-bottom: 0;
+.serviceHireButton:hover {
+  background-color: var(--color-secondary);
 }
 
-.servicesConfirmDelete button:first-of-type {
-  background-color: #ff3e3e;
-  color: white;
+.serviceActions {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
 }
 
-.servicesConfirmDelete button:first-of-type:hover {
-  background-color: #e03232;
-}
-
-.servicesConfirmDelete button:last-of-type {
-  background-color: #ccc;
-  color: #333;
-}
-
-.servicesConfirmDelete button:last-of-type:hover {
-  background-color: #bbb;
-}
-
-/* Botón "Ver todos" */
-.servicesViewAllButton {
-  display: block;
-  margin: 2rem auto 0;
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  color: #8a2be2;
-  border: 1px solid #8a2be2;
-  border-radius: 4px;
+.serviceActionButton {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 8px 12px;
+  border: none;
   cursor: pointer;
-  font-size: 16px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  margin: 0 5px;
 }
 
-.servicesViewAllButton:hover {
-  background-color: #8a2be2;
-  color: white;
+.serviceActionButton:hover {
+  background-color: var(--color-secondary);
 }
 
-/* Media Queries para Responsividad */
-@media (max-width: 768px) {
-  .servicesTitle {
-    font-size: 20px;
-  }
+.serviceDeleteButton {
+  background-color: var(--color-error);
+}
 
-  .servicesGrid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+.serviceDeleteButton:hover {
+  background-color: #b71c1c;
+}
 
-  .servicesCard {
-    margin: 0 auto;
-  }
+.loadingText,
+.noServicesText {
+  text-align: center;
+  color: var(--color-text);
+  font-size: 1.2em;
+}
 
-  .servicesInfo h3 {
-    font-size: 16px;
-  }
+.modal,
+.deleteModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(33, 33, 33, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
-  .servicesDescription {
-    font-size: 13px;
-  }
+.modalContent,
+.deleteModalContent {
+  background-color: var(--color-white);
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+}
 
-  .servicesPrice {
-    font-size: 14px;
-  }
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  cursor: pointer;
+  font-size: 1.5em;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .servicesAddButton {
-    width: 100%;
-    text-align: center;
-  }
+.closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
 
-  .servicesForm {
-    padding: 0.5rem;
-  }
+.modalTitle {
+  text-align: center;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+}
 
-  .servicesForm input,
-  .servicesForm textarea {
-    padding: 0.5rem;
-  }
+.formLayout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  .servicesForm button {
-    width: 100%;
-    padding: 0.75rem;
-  }
+.formInputs {
+  width: 100%;
+}
 
-  .servicesHireButton,
-  .servicesDeleteButton {
-    padding: 0.75rem;
-  }
+.formInput,
+.formTextarea,
+.formFileInput {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid var(--color-accent);
+  border-radius: 5px;
+}
 
-  .servicesViewAllButton {
-    width: 100%;
-    padding: 0.75rem;
-  }
+.formSubmitButton {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 5px;
+  margin-top: 10px;
+}
 
-  .servicesConfirmDelete {
-    padding: 1rem;
-    flex-direction: column;
-  }
+.formSubmitButton:hover {
+  background-color: var(--color-secondary);
+}
 
-  .servicesConfirmDelete button {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
+.croppedImagePreview img {
+  max-width: 100%;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+
+.deleteModalActions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.confirmDeleteButton,
+.cancelDeleteButton {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.confirmDeleteButton:hover,
+.cancelDeleteButton:hover {
+  background-color: var(--color-secondary);
+}
+
+.servicesError {
+  color: var(--color-error);
+  text-align: center;
+  margin-top: 10px;
 }
