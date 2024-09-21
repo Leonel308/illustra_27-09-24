@@ -1,46 +1,47 @@
-/* Container Styles */
+/* Paleta de colores violeta */
+:root {
+  --color-primary: #6a1b9a;
+  --color-secondary: #9c27b0;
+  --color-accent: #ab47bc;
+  --color-background: #f3e5f5;
+  --color-text: #212121;
+  --color-white: #ffffff;
+  --color-error: #d32f2f;
+}
+
 .servicesContainer {
-  max-width: 100%;
-  margin: 0;
-  padding: 1rem;
-  background: linear-gradient(135deg, #f8e5ff 0%, #e0b0ff 100%);
+  padding: 20px;
+  background-color: var(--color-background);
   min-height: 100vh;
-  box-sizing: border-box;
 }
 
 .servicesTitle {
-  font-size: 2.5rem;
-  color: #4a0e4e;
+  color: var(--color-primary);
   text-align: center;
-  margin-bottom: 1.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  font-weight: bold;
-  letter-spacing: 2px;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
 }
 
-/* Controls Styles */
 .controlsContainer {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
 .filterContainer,
 .sortContainer {
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: var(--color-white);
   border-radius: 8px;
   padding: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
 }
 
 .controlIcon {
   margin-right: 0.5rem;
-  color: #9c27b0;
+  color: var(--color-primary);
 }
 
 .filterSelect,
@@ -48,30 +49,27 @@
   border: none;
   background: transparent;
   font-size: 1rem;
-  color: #4a0e4e;
+  color: var(--color-text);
   cursor: pointer;
+  outline: none;
 }
 
-/* Grid Layout */
 .servicesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
 }
 
-/* Service Card Styles */
 .serviceCard {
-  background: #ffffff;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-accent);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  height: 100%;
+  transition: all 0.3s ease;
 }
 
 .serviceCard:hover {
@@ -81,16 +79,12 @@
 
 .serviceImageContainer {
   position: relative;
-  padding-top: 75%; /* 4:3 aspect ratio */
   overflow: hidden;
 }
 
 .serviceImage {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
+  height: 180px;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
@@ -103,14 +97,13 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(74, 14, 78, 0.8);
+  width: 100%;
+  height: 100%;
+  background: rgba(106, 27, 154, 0.7);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  color: white;
+  justify-content: center;
+  color: var(--color-white);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -120,68 +113,49 @@
 }
 
 .viewMoreIcon {
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin-bottom: 0.5rem;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 
 .serviceInfo {
-  padding: 1rem;
+  padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  flex-grow: 1;
+  flex: 1;
 }
 
 .serviceProvider {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  margin-bottom: 10px;
 }
 
 .providerImage {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 10px;
 }
 
 .providerName {
-  font-size: 0.8rem;
-  color: #4a0e4e;
-  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  font-weight: bold;
 }
 
 .serviceTitle {
   font-size: 1.1rem;
-  color: #8a2be2;
-  margin: 0;
-  line-height: 1.3;
-  font-weight: 700;
-  transition: color 0.3s ease;
-  height: 2.6em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.serviceCard:hover .serviceTitle {
-  color: #4a0e4e;
+  color: var(--color-primary);
+  margin-bottom: 10px;
+  flex: 1;
 }
 
 .serviceMetadata {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin-bottom: 10px;
 }
 
 .serviceCategory,
@@ -191,38 +165,29 @@
 }
 
 .metadataIcon {
-  margin-right: 0.2rem;
+  margin-right: 0.3rem;
 }
 
 .servicePrice {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #9c27b0;
-  margin: 0;
+  color: var(--color-secondary);
+  margin-bottom: 15px;
 }
 
 .serviceHireButton {
-  background: linear-gradient(45deg, #9c27b0, #673ab7);
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px;
   border: none;
-  padding: 0.7rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
   width: 100%;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: auto;
+  border-radius: 0 0 12px 12px;
+  transition: background-color 0.3s ease;
 }
 
 .serviceHireButton:hover {
-  background: linear-gradient(45deg, #7b1fa2, #512da8);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.serviceHireButton:active {
-  transform: scale(0.98);
+  background-color: var(--color-secondary);
 }
 
 .favoriteButton,
@@ -260,7 +225,6 @@
   color: #ff4136;
 }
 
-/* Loading Styles */
 .loadingContainer {
   display: flex;
   flex-direction: column;
@@ -271,28 +235,31 @@
 
 .loadingSpinner {
   font-size: 2rem;
-  color: #9c27b0;
+  color: var(--color-primary);
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loadingText {
   margin-top: 1rem;
-  color: #4a0e4e;
+  color: var(--color-text);
 }
 
 .noServicesText {
   text-align: center;
-  color: #4a0e4e;
+  color: var(--color-text);
   font-size: 1.2rem;
   margin-top: 2rem;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .controlsContainer {
     flex-direction: column;
@@ -304,26 +271,8 @@
     width: 100%;
   }
 
-  .filterSelect,
-  .sortSelect {
-    width: 100%;
-  }
-
   .servicesGrid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  }
-
-  .serviceTitle {
-    font-size: 1rem;
-  }
-
-  .servicePrice {
-    font-size: 1.1rem;
-  }
-
-  .serviceHireButton {
-    font-size: 0.8rem;
-    padding: 0.6rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 }
 
@@ -332,16 +281,15 @@
     font-size: 2rem;
   }
 
-  .servicesGrid {
-    grid-template-columns: 1fr;
+  .serviceTitle {
+    font-size: 1rem;
   }
 
-  .serviceInfo {
-    padding: 0.8rem;
+  .servicePrice {
+    font-size: 1rem;
   }
 
-  .serviceMetadata {
-    flex-direction: column;
-    gap: 0.3rem;
+  .serviceHireButton {
+    font-size: 0.9rem;
   }
 }

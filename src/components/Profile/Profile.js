@@ -63,7 +63,7 @@ const Profile = () => {
       return gender === 'female' ? 'ilustradora' : gender === 'other' ? 'ilustrador/a' : 'ilustrador';
     }
     return gender === 'female' ? 'usuaria' : gender === 'other' ? 'usuario/a' : 'usuario';
-  }, [profileData.isArtist, profileData.gender]);
+  }, [profileData]);  // Incluyendo profileData como dependencia completa
 
   const handleSaveBackground = useCallback(async (backgroundURL) => {
     try {

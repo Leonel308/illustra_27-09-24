@@ -1,5 +1,3 @@
-// Feed.js
-
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
@@ -20,20 +18,9 @@ import { MessageCircle, Trash2, Heart, Share2 } from 'lucide-react';
 import PostCreator from '../HomeComponents/PostCreator';
 import '../../Styles/Feed.css';
 
-// Definir categorías SFW y NSFW por separado (opcional, si se necesitan más adelante)
-const SFW_CATEGORIES = [
-  'General', 'OC', 'Furry', 'Realismo', 'Anime', 'Manga', 'Paisajes',
-  'Retratos', 'Arte Conceptual', 'Fan Art', 'Pixel Art',
-  'Cómic', 'Abstracto', 'Minimalista', 'Chibi',
-  'Ilustración Infantil', 'Steampunk', 'Ciencia Ficción',
-  'Fantasía', 'Cyberpunk', 'Retro'
-];
-
-const NSFW_CATEGORIES = [
-  'Hentai', 'Yuri', 'Yaoi', 'Gore', 'Bondage',
-  'Futanari', 'Tentáculos', 'Furry NSFW',
-  'Monstruos', 'Femdom', 'Maledom'
-];
+// Puedes eliminar las categorías si no las usas aún
+// const SFW_CATEGORIES = [...];
+// const NSFW_CATEGORIES = [...];
 
 function Feed({ filters }) {
   const { user } = useContext(UserContext);
@@ -155,7 +142,6 @@ function Feed({ filters }) {
 
     try {
       await deleteDoc(doc(db, isNSFW ? 'PostsCollectionMature' : 'PostsCollection', postId));
-      // Actualizar el estado local para eliminar el post inmediatamente
       setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
     } catch (error) {
       console.error('Error al eliminar publicación:', error);
