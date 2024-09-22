@@ -1,0 +1,238 @@
+/* Feed.module.css */
+
+/* Contenedor Principal */
+.feedContainer {
+  flex: 1; /* Permite que el feed ocupe el espacio restante */
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f7f9fa; /* Fondo claro */
+  color: #14171a; /* Texto principal */
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Publicación */
+.feedPost {
+  background-color: #ffffff; /* Blanco */
+  border-radius: 12px;
+  border: 1px solid #e1e8ed; /* Borde suave */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s, transform 0.3s;
+  overflow: hidden;
+  margin-bottom: 24px;
+  cursor: pointer;
+}
+
+.feedPost:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Encabezado de la Publicación */
+.feedPostHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.feedPostHeaderLeft {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.feedUserAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.feedUsername {
+  font-weight: 600;
+  color: #14171a;
+  font-size: 18px;
+}
+
+/* Contenido de la Publicación */
+.feedPostContent {
+  padding: 0 16px;
+}
+
+.feedPostTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #14171a;
+  margin: 16px 0;
+  cursor: pointer;
+}
+
+.feedPostImageContainer {
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.feedPostImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.feedPostImageContainer:hover .feedPostImage {
+  transform: scale(1.05);
+}
+
+.feedPostDescription {
+  font-size: 16px;
+  color: #657786;
+  margin: 16px 0;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.feedPostCategory {
+  font-size: 14px;
+  color: #657786;
+  margin-bottom: 8px;
+}
+
+.feedPostCreationDate {
+  font-size: 14px;
+  color: #657786;
+  margin-bottom: 16px;
+  text-align: right;
+}
+
+.nsfwTag {
+  background-color: #e0245e; /* Rojo para NSFW */
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: 10px;
+}
+
+/* Acciones de la Publicación */
+.feedPostActions {
+  display: flex;
+  justify-content: space-around;
+  padding: 12px;
+  background-color: #f7f9fa; /* Fondo claro */
+  border-top: 1px solid #e1e8ed;
+}
+
+.feedActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: transparent;
+  border: 2px solid #1da1f2; /* Azul principal */
+  border-radius: 25px;
+  color: #1da1f2;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  max-width: 150px;
+}
+
+.feedActionButton:hover {
+  background-color: #1da1f2;
+  color: #ffffff;
+}
+
+.liked {
+  background-color: #1da1f2; /* Azul principal */
+  color: #ffffff;
+}
+
+.feedDeleteButton {
+  background-color: transparent;
+  border: 2px solid #e0245e; /* Rojo secundario */
+  color: #e0245e;
+  padding: 8px 14px;
+  border-radius: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.feedDeleteButton:hover {
+  background-color: #e0245e;
+  color: #ffffff;
+}
+
+.feedActionIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.feedEmpty {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #657786;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.feedLoading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #657786;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .feedContainer {
+    padding: 16px;
+  }
+
+  .feedUserAvatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .feedUsername {
+    font-size: 16px;
+  }
+
+  .feedPostTitle {
+    font-size: 18px;
+  }
+
+  .feedPostDescription {
+    font-size: 14px;
+  }
+
+  .feedActionButton {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .feedActionIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .feedPostImageContainer {
+    max-height: 250px;
+  }
+}

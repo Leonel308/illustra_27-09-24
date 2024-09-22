@@ -1,50 +1,189 @@
-/* Modal Overlay */
 .modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 42rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; /* This creates a 1:1 aspect ratio */
+  overflow: hidden;
+}
+
+.serviceImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #6a1b9a;
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  z-index: 10;
+}
+
+.closeButton:hover {
+  background-color: #6a1b9a;
+  color: white;
+}
+
+.closeButton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.serviceTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #6a1b9a;
+  margin-bottom: 1rem;
+  padding-right: 2.5rem;
+}
+
+.providerInfo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.providerImage {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  margin-right: 1rem;
+}
+
+.providerName {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.viewProfileButton {
+  color: #9c27b0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+  font-size: 0.875rem;
+}
+
+.viewProfileButton:hover {
+  color: #6a1b9a;
+}
+
+.serviceDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  color: #9c27b0;
+  margin-right: 0.5rem;
+}
+
+.price {
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+.description h4 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.description p {
+  color: #4a5568;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.hireButton,
+.contactButton {
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  flex-grow: 1;
+}
+
+.hireButton {
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  margin-right: 0.5rem;
+}
+
+.hireButton:hover {
+  background-color: #6a1b9a;
+}
+
+.contactButton {
+  background-color: #f3e5f5;
+  color: #9c27b0;
+  border: 1px solid #9c27b0;
+  margin-left: 0.5rem;
+}
+
+.contactButton:hover {
+  background-color: #e1bee7;
+}
+
+@media (max-width: 640px) {
+  .serviceDetails {
+    grid-template-columns: 1fr;
   }
-  
-  /* Modal Content */
-  .modalContent {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 600px;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    text-align: center;
-  }
-  
-  /* Close Button */
-  .closeButton {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-  }
-  
-  .closeButton:hover {
-    background-color: #d32f2f;
-  }
-  
-  .serviceImage {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-  }
-  
+}

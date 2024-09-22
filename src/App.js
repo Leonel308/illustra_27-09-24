@@ -22,7 +22,8 @@ import ServiceDetailsWorker from './components/Services/ServiceDetailsWorker';
 import ServiceDetailsUser from './components/Services/ServiceDetailsUser';
 import InspectPost from './components/Feed/inspectPost';
 import ExplorePosts from './components/explorePosts';
-import ExploreServices from './components/Explore Services/exploreServices'; // Importamos el nuevo componente
+import ExploreServices from './components/Explore Services/exploreServices';
+import LearnMore from './components/HomeComponents/LearnMore'; // Importamos el nuevo componente LearnMore
 import { UserProvider } from './context/UserContext';
 import Layout from './components/Layout';
 
@@ -54,7 +55,8 @@ function App() {
           <Route path="/service-details-user/:requestId/:clientId" element={<Layout><ServiceDetailsUser /></Layout>} />
           <Route path="/inspectPost/:postId" element={<Layout><InspectPost /></Layout>} />
           <Route path="/explore-posts" element={<Layout><ExplorePosts /></Layout>} />
-          <Route path="/exploreServices" element={<Layout><ExploreServices /></Layout>} /> {/* Nueva ruta para exploreServices */}
+          <Route path="/exploreServices" element={<Layout><ExploreServices /></Layout>} />
+          <Route path="/learn-more" element={<Layout><LearnMore /></Layout>} /> {/* Nueva ruta para LearnMore */}
         </Routes>
       </Router>
     </UserProvider>

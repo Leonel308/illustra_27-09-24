@@ -1,0 +1,187 @@
+/* RightSidebar.module.css */
+
+/* Contenedor Principal del Sidebar Derecho */
+.sidebarRight {
+  width: 250px; /* Reducido de 300px a 250px */
+  padding: 15px; /* Reducido padding */
+  background-color: #ffffff; /* Blanco */
+  border-left: 1px solid #e1e8ed; /* Borde suave */
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.searchBar {
+  margin-bottom: 15px; /* Reducido margen */
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px; /* Reducido padding */
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 13px; /* Reducido tamaño de fuente */
+}
+
+.featuredUsersContainer,
+.recommendedPostsContainer {
+  margin-bottom: 25px; /* Reducido margen */
+}
+
+.sectionTitle {
+  font-size: 14px; /* Reducido tamaño de fuente */
+  margin-bottom: 8px; /* Reducido margen */
+  color: #14171a;
+}
+
+.featuredUsersVertical,
+.postsVertical {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Reducido gap */
+}
+
+.featuredUserCardVertical,
+.postCardVertical {
+  display: flex;
+  flex-direction: column;
+  background-color: #f7f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.featuredUserCardVertical:hover,
+.postCardVertical:hover {
+  background-color: #e8f5fe;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.userPhotoVertical {
+  width: 100%;
+  height: 120px; /* Reducido de 150px a 120px */
+  object-fit: cover;
+}
+
+.userInfoVertical {
+  padding: 8px; /* Reducido padding */
+}
+
+.usernameVertical {
+  font-size: 13px; /* Reducido tamaño de fuente */
+  font-weight: 600;
+  color: #14171a;
+  margin-bottom: 4px; /* Reducido margen */
+}
+
+.bioVertical {
+  font-size: 12px; /* Reducido tamaño de fuente */
+  color: #657786;
+}
+
+.postImageContainerVertical {
+  width: 100%;
+  height: 120px; /* Reducido de 150px a 120px */
+  overflow: hidden;
+}
+
+.postImageVertical {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.postImageContainerVertical:hover .postImageVertical {
+  transform: scale(1.05);
+}
+
+.postDetailsVertical {
+  padding: 8px; /* Reducido padding */
+  background-color: #ffffff;
+}
+
+.postInfoVertical {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px; /* Reducido margen */
+}
+
+.postInfoVertical .userPhotoVertical {
+  width: 25px; /* Reducido tamaño */
+  height: 25px; /* Reducido tamaño */
+  border-radius: 50%;
+  margin-right: 8px; /* Reducido margen */
+}
+
+.userNameVertical {
+  font-size: 13px; /* Reducido tamaño de fuente */
+  font-weight: 600;
+  color: #14171a;
+}
+
+.postTitleVertical {
+  font-size: 13px; /* Reducido tamaño de fuente */
+  font-weight: 600;
+  color: #14171a;
+  margin-bottom: 8px; /* Reducido margen */
+}
+
+.deletePostButtonVertical {
+  padding: 5px 10px; /* Reducido padding */
+  background-color: #e0245e; /* Rojo secundario */
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 11px; /* Reducido tamaño de fuente */
+  transition: background-color 0.2s;
+}
+
+.deletePostButtonVertical:hover {
+  background-color: #c21c4d;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .sidebarRight {
+    width: 100%;
+    padding: 10px;
+    border-left: none;
+    border-top: 1px solid #e1e8ed;
+    box-shadow: none;
+  }
+
+  .featuredUserCardVertical,
+  .postCardVertical {
+    flex-direction: row;
+    height: auto;
+  }
+
+  .userPhotoVertical {
+    width: 60px; /* Ajustado para fila */
+    height: 60px;
+  }
+
+  .postImageContainerVertical {
+    width: 60px;
+    height: 60px;
+  }
+
+  .postImageVertical {
+    width: 60px;
+    height: 60px;
+  }
+
+  .postDetailsVertical {
+    padding: 6px;
+  }
+
+  .postTitleVertical {
+    font-size: 11px;
+  }
+
+  .deletePostButtonVertical {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+}

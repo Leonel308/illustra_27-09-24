@@ -18,7 +18,7 @@ const WelcomeBox = ({ portfolioImages = [] }) => {
         const response = await fetch('/api/random-portfolio-images');
         const data = await response.json();
         setRandomImages(
-          data.filter((image) => image && image.url) // Solo incluye imágenes válidas
+          data.filter((image) => image && image.url)
         );
       } catch (error) {
         console.error('Error fetching random images:', error);
@@ -31,7 +31,6 @@ const WelcomeBox = ({ portfolioImages = [] }) => {
     }
   }, [portfolioImages]);
 
-  // Filtrar imágenes no válidas en displayImages
   const displayImages = (portfolioImages.length > 0 ? portfolioImages : randomImages).filter(
     (image) => image && (typeof image === 'string' || image.url)
   );
@@ -60,10 +59,10 @@ const WelcomeBox = ({ portfolioImages = [] }) => {
       >
         {displayImages.length > 0 ? (
           displayImages.map((image) => {
-            if (!image) return null; // Verificar que image no sea undefined
+            if (!image) return null;
             const imageUrl = typeof image === 'string' ? image : image.url;
             if (imagesLoaded[imageUrl] === false) {
-              return null; // No renderiza la diapositiva si la imagen no está disponible
+              return null;
             }
             return (
               <SwiperSlide key={imageUrl}>
