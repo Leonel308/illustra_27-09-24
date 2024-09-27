@@ -1,96 +1,128 @@
+/* src/Styles/adminDashboard.css */
+
 .admin-dashboard {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px;
+  margin: 40px 20px;
+  padding: 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
 .admin-dashboard h1 {
-  font-size: 2em;
+  font-size: 2.5rem;
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .withdrawal-request {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 80%;
-  padding: 10px;
+  width: 90%;
+  max-width: 800px;
+  padding: 15px 20px;
   margin: 10px 0;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #f9f9f9;
+  border-radius: 8px;
+  background-color: #f1f1f1;
+  transition: background-color 0.3s;
+}
+
+.withdrawal-request:hover {
+  background-color: #e2e6ea;
 }
 
 .withdrawal-request img.user-photo {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 15px;
 }
 
-.withdrawal-request span {
+.withdrawal-request .user-info {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.withdrawal-request .user-info .username {
+  font-size: 1.2em;
+  color: #333;
+}
+
+.withdrawal-request .user-info .user-id {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.withdrawal-request .withdrawal-amount {
   flex: 1;
   font-size: 1.2em;
-  margin-right: 10px;
+  color: #dc3545; /* Rojo para montos de retiro */
+  text-align: right;
 }
 
 .withdrawal-request button {
-  background-color: #6a0dad; /* Violet color */
+  background-color: #6a0dad; /* Violeta */
   color: white;
-  padding: 5px 10px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 1em;
-  margin-left: 10px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .withdrawal-request button:hover {
   background-color: #5c0a99;
+  transform: translateY(-2px);
 }
 
 /* Styles for the SendNotification component */
 .send-notification {
-  margin-bottom: 20px;
-  padding: 20px;
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
+  padding: 25px;
+  margin: 30px 0;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 5px;
+  border-radius: 8px;
   text-align: center;
 }
 
 .send-notification h2 {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   color: #5a189a;
+  font-size: 2em;
 }
 
 .send-notification textarea {
   width: 100%;
-  height: 100px;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  font-size: 16px;
-  resize: none;
+  height: 120px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+  resize: vertical;
 }
 
 .send-notification button {
   background-color: #6a0dad;
   color: white;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 1em;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .send-notification button:hover {
   background-color: #5c0a99;
+  transform: translateY(-2px);
 }

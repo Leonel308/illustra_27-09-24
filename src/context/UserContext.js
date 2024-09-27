@@ -1,3 +1,5 @@
+// src/context/UserContext.js
+
 import React, { createContext, useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -76,7 +78,7 @@ export const UserProvider = ({ children }) => {
   }, [auth]);
 
   return (
-    <UserContext.Provider value={{ user, authToken, loading, error }}>
+    <UserContext.Provider value={{ user, setUser, authToken, loading, error }}> {/* setUser agregado */}
       {children}
     </UserContext.Provider>
   );

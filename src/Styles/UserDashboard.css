@@ -1,49 +1,86 @@
 .user-dashboard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  font-family: 'Arial', sans-serif;
 }
 
 .user-dashboard h1 {
-  font-size: 2em;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 0.5rem;
 }
 
-.user-dashboard p {
-  font-size: 1.2em;
-  margin: 10px 0;
+.user-dashboard .balance,
+.user-dashboard .pending-balance {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 15px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .user-dashboard .balance {
-  font-size: 1.5em;
-  font-weight: bold;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.user-dashboard .pending-balance {
+  background-color: #fff8e1;
+  color: #f57f17;
 }
 
 .user-dashboard button {
-  background-color: #28a745;
+  background-color: #3498db;
   color: white;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 5px;
+  border-radius: 30px;
   cursor: pointer;
-  font-size: 1.1em;
+  font-size: 1.2rem;
   margin-top: 20px;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .user-dashboard button:hover {
-  background-color: #218838;
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-dashboard button:active {
+  transform: translateY(0);
 }
 
 .user-dashboard .error {
-  color: red;
+  color: #e74c3c;
   margin-top: 20px;
+  font-size: 1rem;
+  text-align: center;
+  padding: 10px;
+  background-color: #fadbd8;
+  border-radius: 8px;
 }
 
 .user-dashboard .info {
-  color: gray;
+  color: #7f8c8d;
   font-style: italic;
-  margin-top: 20px;
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.9rem;
 }

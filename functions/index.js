@@ -1,3 +1,5 @@
+// functions/index.js
+
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
@@ -5,27 +7,30 @@ const cors = require('cors');
 const express = require('express');
 const dotenv = require('dotenv');
 
-// Cargar variables de entorno desde el archivo .env
+// Cargar variables de entorno desde el archivo .env (solo útil localmente)
 dotenv.config();
 
 // Inicializar Firebase Admin
 admin.initializeApp();
 
+// Crear una instancia de Express
 const app = express();
+
+// Definir los orígenes permitidos para CORS
 const allowedOrigins = ['https://illustra.app', 'http://localhost:3000'];
 
 // Configurar CORS para permitir solicitudes desde orígenes específicos
 app.use(cors({
   origin: allowedOrigins,
-  methods: 'GET, POST, OPTIONS',
-  allowedHeaders: ['Content-Type', 'Authorization'], // Incluir Authorization aquí
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Middleware para manejar OPTIONS preflight requests
 app.options('*', cors({
   origin: allowedOrigins,
-  methods: 'GET, POST, OPTIONS',
-  allowedHeaders: ['Content-Type', 'Authorization'], // Aquí también incluimos Authorization
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Credenciales de Mercado Pago desde variables de entorno o configuración de Firebase
@@ -34,42 +39,78 @@ const MERCADO_PAGO_CLIENT_SECRET = process.env.MERCADOPAGO_CLIENT_SECRET || func
 const REDIRECT_URI = process.env.MERCADOPAGO_REDIRECT_URI || functions.config().mercadopago.redirect_uri;
 const ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || functions.config().mercadopago.access_token;
 
-// Función para guardar una transacción
-const saveTransaction = async (uid, type, amount, status) => {
+// Middleware de autenticación
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token de autenticación requerido.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
   try {
-    const userRef = admin.firestore().collection('users').doc(uid);
-    await userRef.collection('transactions').add({
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken; // Adjuntar el token decodificado a la solicitud
+    next();
+  } catch (error) {
+    console.error('Error al verificar el token de autenticación:', error);
+    return res.status(401).json({ error: 'Token de autenticación inválido.' });
+  }
+};
+
+// Función para guardar una transacción
+const saveTransaction = async (uid, type, amount, status, transactionId) => {
+  try {
+    const transactionRef = admin.firestore().collection('users').doc(uid).collection('transactions').doc(transactionId);
+    await transactionRef.set({
       type,
       amount,
       status,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      transactionId,
     });
+    console.log(`Transacción guardada: ${transactionId} para el usuario: ${uid}`);
   } catch (error) {
     console.error('Error al guardar la transacción:', error);
   }
 };
 
-// Función para crear un pago en Mercado Pago (también usada para añadir saldo)
-app.post('/createAddBalancePayment', async (req, res) => {
-  const { amount, uid } = req.body;
+// Ruta: Crear Preferencia de Pago para Añadir Saldo
+app.post('/createAddBalancePayment', authenticate, async (req, res) => {
+  const { amount } = req.body;
+  const uid = req.user.uid; // Obtener uid del usuario autenticado
 
-  // Validar los campos requeridos
-  if (!amount || !uid) {
-    return res.status(400).json({ error: "Faltan campos requeridos: amount, uid" });
+  // Validar campos requeridos
+  if (!amount) {
+    console.error("Falta el campo requerido: amount");
+    return res.status(400).json({ error: "Falta el campo requerido: amount" });
+  }
+
+  // Validar que el monto sea un número positivo
+  if (isNaN(amount) || parseFloat(amount) <= 0) {
+    console.error("El monto no es un número válido:", amount);
+    return res.status(400).json({ error: "El monto debe ser un número positivo." });
   }
 
   try {
-    // Obtener los datos del usuario desde Firestore
+    // Obtener datos del usuario desde Firestore
     const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    
+
     if (!userDoc.exists) {
+      console.error('Usuario no encontrado:', uid);
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
     const userData = userDoc.data();
-    const payerEmail = userData.email; // Obtener el correo del usuario
+    const payerEmail = userData.email; // Suponiendo que el correo electrónico está almacenado
 
-    // Crear la preferencia de pago en Mercado Pago
+    // Generar un ID único para la transacción
+    const transactionId = admin.firestore().collection('users').doc(uid).collection('transactions').doc().id;
+
+    // Crear external_reference con formato: uid_transactionId
+    const externalReference = `${uid}_${transactionId}`;
+
     const preference = {
       items: [
         {
@@ -82,11 +123,12 @@ app.post('/createAddBalancePayment', async (req, res) => {
         email: payerEmail,
       },
       back_urls: {
-        success: `https://illustra.app/success?uid=${uid}`,
+        success: `https://illustra.app/success?transactionId=${transactionId}`,
         failure: "https://illustra.app/failure",
         pending: "https://illustra.app/pending",
       },
       auto_return: "approved",
+      external_reference: externalReference, // Incluir external_reference
     };
 
     // Enviar la solicitud a Mercado Pago
@@ -96,43 +138,146 @@ app.post('/createAddBalancePayment', async (req, res) => {
       }
     });
 
-    // Guardar la transacción
-    await saveTransaction(uid, 'recharge', parseFloat(amount), 'pending');
+    // Guardar la transacción como pendiente
+    await admin.firestore().collection('users').doc(uid).collection('transactions').doc(transactionId).set({
+      type: 'recharge',
+      amount: parseFloat(amount),
+      status: 'pending',
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      paymentId: null,
+      external_reference: externalReference,
+    });
+
+    // Incrementar el pendingBalance
+    await admin.firestore().collection('users').doc(uid).update({
+      pendingBalance: admin.firestore.FieldValue.increment(parseFloat(amount))
+    });
+
+    console.log(`Preferencia de pago creada para usuario: ${uid}, Transaction ID: ${transactionId}`);
 
     // Devolver la URL de Mercado Pago
     res.json({ init_point: response.data.init_point });
   } catch (error) {
-    console.error("Error al crear la preferencia de pago:", error.message);
+    console.error("Error al crear la preferencia de pago:", error.response ? error.response.data : error.message);
     res.status(500).json({ error: "Error al crear la preferencia de pago" });
   }
 });
 
-// Función para verificar el estado del pago y actualizar balance/pending balance
-app.post('/verifyPayment', async (req, res) => {
-  const { uid, paymentId } = req.body;
+// Ruta: Webhook de Notificación de Pagos de Mercado Pago
+app.post('/paymentNotification', async (req, res) => {
+  const { type, data } = req.body;
 
-  if (!uid || !paymentId) {
-    return res.status(400).json({ error: "Faltan campos requeridos: uid, paymentId" });
+  console.log('Webhook recibido:', JSON.stringify(req.body, null, 2));
+
+  if (type === 'payment') {
+    try {
+      const paymentId = data.id;
+
+      // Obtener la información del pago desde Mercado Pago
+      const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+      });
+
+      console.log('Respuesta de Mercado Pago:', JSON.stringify(paymentResponse.data, null, 2));
+
+      const paymentStatus = paymentResponse.data.status;
+      const externalReference = paymentResponse.data.external_reference;
+      const amount = paymentResponse.data.transaction_amount;
+
+      console.log(`Estado del pago: ${paymentStatus}`);
+      console.log(`external_reference: ${externalReference}`);
+      console.log(`Monto de la transacción: ${amount}`);
+
+      // Verificar que external_reference esté bien formado
+      if (!externalReference) {
+        console.error('external_reference está vacío o no existe:', externalReference);
+        res.sendStatus(200); // Aceptar la notificación pero no procesarla
+        return;
+      }
+
+      const parts = externalReference.split('_');
+      if (parts.length !== 2) {
+        console.error('external_reference no tiene el formato esperado:', externalReference);
+        res.sendStatus(200);
+        return;
+      }
+
+      const [uid, transactionId] = parts;
+      console.log(`UID: ${uid}, Transaction ID: ${transactionId}`);
+
+      if (paymentStatus === 'approved' && uid && transactionId) {
+        const userRef = admin.firestore().collection('users').doc(uid);
+        const transactionRef = userRef.collection('transactions').doc(transactionId);
+        const transactionDoc = await transactionRef.get();
+
+        if (transactionDoc.exists) {
+          const transactionData = transactionDoc.data();
+          console.log(`Estado actual de la transacción: ${transactionData.status}`);
+
+          if (transactionData.status === 'pending') {
+            // Actualizar balance y pendingBalance
+            await userRef.update({
+              balance: admin.firestore.FieldValue.increment(amount),
+              pendingBalance: admin.firestore.FieldValue.increment(-amount)
+            });
+
+            // Actualizar la transacción a 'completed' y añadir paymentId
+            await transactionRef.update({
+              status: 'completed',
+              paymentId: paymentId,
+              completedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            console.log(`Transacción ${transactionId} completada para el usuario ${uid}`);
+          } else {
+            console.log(`La transacción ${transactionId} ya fue procesada con estado: ${transactionData.status}`);
+          }
+        } else {
+          console.error(`Transacción ${transactionId} no encontrada para el usuario ${uid}`);
+        }
+      } else {
+        console.error('Información de pago incompleta o estado no aprobado:', data);
+      }
+
+      res.sendStatus(200); // Aceptar la notificación
+    } catch (error) {
+      console.error('Error al manejar el webhook:', error.response ? error.response.data : error.message);
+      res.status(500).json({ error: 'Error al manejar el webhook' });
+    }
+  } else {
+    // Ignorar otros tipos de notificaciones
+    console.log(`Notificación ignorada de tipo: ${type}`);
+    res.sendStatus(200);
+  }
+});
+
+// Ruta: Verificar el Pago
+app.post('/verifyPayment', authenticate, async (req, res) => {
+  const { transactionId } = req.body;
+  const uid = req.user.uid; // Obtener uid del usuario autenticado
+
+  if (!transactionId) {
+    console.error("Falta el campo requerido: transactionId");
+    return res.status(400).json({ error: "Falta el campo requerido: transactionId" });
   }
 
   try {
-    const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
-    });
+    const transactionRef = admin.firestore().collection('users').doc(uid).collection('transactions').doc(transactionId);
+    const transactionDoc = await transactionRef.get();
 
-    if (paymentResponse.data.status === 'approved') {
-      const userRef = admin.firestore().collection('users').doc(uid);
-      await userRef.update({
-        balance: admin.firestore.FieldValue.increment(paymentResponse.data.transaction_amount),
-        pendingBalance: admin.firestore.FieldValue.increment(-paymentResponse.data.transaction_amount)
-      });
+    if (!transactionDoc.exists) {
+      console.error(`Transacción ${transactionId} no encontrada para el usuario ${uid}`);
+      return res.status(404).json({ error: "Transacción no encontrada." });
+    }
 
-      // Actualizar el estado de la transacción
-      await saveTransaction(uid, 'recharge', paymentResponse.data.transaction_amount, 'completed');
+    const transactionData = transactionDoc.data();
 
+    if (transactionData.status === 'completed') {
       res.json({ success: true, message: "Pago verificado y balance actualizado" });
+    } else if (transactionData.status === 'pending') {
+      res.json({ success: false, message: "El pago aún está pendiente." });
     } else {
-      res.json({ success: false, message: "El pago no ha sido aprobado" });
+      res.json({ success: false, message: "Estado de pago desconocido." });
     }
   } catch (error) {
     console.error('Error al verificar el pago:', error);
@@ -140,8 +285,8 @@ app.post('/verifyPayment', async (req, res) => {
   }
 });
 
-// Función para manejar el token de autorización de Mercado Pago
-app.get('/mercadoPagoToken', async (req, res) => {
+// Ruta: Obtener Token de Autorización de Mercado Pago
+app.get('/mercadoPagoToken', authenticate, async (req, res) => {
   const { code, state } = req.query;
 
   if (!code || !state) {
@@ -168,6 +313,7 @@ app.get('/mercadoPagoToken', async (req, res) => {
       mercadoPagoRefreshToken: refresh_token,
     });
 
+    console.log(`Tokens de Mercado Pago actualizados para el usuario: ${state}`);
     res.json(response.data);
   } catch (error) {
     console.error("Error al obtener tokens de Mercado Pago:", error.response ? error.response.data : error.message);
@@ -175,13 +321,9 @@ app.get('/mercadoPagoToken', async (req, res) => {
   }
 });
 
-// Función para desvincular Mercado Pago
-app.get('/unlinkMercadoPago', async (req, res) => {
-  const { uid } = req.query;
-
-  if (!uid) {
-    return res.status(400).json({ error: "Parámetros de URL inválidos. No se pudo desvincular Mercado Pago." });
-  }
+// Ruta: Desvincular Mercado Pago
+app.get('/unlinkMercadoPago', authenticate, async (req, res) => {
+  const uid = req.user.uid;
 
   try {
     // Eliminar los tokens de Firestore
@@ -190,6 +332,7 @@ app.get('/unlinkMercadoPago', async (req, res) => {
       mercadoPagoAccessToken: admin.firestore.FieldValue.delete(),
       mercadoPagoRefreshToken: admin.firestore.FieldValue.delete(),
     });
+    console.log(`Cuenta de Mercado Pago desvinculada para el usuario: ${uid}`);
     res.json({ message: "Cuenta de Mercado Pago desvinculada." });
   } catch (error) {
     console.error("Error al desvincular cuenta de Mercado Pago:", error);
@@ -197,12 +340,20 @@ app.get('/unlinkMercadoPago', async (req, res) => {
   }
 });
 
-// Función para aprobar pagos a usuarios
-app.post('/approvePayment', async (req, res) => {
-  const { uid, amount } = req.body;
+// Ruta: Aprobar Pagos a Usuarios (Retiros)
+app.post('/approvePayment', authenticate, async (req, res) => {
+  const { amount } = req.body;
+  const uid = req.user.uid;
 
-  if (!uid || !amount) {
-    return res.status(400).json({ error: "Faltan campos requeridos: uid, amount" });
+  if (!amount) {
+    console.error("Falta el campo requerido: amount");
+    return res.status(400).json({ error: "Falta el campo requerido: amount" });
+  }
+
+  // Validar que el monto sea un número positivo
+  if (isNaN(amount) || parseFloat(amount) <= 0) {
+    console.error("El monto no es un número válido:", amount);
+    return res.status(400).json({ error: "El monto debe ser un número positivo." });
   }
 
   try {
@@ -211,15 +362,21 @@ app.post('/approvePayment', async (req, res) => {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
+      console.error("Usuario no encontrado:", uid);
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     const userData = userDoc.data();
     const accessToken = userData.mercadoPagoAccessToken;
 
+    if (!accessToken) {
+      console.error("El usuario no tiene un token de Mercado Pago válido:", uid);
+      return res.status(400).json({ error: "El usuario no tiene un token de Mercado Pago válido." });
+    }
+
     // Crear la solicitud de pago
     const paymentData = {
-      transaction_amount: amount,
+      transaction_amount: parseFloat(amount),
       reason: "Retiro",
       payment_method_id: "account_money",
       payer: {
@@ -238,92 +395,70 @@ app.post('/approvePayment', async (req, res) => {
     if (paymentResponse.data && paymentResponse.data.status === "approved") {
       // Actualizar el balance en Firestore
       await userRef.update({
-        balance: admin.firestore.FieldValue.increment(-amount),
-        pendingBalance: admin.firestore.FieldValue.increment(-amount)
+        balance: admin.firestore.FieldValue.increment(-parseFloat(amount)),
+        pendingBalance: admin.firestore.FieldValue.increment(-parseFloat(amount))
       });
 
-      // Guardar la transacción
-      await saveTransaction(uid, 'withdrawal', amount, 'completed');
+      // Generar un ID único para la transacción
+      const transactionId = admin.firestore().collection('users').doc(uid).collection('transactions').doc().id;
 
+      // Guardar la transacción
+      await saveTransaction(uid, 'withdrawal', parseFloat(amount), 'completed', transactionId);
+
+      console.log(`Pago aprobado y procesado para el usuario: ${uid}, Transaction ID: ${transactionId}`);
       res.json({ message: "Pago aprobado y procesado" });
     } else {
       throw new Error('El pago no fue aprobado');
     }
   } catch (error) {
-    console.error("Error al aprobar el pago:", error);
+    console.error("Error al aprobar el pago:", error.response ? error.response.data : error.message);
     res.status(500).json({ error: "Error al aprobar el pago" });
   }
 });
 
-// Función para manejar notificaciones de pagos desde el webhook de Mercado Pago
-app.post('/paymentNotification', async (req, res) => {
-  const { type, data } = req.body;
+// Ruta: Actualizar Pending Balance (Reembolsos y Transferencias)
+app.post('/updatePendingBalance', authenticate, async (req, res) => {
+  const { amount, action } = req.body;
+  const uid = req.user.uid;
 
-  if (type === 'payment') {
-    try {
-      const paymentId = data.id;
-
-      // Obtener la información del pago desde Mercado Pago
-      const paymentResponse = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
-      });
-
-      const paymentStatus = paymentResponse.data.status;
-      const uid = paymentResponse.data.payer.id;
-      const amount = paymentResponse.data.transaction_amount;
-
-      if (paymentStatus === 'approved') {
-        const withdrawalRequestRef = admin.firestore().collection('withdrawalRequests').doc(uid);
-        await withdrawalRequestRef.update({ status: 'approved' });
-        await withdrawalRequestRef.delete();
-
-        // Actualizar el balance del usuario
-        const userRef = admin.firestore().collection('users').doc(uid);
-        await userRef.update({
-          balance: admin.firestore.FieldValue.increment(-amount),
-          pendingBalance: admin.firestore.FieldValue.increment(-amount)
-        });
-
-        // Guardar la transacción
-        await saveTransaction(uid, 'withdrawal', amount, 'completed');
-      }
-
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('Error al manejar el webhook:', error);
-      res.status(500).json({ error: 'Error al manejar el webhook' });
-    }
-  } else {
-    res.sendStatus(200);
+  if (!amount || !action) {
+    console.error("Faltan campos requeridos: amount, action");
+    return res.status(400).json({ error: "Faltan campos requeridos: amount, action" });
   }
-});
 
-// Función para actualizar el pendingBalance
-app.post('/updatePendingBalance', async (req, res) => {
-  const { uid, amount, action } = req.body;
-
-  if (!uid || !amount || !action) {
-    return res.status(400).json({ error: "Faltan campos requeridos: uid, amount, action" });
+  // Validar que el monto sea un número positivo
+  if (isNaN(amount) || parseFloat(amount) <= 0) {
+    console.error("El monto no es un número válido:", amount);
+    return res.status(400).json({ error: "El monto debe ser un número positivo." });
   }
 
   try {
     const userRef = admin.firestore().collection('users').doc(uid);
-    
+
     if (action === 'refund') {
       // Devolver saldo al balance y reducir el pendingBalance
       await userRef.update({
-        balance: admin.firestore.FieldValue.increment(amount),
-        pendingBalance: admin.firestore.FieldValue.increment(-amount)
+        balance: admin.firestore.FieldValue.increment(parseFloat(amount)),
+        pendingBalance: admin.firestore.FieldValue.increment(-parseFloat(amount))
       });
+      // Generar un ID único para la transacción
+      const transactionId = admin.firestore().collection('users').doc(uid).collection('transactions').doc().id;
       // Guardar la transacción de reembolso
-      await saveTransaction(uid, 'refund', amount, 'completed');
+      await saveTransaction(uid, 'refund', parseFloat(amount), 'completed', transactionId);
+      console.log(`Reembolso completado para el usuario: ${uid}, Transaction ID: ${transactionId}`);
     } else if (action === 'transfer') {
       // Reducir el pendingBalance
       await userRef.update({
-        pendingBalance: admin.firestore.FieldValue.increment(-amount)
+        pendingBalance: admin.firestore.FieldValue.increment(-parseFloat(amount))
       });
+      // Generar un ID único para la transacción
+      const transactionId = admin.firestore().collection('users').doc(uid).collection('transactions').doc().id;
       // Guardar la transacción de transferencia
-      await saveTransaction(uid, 'transfer', amount, 'completed');
+      await saveTransaction(uid, 'transfer', parseFloat(amount), 'completed', transactionId);
+      console.log(`Transferencia completada para el usuario: ${uid}, Transaction ID: ${transactionId}`);
+    } else {
+      console.error("Acción inválida:", action);
+      return res.status(400).json({ error: "Acción inválida. Debe ser 'refund' o 'transfer'." });
     }
 
     res.json({ message: "Pending balance actualizado exitosamente" });
@@ -373,7 +508,7 @@ const updateProfileImage = async (uid, newImagePath, type) => {
   console.log(`Imagen actualizada: ${type} para el usuario: ${uid}`);
 };
 
-// Función que se ejecuta cuando se actualiza un documento de usuario en Firestore
+// Firestore trigger para manejar actualizaciones de imágenes
 exports.uploadImage = functions.firestore.document('users/{uid}').onUpdate(async (change, context) => {
   const newValue = change.after.data();
   const previousValue = change.before.data();

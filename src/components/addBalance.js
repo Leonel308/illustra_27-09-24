@@ -3,10 +3,10 @@
 import React, { useState, useContext, useCallback } from 'react';
 import UserContext from '../context/UserContext';
 import TermsAndConditions from './TermsAndConditions';
-import '../Styles/addBalance.css';
+import '../Styles/addBalance.css'; // Asegúrate de que el nombre coincide
 
 const AddBalance = ({ onClose }) => {
-  const { user, authToken, loading, error: contextError } = useContext(UserContext); // Obtener authToken del contexto
+  const { user, authToken } = useContext(UserContext); // Eliminado 'loading' y 'contextError' si no se usan
   const [baseAmount, setBaseAmount] = useState('');
   const [error, setError] = useState('');
   const [loadingRequest, setLoadingRequest] = useState(false);
@@ -18,7 +18,7 @@ const AddBalance = ({ onClose }) => {
   const mercadoPagoFeeRate = 0.127; // 12.7%
 
   // Calcular comisiones y total
-  const numericBaseAmount = parseFloat(baseAmount) || 0;
+  const numericBaseAmount = parseInt(baseAmount, 10) || 0;
   const platformCommission = numericBaseAmount * platformCommissionRate;
   const totalBeforeMP = numericBaseAmount + platformCommission;
   const mercadoPagoFee = totalBeforeMP * mercadoPagoFeeRate;
@@ -111,6 +111,16 @@ const AddBalance = ({ onClose }) => {
     }
   }, [isConfirming, onClose]);
 
+  // Función para manejar cambios en el input y asegurar que solo se ingresen números enteros
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+
+    // Permitir solo números y evitar entradas con decimales
+    if (/^\d*$/.test(value)) {
+      setBaseAmount(value);
+    }
+  };
+
   return (
     <div className="modal-addBalance-overlay">
       <div className="modal-addBalance-content">
@@ -127,13 +137,13 @@ const AddBalance = ({ onClose }) => {
           {!isConfirming ? (
             <>
               <input
-                type="number"
+                type="text" // Cambiado de 'number' a 'text' para manejar mejor la validación
                 placeholder="Ingrese el monto"
                 value={baseAmount}
-                onChange={(e) => setBaseAmount(e.target.value)}
+                onChange={handleInputChange}
                 className="modal-addBalance-input"
-                min="0"
-                step="0.01"
+                inputMode="numeric"
+                pattern="\d*"
               />
 
               <div className="modal-addBalance-terms-section">

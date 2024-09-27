@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
+// src/components/Success.js
+
+import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import UserContext from '../context/UserContext';
 
 const Success = () => {
   const [status, setStatus] = useState('Verificando pago...');
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, authToken } = useContext(UserContext); // Obtener user y authToken desde el contexto
 
   useEffect(() => {
     const verifyPayment = async () => {
       const params = new URLSearchParams(location.search);
-      const uid = params.get('uid');
-      const paymentId = params.get('payment_id'); // Asegúrate de que Mercado Pago envíe este parámetro
+      const transactionId = params.get('transactionId'); // Obtener transactionId de la URL
 
-      if (!uid || !paymentId) {
+      if (!transactionId || !user) {
         setStatus('Error: Información de pago incompleta');
         return;
       }
@@ -22,9 +25,9 @@ const Success = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Asegúrate de almacenar y enviar el token de autenticación
+            'Authorization': `Bearer ${authToken}` // Usar authToken del contexto
           },
-          body: JSON.stringify({ uid, paymentId }),
+          body: JSON.stringify({ uid: user.uid, transactionId }), // Enviar uid y transactionId
         });
 
         const data = await response.json();
@@ -36,7 +39,7 @@ const Success = () => {
             navigate('/dashboard'); // Cambia '/dashboard' por la ruta que prefieras
           }, 3000);
         } else {
-          setStatus('El pago no ha sido aprobado. Por favor, contacta a soporte.');
+          setStatus(`Error: ${data.message || 'Información de pago incompleta.'}`);
         }
       } catch (error) {
         console.error('Error al verificar el pago:', error);
@@ -45,7 +48,7 @@ const Success = () => {
     };
 
     verifyPayment();
-  }, [location, navigate]);
+  }, [location, navigate, user, authToken]);
 
   return (
     <div className="payment-status-container">

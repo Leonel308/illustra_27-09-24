@@ -1,6 +1,8 @@
+// src/components/TransactionHistory.js
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import '../Styles/TransactionHistory.css';
 
 const TransactionHistory = ({ userId }) => {
@@ -9,33 +11,33 @@ const TransactionHistory = ({ userId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!userId) return;
+    if (!userId) return;
 
-      try {
-        const transactionsRef = collection(db, `users/${userId}/transactions`);
-        const q = query(
-          transactionsRef,
-          orderBy('timestamp', 'desc'),
-          limit(10)
-        );
+    const transactionsRef = collection(db, `users/${userId}/transactions`);
+    const q = query(
+      transactionsRef,
+      orderBy('timestamp', 'desc'),
+      limit(10)
+    );
 
-        const querySnapshot = await getDocs(q);
-        const transactionList = querySnapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const transactionList = [];
+      querySnapshot.forEach((doc) => {
+        transactionList.push({
           id: doc.id,
-          ...doc.data()
-        }));
+          ...doc.data(),
+        });
+      });
+      setTransactions(transactionList);
+      setLoading(false);
+    }, (err) => {
+      console.error('Error fetching transactions:', err);
+      setError('Error al cargar las transacciones. Por favor, intenta de nuevo más tarde.');
+      setLoading(false);
+    });
 
-        setTransactions(transactionList);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching transactions:', err);
-        setError('Error al cargar las transacciones. Por favor, intenta de nuevo más tarde.');
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, [userId]);
 
   if (loading) {
@@ -54,7 +56,7 @@ const TransactionHistory = ({ userId }) => {
       ) : (
         <ul className="transaction-list">
           {transactions.map((transaction) => (
-            <li key={transaction.id} className="transaction-item">
+            <li key={transaction.id} className={`transaction-item ${transaction.status}`}>
               <div className="transaction-type">
                 {transaction.type === 'recharge' ? 'Recarga' : 'Retiro'}
               </div>
@@ -62,9 +64,9 @@ const TransactionHistory = ({ userId }) => {
                 {transaction.type === 'recharge' ? '+' : '-'}${transaction.amount.toFixed(2)}
               </div>
               <div className="transaction-date">
-                {transaction.timestamp.toDate().toLocaleString()}
+                {transaction.timestamp && transaction.timestamp.toDate().toLocaleString()}
               </div>
-              <div className="transaction-status">
+              <div className={`transaction-status ${transaction.status}`}>
                 {transaction.status === 'completed' ? 'Completado' : 'Pendiente'}
               </div>
             </li>
