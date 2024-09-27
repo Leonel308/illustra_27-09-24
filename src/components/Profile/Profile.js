@@ -1,3 +1,5 @@
+// src/components/HomeComponents/Profile.js
+
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -29,7 +31,9 @@ const Profile = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Fetch user data from Firestore
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
@@ -45,11 +49,11 @@ const Profile = () => {
           }));
           setIsOwner(user?.uid === userId);
         } else {
-          setError('User not found');
+          setError('Usuario no encontrado');
         }
       } catch (error) {
-        console.error("Error fetching user data: ", error);
-        setError('Failed to load user data');
+        console.error("Error al obtener datos del usuario: ", error);
+        setError('Error al cargar los datos del usuario');
       } finally {
         setIsLoading(false);
       }
@@ -57,79 +61,120 @@ const Profile = () => {
     fetchUserData();
   }, [user, userId]);
 
+  // Memoizar el label del artista para evitar cálculos innecesarios
   const getArtistLabel = useMemo(() => {
     const { isArtist, gender } = profileData;
     if (isArtist) {
       return gender === 'female' ? 'ilustradora' : gender === 'other' ? 'ilustrador/a' : 'ilustrador';
     }
     return gender === 'female' ? 'usuaria' : gender === 'other' ? 'usuario/a' : 'usuario';
-  }, [profileData]);  // Incluyendo profileData como dependencia completa
+  }, [profileData]);
 
+  // Manejar la actualización de la imagen de fondo
   const handleSaveBackground = useCallback(async (backgroundURL) => {
     try {
       const userRef = doc(db, 'users', userId);
       await updateDoc(userRef, { backgroundURL });
       setProfileData(prevData => ({ ...prevData, backgroundURL }));
     } catch (error) {
-      console.error("Error updating background image: ", error);
-      setError('Failed to update background image');
+      console.error("Error al actualizar la imagen de fondo: ", error);
+      setError('Error al actualizar la imagen de fondo');
     }
   }, [userId]);
 
+  // Manejar la actualización de la imagen de perfil
   const handleUpdateProfilePicture = useCallback((newPhotoURL) => {
     setProfileData(prevData => ({ ...prevData, photoURL: newPhotoURL }));
   }, []);
 
+  // Toggle de la barra lateral en dispositivos móviles
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   if (isLoading) {
-    return <div className={styles.loadingSpinner}>Loading...</div>;
+    return <div className={styles.loadingSpinner} role="status" aria-live="polite">Cargando...</div>;
   }
 
   if (error) {
-    return <div className={styles.errorMessage}>{error}</div>;
+    return <div className={styles.errorMessage} role="alert">{error}</div>;
   }
 
   return (
-    <div className={styles.profilePageContainer} style={{ backgroundImage: `url(${profileData.backgroundURL})` }}>
+    <div 
+      className={styles.profilePageContainer} 
+      style={{ backgroundImage: `url(${profileData.backgroundURL})` }}
+      role="main"
+    >
+      {/* Botón para toggle de sidebar en móviles */}
+      <button 
+        className={styles.sidebarToggle} 
+        onClick={toggleSidebar}
+        aria-label={isSidebarOpen ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
+        aria-expanded={isSidebarOpen}
+      >
+        {isSidebarOpen ? '✕' : '☰'}
+      </button>
+
       <div className={styles.profileContent}>
-        <aside className={styles.profileSidebar}>
-          <header className={styles.profileHeader}>
-            <ProfilePicture 
-              photoURL={profileData.photoURL} 
-              isOwner={isOwner} 
-              setPhotoURL={handleUpdateProfilePicture} 
+        {/* Barra Lateral (Sidebar) */}
+        <aside 
+          className={`${styles.profileSidebar} ${isSidebarOpen ? styles.active : ''}`} 
+          aria-hidden={!isSidebarOpen}
+        >
+          <div className={styles.sidebarContent}>
+            <header className={styles.profileHeader}>
+              <ProfilePicture 
+                photoURL={profileData.photoURL} 
+                isOwner={isOwner} 
+                setPhotoURL={handleUpdateProfilePicture} 
+              />
+              <h2 className={styles.username}>{profileData.username}</h2>
+              <p className={styles.userRole}>
+                {profileData.isArtist ? '🖌️' : '👤'} {getArtistLabel}
+              </p>
+              <p className={styles.contentType}>
+                🎨 Contenido: {profileData.adultContent}
+              </p>
+            </header>
+
+            {/* Bio del Perfil */}
+            <ProfileBio
+              bio={profileData.bio}
+              isOwner={isOwner}
+              setBio={(newBio) => setProfileData(prevData => ({ ...prevData, bio: newBio }))}
+              userId={userId}
             />
-            <h2>{profileData.username}</h2>
-            <p className={styles.userRole}>
-              {profileData.isArtist ? '🖌️' : '👤'} {getArtistLabel}
-            </p>
-            <p className={styles.contentType}>
-              🎨 Contenido: {profileData.adultContent}
-            </p>
-          </header>
 
-          <ProfileBio
-            bio={profileData.bio}
-            isOwner={isOwner}
-            setBio={(newBio) => setProfileData(prevData => ({ ...prevData, bio: newBio }))}
-            userId={userId}
-          />
-
-          {isOwner && (
-            <div className={styles.profileBackgroundContainer}>
-              <ProfileBackground onSave={handleSaveBackground} />
-            </div>
-          )}
+            {/* Imagen de Fondo (Editable solo por el propietario) */}
+            {isOwner && (
+              <div className={styles.profileBackgroundContainer}>
+                <ProfileBackground onSave={handleSaveBackground} />
+              </div>
+            )}
+          </div>
         </aside>
 
+        {/* Contenido Principal */}
         <main className={styles.profileMainContent}>
-          <section className={styles.profileSection}>
-            <h3>Servicios</h3>
-            <ProfileServices services={profileData.services} isOwner={isOwner} userId={userId} />
+          {/* Sección de Servicios */}
+          <section className={styles.profileSection} aria-labelledby="services-section">
+            <h3 id="services-section">Servicios</h3>
+            <ProfileServices 
+              services={profileData.services} 
+              isOwner={isOwner} 
+              userId={userId} 
+            />
           </section>
 
-          <section className={styles.profileSection}>
-            <h3>Portfolio</h3>
-            <ProfilePortfolio portfolio={profileData.portfolio} isOwner={isOwner} userId={userId} />
+          {/* Sección de Portfolio */}
+          <section className={styles.profileSection} aria-labelledby="portfolio-section">
+            <h3 id="portfolio-section">Portfolio</h3>
+            <ProfilePortfolio 
+              portfolio={profileData.portfolio} 
+              isOwner={isOwner} 
+              userId={userId} 
+            />
           </section>
         </main>
       </div>

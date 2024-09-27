@@ -1,0 +1,27 @@
+/* variables.css */
+:root {
+    --primary-color: #6a0dad;
+    --secondary-color: #ff6b6b;
+    --accent-color: #4ecdc4;
+    --background-color: rgba(247, 247, 247, 0.6);
+    --text-color: #333333;
+    --sidebar-width: 300px;
+    --sidebar-width-mobile: 200px;
+    --sidebar-gradient: linear-gradient(135deg, rgba(106, 13, 173, 0.9), rgba(255, 107, 107, 0.9));
+    --card-background: rgba(255, 255, 255, 0.85);
+    --transition-speed: 0.3s;
+    --header-height: 60px;
+    --spinner-color: var(--primary-color);
+    --error-color: #d32f2f;
+    --color-white: #ffffff;
+    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --border-radius: 15px;
+  }
+  
+  /* Reseteo de estilos */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  

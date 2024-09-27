@@ -1,0 +1,200 @@
+/* Superposición del Modal */
+.membership-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+    animation: fadeIn 0.3s ease forwards;
+  }
+  
+  /* Contenido del Modal */
+  .membership-modal-content {
+    background-color: var(--background-color);
+    padding: 3rem 2.5rem 2.5rem;
+    border-radius: var(--border-radius-base);
+    position: relative;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0.5rem 1rem var(--shadow-color), 0 1rem 2rem var(--shadow-color-dark);
+    text-align: center;
+    transform: scale(0.9);
+    animation: scaleUp 0.3s ease forwards;
+  }
+  
+  /* Botón de Cierre */
+  .membership-close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all var(--transition-speed) ease;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  
+  .membership-close-button:hover {
+    color: var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Título del Modal */
+  .membership-modal-content h2 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    font-size: 2.25rem;
+    font-weight: 700;
+  }
+  
+  /* Subtítulo de Beneficios */
+  .membership-modal-content h3 {
+    margin-bottom: 1.25rem;
+    color: var(--primary-dark);
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+  
+  /* Texto del Modal */
+  .membership-modal-content p {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  
+  /* Beneficios de Membresía */
+  .membership-benefits {
+    text-align: left;
+    margin-bottom: 2.5rem;
+  }
+  
+  .membership-benefits ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .membership-benefits li {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    transition: transform var(--transition-speed) ease;
+  }
+  
+  .membership-benefits li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--success-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  .membership-benefits li:hover {
+    transform: translateX(5px);
+  }
+  
+  /* Botón de CTA */
+  .membership-cta-button {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    box-shadow: 0 4px 6px var(--shadow-color);
+  }
+  
+  .membership-cta-button:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px var(--shadow-color-dark);
+  }
+  
+  .membership-cta-button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px var(--shadow-color);
+  }
+  
+  /* Animaciones */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes scaleUp {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Responsividad */
+  @media (max-width: 768px) {
+    .membership-modal-content {
+      padding: 2.5rem 1.5rem 2rem;
+    }
+  
+    .membership-modal-content h2 {
+      font-size: 2rem;
+    }
+  
+    .membership-modal-content h3 {
+      font-size: 1.5rem;
+    }
+  
+    .membership-benefits li {
+      font-size: 1rem;
+    }
+  
+    .membership-cta-button {
+      padding: 0.875rem 1.75rem;
+      font-size: 1.1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .membership-modal-content {
+      padding: 2rem 1rem 1.5rem;
+    }
+  
+    .membership-modal-content h2 {
+      font-size: 1.75rem;
+    }
+  
+    .membership-modal-content h3 {
+      font-size: 1.25rem;
+    }
+  
+    .membership-benefits li {
+      font-size: 0.95rem;
+    }
+  
+    .membership-cta-button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+  }

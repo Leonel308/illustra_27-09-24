@@ -1,0 +1,361 @@
+.inspectPostContainer {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 24px;
+  background-color: #f5f3ff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(107, 70, 193, 0.12);
+}
+
+.inspectPostMain {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #d8b4fe;
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.05);
+  overflow: hidden;
+}
+
+.inspectPostHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #d8b4fe;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.inspectPostAuthor {
+  display: flex;
+  align-items: center;
+}
+
+.inspectUserAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 16px;
+  border: 2px solid #8b5cf6;
+}
+
+.inspectUsername {
+  font-weight: 700;
+  font-size: 18px;
+  color: #4c1d95;
+}
+
+.inspectDeleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: #7c3aed;
+  border: none;
+  border-radius: 25px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inspectDeleteButton:hover {
+  background-color: #6d28d9;
+}
+
+.inspectActionIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.inspectPostTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #4c1d95;
+  margin: 24px 20px 16px;
+  line-height: 1.3;
+}
+
+.inspectPostCategory {
+  font-size: 14px;
+  color: #6d28d9;
+  margin: 0 20px 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nsfwTag {
+  background-color: #7c3aed;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: 10px;
+}
+
+.inspectPostImageContainer {
+  width: calc(100% - 40px);
+  max-height: 500px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin: 0 20px 20px;
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
+}
+
+.inspectPostImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inspectPostDescription {
+  font-size: 16px;
+  color: #4c1d95;
+  margin: 0 20px 20px;
+  line-height: 1.8;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.inspectPostActions {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px 20px;
+  border-top: 1px solid #d8b4fe;
+  background-color: rgba(245, 243, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.inspectActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: transparent;
+  border: 2px solid #8b5cf6;
+  border-radius: 25px;
+  color: #6d28d9;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  max-width: 150px;
+  justify-content: center;
+}
+
+.inspectActionButton:hover {
+  background-color: #8b5cf6;
+  color: #ffffff;
+}
+
+.inspectActionButton.liked {
+  background-color: #8b5cf6;
+  color: #ffffff;
+}
+
+.inspectCommentsSection {
+  padding: 16px;
+  border-top: 1px solid #d8b4fe;
+}
+
+.inspectCommentsSection h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #4c1d95;
+}
+
+.inspectAddComment {
+  margin-bottom: 16px;
+}
+
+.addCommentTextarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d8b4fe;
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 80px;
+  font-size: 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.addCommentTextarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+.commentMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.commentButton {
+  background-color: #8b5cf6;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.commentButton:hover {
+  background-color: #7c3aed;
+}
+
+.inspectComment {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: #f5f3ff;
+  border-radius: 8px;
+  border: 1px solid #d8b4fe;
+}
+
+.commentUserAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+  border: 2px solid #8b5cf6;
+}
+
+.commentContent {
+  flex-grow: 1;
+}
+
+.commentContent strong {
+  font-weight: 700;
+  margin-right: 8px;
+  color: #4c1d95;
+}
+
+.commentContent p {
+  font-size: 14px;
+  color: #4c1d95;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+
+.deleteCommentContainer {
+  display: flex;
+  align-items: center;
+}
+
+.deleteCommentButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7c3aed;
+  transition: all 0.3s ease;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.deleteCommentButton:hover {
+  color: #6d28d9;
+  transform: rotate(15deg);
+}
+
+.deleteCommentButton:focus,
+.deleteCommentButton:active {
+  outline: none;
+  background: none;
+  color: #6d28d9;
+  transform: rotate(0deg);
+}
+
+.deleteCommentButton:focus-visible {
+  box-shadow: 0 0 0 2px #f5f3ff, 0 0 0 4px #8b5cf6;
+}
+
+.inspectPostLoading,
+.inspectPostError {
+  text-align: center;
+  padding: 60px 40px;
+  font-size: 18px;
+  color: #6d28d9;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
+}
+
+@media (max-width: 768px) {
+  .inspectPostContainer {
+    margin: 20px;
+    padding: 16px;
+  }
+
+  .inspectUserAvatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .inspectUsername {
+    font-size: 16px;
+  }
+
+  .inspectPostTitle {
+    font-size: 20px;
+  }
+
+  .inspectPostDescription {
+    font-size: 15px;
+  }
+
+  .inspectPostCategory {
+    margin-bottom: 8px;
+  }
+
+  .nsfwTag {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+
+  .inspectActionButton {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .inspectActionIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .inspectPostImageContainer {
+    max-height: 300px;
+  }
+
+  .inspectDeleteButton {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .commentUserAvatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .inspectComment {
+    padding: 10px;
+  }
+
+  .addCommentTextarea {
+    min-height: 60px;
+  }
+}

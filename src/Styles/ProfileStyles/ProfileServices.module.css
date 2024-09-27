@@ -1,4 +1,3 @@
-/* Paleta de colores violeta */
 :root {
   --color-primary: #6a1b9a;
   --color-secondary: #9c27b0;
@@ -10,26 +9,33 @@
 }
 
 .servicesContainer {
-  padding: 20px;
+  padding: 2rem;
   background-color: var(--color-background);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .servicesTitle {
   color: var(--color-primary);
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .servicesAddButton {
   background-color: var(--color-primary);
   color: var(--color-white);
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  margin: 0 auto 20px auto;
-  border-radius: 5px;
+  margin: 0 auto 2rem auto;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .servicesAddButton:hover {
@@ -37,34 +43,47 @@
 }
 
 .buttonIcon {
-  margin-right: 8px;
+  margin-right: 0.5rem;
 }
 
 .servicesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
 }
 
 .serviceCard {
   background-color: var(--color-white);
   border: 1px solid var(--color-accent);
-  border-radius: 10px;
+  border-radius: 1rem;
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.serviceCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .serviceImageContainer {
   position: relative;
+  height: 200px;
+  overflow: hidden;
 }
 
 .serviceImage {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.serviceCard:hover .serviceImage {
+  transform: scale(1.05);
 }
 
 .serviceDisabledOverlay {
@@ -78,11 +97,12 @@
   align-items: center;
   justify-content: center;
   color: var(--color-white);
-  font-size: 1.5em;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 .serviceInfo {
-  padding: 15px;
+  padding: 1.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -90,29 +110,37 @@
 
 .serviceTitle {
   color: var(--color-primary);
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: bold;
 }
 
 .serviceDescription {
   color: var(--color-text);
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
   flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .servicePrice {
   color: var(--color-secondary);
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
 }
 
 .serviceHireButton {
   background-color: var(--color-primary);
   color: var(--color-white);
-  padding: 10px;
+  padding: 0.75rem;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 0.5rem;
   margin-top: auto;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .serviceHireButton:hover {
@@ -122,20 +150,25 @@
 .serviceActions {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  padding: 1rem;
+  background-color: var(--color-background);
+  border-top: 1px solid var(--color-accent);
 }
 
 .serviceActionButton {
   background-color: var(--color-primary);
   color: var(--color-white);
-  padding: 8px 12px;
+  padding: 0.5rem 1rem;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 0.5rem;
   display: flex;
   align-items: center;
   flex: 1;
-  margin: 0 5px;
+  margin: 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .serviceActionButton:hover {
@@ -154,7 +187,8 @@
 .noServicesText {
   text-align: center;
   color: var(--color-text);
-  font-size: 1.2em;
+  font-size: 1.2rem;
+  padding: 2rem;
 }
 
 .modal,
@@ -174,8 +208,8 @@
 .modalContent,
 .deleteModalContent {
   background-color: var(--color-white);
-  padding: 20px;
-  border-radius: 10px;
+  padding: 2rem;
+  border-radius: 1rem;
   width: 90%;
   max-width: 500px;
   position: relative;
@@ -186,16 +220,17 @@
   border: none;
   color: var(--color-text);
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 1rem;
+  right: 1rem;
   cursor: pointer;
-  font-size: 1.5em;
-  width: 40px;
-  height: 40px;
+  font-size: 1.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s ease;
 }
 
 .closeButton:hover {
@@ -205,7 +240,9 @@
 .modalTitle {
   text-align: center;
   color: var(--color-primary);
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 .formLayout {
@@ -222,49 +259,71 @@
 .formTextarea,
 .formFileInput {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
   border: 1px solid var(--color-accent);
-  border-radius: 5px;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.formTextarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .formSubmitButton {
   background-color: var(--color-primary);
   color: var(--color-white);
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   border: none;
   cursor: pointer;
   width: 100%;
-  border-radius: 5px;
-  margin-top: 10px;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .formSubmitButton:hover {
   background-color: var(--color-secondary);
 }
 
+.formSubmitButton:disabled {
+  background-color: var(--color-accent);
+  cursor: not-allowed;
+}
+
+.croppedImagePreview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
 .croppedImagePreview img {
   max-width: 100%;
-  border-radius: 5px;
-  margin-top: 15px;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .deleteModalActions {
   display: flex;
   justify-content: space-around;
-  margin-top: 20px;
+  margin-top: 1.5rem;
 }
 
 .confirmDeleteButton,
 .cancelDeleteButton {
   background-color: var(--color-primary);
   color: var(--color-white);
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 0.5rem;
   display: flex;
   align-items: center;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .confirmDeleteButton:hover,
@@ -272,8 +331,17 @@
   background-color: var(--color-secondary);
 }
 
+.confirmDeleteButton {
+  background-color: var(--color-error);
+}
+
+.confirmDeleteButton:hover {
+  background-color: #b71c1c;
+}
+
 .servicesError {
   color: var(--color-error);
   text-align: center;
-  margin-top: 10px;
+  margin-top: 1rem;
+  font-size: 1rem;
 }

@@ -1,187 +1,315 @@
+/* src/components/HomeComponents/WelcomeBox.css */
+
+:root {
+  --color-primary: #1da1f2;
+  --color-secondary: #e0245e;
+  --color-background: #f7f9fa;
+  --color-text: #14171a;
+  --color-muted: #657786;
+  --color-white: #ffffff;
+  --border-radius: 12px;
+  --transition-speed: 0.3s;
+  --box-shadow-light: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --box-shadow-medium: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
 .welcome-box {
-    position: relative;
-    width: 100%;
-    height: 400px;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  background-color: var(--color-background);
+}
+
+.welcome-swiper {
+  height: 100%;
+}
+
+.slide-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(88, 28, 135, 0.8), rgba(124, 58, 237, 0.6));
+  pointer-events: none;
+}
+
+.slide-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--color-white);
+  font-size: 1.2rem;
+  padding: 1rem;
+  background-color: rgba(88, 28, 135, 0.2);
+  border-radius: var(--border-radius);
+}
+
+.welcome-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 2rem;
+  color: var(--color-white);
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.welcome-title {
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.welcome-description {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  line-height: 1.6;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.5s ease-out 0.2s both;
+}
+
+.welcome-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  animation: fadeInUp 0.5s ease-out 0.4s both;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: bold;
+  font-size: 1.125rem;
+  transition: all var(--transition-speed) ease;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 200px;
+  box-shadow: var(--box-shadow-light);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-medium);
+}
+
+.start-button {
+  background-color: #10B981;
+  color: var(--color-white);
+}
+
+.start-button:hover {
+  background-color: #059669;
+}
+
+.feed-button {
+  background-color: #3B82F6;
+  color: var(--color-white);
+}
+
+.feed-button:hover {
+  background-color: #2563EB;
+}
+
+.users-button {
+  background-color: #F59E0B;
+  color: var(--color-white);
+}
+
+.users-button:hover {
+  background-color: #D97706;
+}
+
+.learn-button {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #581C87;
+}
+
+.learn-button:hover {
+  background-color: var(--color-white);
+}
+
+.register-button {
+  background-color: #6a0dad;
+  color: var(--color-white);
+}
+
+.register-button:hover {
+  background-color: #4a0080;
+}
+
+.login-button {
+  background-color: #1da1f2;
+  color: var(--color-white);
+}
+
+.login-button:hover {
+  background-color: #0c7abf;
+}
+
+.button-icon {
+  margin-left: 0.75rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.cta-button:hover .button-icon {
+  transform: translateX(4px);
+}
+
+.error-message {
+  margin-top: 1rem;
+  color: var(--color-secondary);
+  font-size: 1rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-white);
+  opacity: 0.7;
+  transition: all var(--transition-speed) ease;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.guest-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.guest-content .welcome-title {
+  color: var(--color-text);
+  text-shadow: none;
+}
+
+.guest-content .welcome-description {
+  color: var(--color-text);
+  text-shadow: none;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .welcome-swiper {
-    height: 100%;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .slide-content {
-    position: relative;
-    width: 100%;
-    height: 100%;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  .slide-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  to {
+    opacity: 1;
   }
-  
-  .slide-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to right, rgba(88, 28, 135, 0.8), rgba(124, 58, 237, 0.6));
+}
+
+@media (max-width: 1024px) {
+  .welcome-box {
+    height: 450px;
   }
-  
-  .welcome-content {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 2rem;
-    color: white;
-    z-index: 10;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  
+
   .welcome-title {
-    font-size: 3rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: 3.5rem;
   }
-  
+
   .welcome-description {
     font-size: 1.25rem;
-    margin-bottom: 2rem;
-    max-width: 600px;
-    line-height: 1.6;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   }
-  
-  .welcome-buttons {
-    display: flex;
-    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .welcome-box {
+    height: 400px;
   }
-  
-  .cta-button {
-    display: inline-flex;
+
+  .welcome-content {
     align-items: center;
-    justify-content: center;
-    padding: 0.875rem 1.75rem;
-    border-radius: 9999px;
-    font-weight: bold;
-    font-size: 1.125rem;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .start-button {
-    background-color: #10B981;
-    color: white;
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
-  }
-  
-  .start-button:hover {
-    background-color: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(16, 185, 129, 0.3);
-  }
-  
-  .learn-button {
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #581C87;
-    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.25);
-  }
-  
-  .learn-button:hover {
-    background-color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(255, 255, 255, 0.3);
-  }
-  
-  .button-icon {
-    margin-left: 0.75rem;
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  
-  .swiper-pagination-bullet {
-    width: 12px;
-    height: 12px;
-    background-color: white;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-  }
-  
-  .swiper-pagination-bullet-active {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  
-  .slide-placeholder {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(88, 28, 135, 0.2);
-    color: white;
-    font-size: 1.2rem;
     text-align: center;
   }
-  
-  .slide-placeholder svg {
-    margin-bottom: 1rem;
-    opacity: 0.7;
+
+  .welcome-title {
+    font-size: 3rem;
   }
-  
-  @media (max-width: 768px) {
-    .welcome-box {
-      height: 350px;
-    }
-  
-    .welcome-title {
-      font-size: 2.5rem;
-    }
-  
-    .welcome-description {
-      font-size: 1.125rem;
-    }
-  
-    .cta-button {
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-    }
+
+  .welcome-description {
+    font-size: 1.125rem;
+    max-width: 100%;
   }
-  
-  @media (max-width: 640px) {
-    .welcome-box {
-      height: 300px;
-    }
-  
-    .welcome-title {
-      font-size: 2rem;
-    }
-  
-    .welcome-description {
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
-    }
-  
-    .cta-button {
-      padding: 0.625rem 1.25rem;
-      font-size: 0.875rem;
-    }
-  
-    .welcome-buttons {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-  
-    .button-icon {
-      width: 1rem;
-      height: 1rem;
-    }
+
+  .welcome-buttons {
+    gap: 0.75rem;
   }
+
+  .cta-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .welcome-box {
+    height: 350px;
+  }
+
+  .welcome-title {
+    font-size: 2.5rem;
+  }
+
+  .welcome-description {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-button {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .welcome-buttons {
+    gap: 0.5rem;
+  }
+}

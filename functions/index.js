@@ -6,7 +6,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 
 // Cargar variables de entorno desde el archivo .env
-dotenv.config(); 
+dotenv.config();
 
 // Inicializar Firebase Admin
 admin.initializeApp();
@@ -18,11 +18,15 @@ const allowedOrigins = ['https://illustra.app', 'http://localhost:3000'];
 app.use(cors({
   origin: allowedOrigins,
   methods: 'GET, POST, OPTIONS',
-  allowedHeaders: 'Content-Type',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Incluir Authorization aquí
 }));
 
 // Middleware para manejar OPTIONS preflight requests
-app.options('*', cors());
+app.options('*', cors({
+  origin: allowedOrigins,
+  methods: 'GET, POST, OPTIONS',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Aquí también incluimos Authorization
+}));
 
 // Credenciales de Mercado Pago desde variables de entorno o configuración de Firebase
 const MERCADO_PAGO_CLIENT_ID = process.env.MERCADOPAGO_CLIENT_ID || functions.config().mercadopago.client_id;

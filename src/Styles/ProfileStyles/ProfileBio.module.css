@@ -1,0 +1,122 @@
+/* src/Styles/ProfileStyles/ProfileBio.module.css */
+
+.profileBio {
+  background-color: transparent;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.bioTitle {
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.bioForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.bioTextarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  resize: vertical;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.bioTextarea:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  outline: none;
+}
+
+.bioActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.bioButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bioButton:hover {
+  transform: translateY(-1px);
+}
+
+.bioButton:active {
+  transform: translateY(1px);
+}
+
+.bioButton.save {
+  background-color: #4caf50;
+  color: white;
+}
+
+.bioButton.save:hover {
+  background-color: #45a049;
+}
+
+.bioButton.cancel {
+  background-color: #f44336;
+  color: white;
+}
+
+.bioButton.cancel:hover {
+  background-color: #d32f2f;
+}
+
+.bioContent {
+  background-color: transparent;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.bioContent p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.bioContent .bioButton.edit {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 100%;
+}
+
+.bioContent .bioButton.edit:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .bioTitle {
+    font-size: 1.5rem;
+  }
+
+  .bioContent p {
+    font-size: 1rem;
+  }
+
+  .bioButton {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+}

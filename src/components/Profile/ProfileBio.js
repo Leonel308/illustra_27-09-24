@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import '../../Styles/ProfileStyles/ProfileBio.css';
+import styles from '../../Styles/ProfileStyles/ProfileBio.module.css';
 
 const ProfileBio = ({ bio, isOwner, setBio, userId }) => {
   const [editedBio, setEditedBio] = useState(bio);
@@ -24,26 +24,41 @@ const ProfileBio = ({ bio, isOwner, setBio, userId }) => {
   };
 
   return (
-    <div className="profile-bio">
-      <h2>Biografía</h2>
+    <div className={styles.profileBio}>
+      <h2 className={styles.bioTitle}>Biografía</h2>
       {isEditing ? (
-        <form onSubmit={handleSubmit} className="bio-form">
+        <form onSubmit={handleSubmit} className={styles.bioForm}>
           <textarea
             value={editedBio}
             onChange={handleBioChange}
             placeholder="Escribe tu biografía aquí..."
             maxLength={200}
-            className="bio-textarea"
+            className={styles.bioTextarea}
           />
-          <div className="bio-actions">
-            <button type="submit" className="bio-button save">Guardar</button>
-            <button type="button" onClick={() => setIsEditing(false)} className="bio-button cancel">Cancelar</button>
+          <div className={styles.bioActions}>
+            <button type="submit" className={`${styles.bioButton} ${styles.save}`}>
+              Guardar
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className={`${styles.bioButton} ${styles.cancel}`}
+            >
+              Cancelar
+            </button>
           </div>
         </form>
       ) : (
-        <div className="bio-content">
+        <div className={styles.bioContent}>
           <p>{bio || 'No hay biografía disponible.'}</p>
-          {isOwner && <button onClick={() => setIsEditing(true)} className="bio-button edit">Editar</button>}
+          {isOwner && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className={`${styles.bioButton} ${styles.edit}`}
+            >
+              Editar
+            </button>
+          )}
         </div>
       )}
     </div>

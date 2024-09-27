@@ -1,3 +1,5 @@
+// src/pages/Home.js
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
@@ -95,7 +97,9 @@ const Home = () => {
             <h2>Feed de Publicaciones</h2>
             {!user ? (
               <div className="feed-warning">
-                Para ver el contenido debes <button onClick={() => navigate('/register')} className="link-button">registrarte</button> o <button onClick={() => navigate('/login')} className="link-button">iniciar sesión</button>.
+                Para ver el contenido debes{' '}
+                <button onClick={() => navigate('/register')} className="link-button">registrarte</button> o{' '}
+                <button onClick={() => navigate('/login')} className="link-button">iniciar sesión</button>.
               </div>
             ) : (
               <Feed filters={filters} />

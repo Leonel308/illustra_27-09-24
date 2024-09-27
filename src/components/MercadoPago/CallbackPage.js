@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+// src/pages/CallbackPage.js
+
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
+import UserContext from '../../context/UserContext'; // Importar el contexto de usuario
 
 const CallbackPage = () => {
   const navigate = useNavigate();
+  const { user, authToken } = useContext(UserContext); // Obtener authToken del contexto
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -37,6 +41,9 @@ const CallbackPage = () => {
             mercadoPagoRefreshToken: refresh_token
           });
 
+          // Llamar al endpoint /verifyPayment
+          await verifyPayment(state);
+
           navigate('/configuration');
         } catch (error) {
           console.error('Error al obtener tokens:', error);
@@ -52,7 +59,38 @@ const CallbackPage = () => {
     };
 
     fetchTokens();
-  }, [navigate]);
+  }, [navigate, authToken, user]);
+
+  const verifyPayment = async (uid) => {
+    if (!authToken) {
+      setError('No autorizado: Falta el token de autenticación.');
+      setLoading(false);
+      return;
+    }
+
+    console.log('Enviando authToken en verifyPayment:', authToken); // Log agregado
+
+    try {
+      const response = await fetch('https://us-central1-illustra-6ca8a.cloudfunctions.net/api/verifyPayment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}` // Incluir el token de autenticación
+        },
+        body: JSON.stringify({ uid }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Error desconocido');
+      }
+
+      console.log('Verificación de pago exitosa:', data);
+    } catch (error) {
+      console.error('Error al verificar el pago:', error);
+      setError(`Error al verificar el pago: ${error.message}`);
+    }
+  };
 
   return (
     <div>

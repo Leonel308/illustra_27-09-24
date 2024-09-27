@@ -1,46 +1,87 @@
-import React, { useState, useContext } from 'react';
+// src/components/AddBalance.js
+
+import React, { useState, useContext, useCallback } from 'react';
 import UserContext from '../context/UserContext';
 import TermsAndConditions from './TermsAndConditions';
 import '../Styles/addBalance.css';
 
 const AddBalance = ({ onClose }) => {
-  const { user } = useContext(UserContext);
-  const [amount, setAmount] = useState('');
+  const { user, authToken, loading, error: contextError } = useContext(UserContext); // Obtener authToken del contexto
+  const [baseAmount, setBaseAmount] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingRequest, setLoadingRequest] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false); // Nuevo estado para la confirmación
 
-  const handleAddBalance = async () => {
-    // Limpiamos errores previos y activamos el estado de carga
+  // Definir las comisiones
+  const platformCommissionRate = 0.05; // 5%
+  const mercadoPagoFeeRate = 0.127; // 12.7%
+
+  // Calcular comisiones y total
+  const numericBaseAmount = parseFloat(baseAmount) || 0;
+  const platformCommission = numericBaseAmount * platformCommissionRate;
+  const totalBeforeMP = numericBaseAmount + platformCommission;
+  const mercadoPagoFee = totalBeforeMP * mercadoPagoFeeRate;
+  const totalAmount = parseFloat((totalBeforeMP + mercadoPagoFee).toFixed(2));
+
+  const handleNext = useCallback(() => {
+    // Limpiamos errores previos
     setError('');
-    setLoading(true);
 
-    // Validamos que el usuario esté autenticado y que haya aceptado los términos
-    if (!user?.uid) {
-      setError('Error: el UID no está disponible.');
-      setLoading(false);
+    // Validamos que el monto sea válido
+    if (numericBaseAmount <= 0) {
+      setError('Por favor, ingrese un monto válido.');
       return;
     }
 
+    // Validamos que el usuario haya aceptado los términos
     if (!acceptedTerms) {
       setError('Debes aceptar los términos y condiciones.');
-      setLoading(false);
+      return;
+    }
+
+    // Pasamos a la etapa de confirmación
+    setIsConfirming(true);
+  }, [numericBaseAmount, acceptedTerms]);
+
+  const handleConfirm = useCallback(async () => {
+    // Limpiamos errores previos y activamos el estado de carga
+    setError('');
+    setLoadingRequest(true);
+
+    // Validamos que el usuario esté autenticado
+    if (!user?.uid) {
+      setError('Error: el UID no está disponible.');
+      setLoadingRequest(false);
       return;
     }
 
     try {
+      // Validamos que authToken esté disponible
+      if (!authToken) {
+        setError('Error: No se pudo obtener el token de autenticación.');
+        setLoadingRequest(false);
+        return;
+      }
+
+      // Obtener la URL de la API desde las variables de entorno
+      const API_URL = process.env.REACT_APP_API_URL || 'https://us-central1-illustra-6ca8a.cloudfunctions.net/api';
+
       // Realizamos la solicitud para generar el pago en el backend
       const response = await fetch(
-        'https://us-central1-illustra-6ca8a.cloudfunctions.net/api/createAddBalancePayment',
+        `${API_URL}/createAddBalancePayment`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount, uid: user.uid })
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}` // Usar authToken del contexto
+          },
+          body: JSON.stringify({ amount: numericBaseAmount, uid: user.uid })
         }
       );
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) throw new Error(data.error || 'Error desconocido');
 
       // Redirigimos al usuario a la página de pago si todo está correcto
       window.location.href = data.init_point;
@@ -52,18 +93,23 @@ const AddBalance = ({ onClose }) => {
       setError(err.message || 'Error al crear el pago. Por favor, intenta de nuevo.');
     } finally {
       // Desactivamos el estado de carga al finalizar
-      setLoading(false);
+      setLoadingRequest(false);
     }
-  };
+  }, [numericBaseAmount, user, authToken]);
 
-  const handleCancel = () => {
-    // Limpiamos los datos ingresados y los estados
-    setAmount('');
-    setAcceptedTerms(false);
-    setError('');
-    // Llamamos la función onClose para cerrar el modal
-    onClose();
-  };
+  const handleCancel = useCallback(() => {
+    if (isConfirming) {
+      // Si está en la etapa de confirmación, volver a la etapa de ingreso
+      setIsConfirming(false);
+    } else {
+      // Limpiamos los datos ingresados y los estados
+      setBaseAmount('');
+      setAcceptedTerms(false);
+      setError('');
+      // Llamamos la función onClose para cerrar el modal
+      onClose();
+    }
+  }, [isConfirming, onClose]);
 
   return (
     <div className="modal-addBalance-overlay">
@@ -77,40 +123,62 @@ const AddBalance = ({ onClose }) => {
               <strong>Error:</strong> {error}
             </div>
           )}
-          <input
-            type="number"
-            placeholder="Ingrese el monto"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="modal-addBalance-input"
-          />
 
-          <div className="modal-addBalance-terms-section">
-            <div className="modal-addBalance-terms-scrollable">
-              <TermsAndConditions />
-            </div>
-            <div className="modal-addBalance-checkbox-container">
+          {!isConfirming ? (
+            <>
               <input
-                type="checkbox"
-                id="terms"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                type="number"
+                placeholder="Ingrese el monto"
+                value={baseAmount}
+                onChange={(e) => setBaseAmount(e.target.value)}
+                className="modal-addBalance-input"
+                min="0"
+                step="0.01"
               />
-              <label htmlFor="terms">He leído y acepto los términos y condiciones</label>
+
+              <div className="modal-addBalance-terms-section">
+                <div className="modal-addBalance-terms-scrollable">
+                  <TermsAndConditions />
+                </div>
+                <div className="modal-addBalance-checkbox-container">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  />
+                  <label htmlFor="terms">He leído y acepto los términos y condiciones</label>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="modal-addBalance-confirmation">
+              <p><strong>Monto a recargar:</strong> ${numericBaseAmount.toFixed(2)}</p>
+              <p style={{ color: 'gray' }}><strong>Comisión de recarga (5%):</strong> ${platformCommission.toFixed(2)}</p>
+              <p style={{ color: 'gray' }}><strong>Comisión de Mercado Pago (12.7%):</strong> ${mercadoPagoFee.toFixed(2)}</p>
+              <p><strong>Total a pagar:</strong> ${totalAmount.toFixed(2)}</p>
             </div>
-          </div>
+          )}
         </div>
         <div className="modal-addBalance-footer">
-          <button onClick={handleCancel}>Cancelar</button>
-          <button onClick={handleAddBalance} disabled={loading || !amount || !acceptedTerms}>
-            {loading ? (
-              <>
-                <span className="modal-addBalance-loader" />Procesando
-              </>
-            ) : (
-              'Añadir'
-            )}
+          <button onClick={handleCancel} className="modal-addBalance-button">
+            {isConfirming ? 'Atrás' : 'Cancelar'}
           </button>
+          {!isConfirming ? (
+            <button onClick={handleNext} disabled={loadingRequest || !baseAmount || !acceptedTerms} className="modal-addBalance-button primary">
+              Siguiente
+            </button>
+          ) : (
+            <button onClick={handleConfirm} disabled={loadingRequest} className="modal-addBalance-button primary">
+              {loadingRequest ? (
+                <>
+                  <span className="modal-addBalance-loader"></span> Procesando
+                </>
+              ) : (
+                'Confirmar'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

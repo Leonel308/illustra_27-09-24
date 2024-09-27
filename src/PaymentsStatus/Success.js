@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Success = () => {
   const [status, setStatus] = useState('Verificando pago...');
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const verifyPayment = async () => {
       const params = new URLSearchParams(location.search);
-      const userId = params.get('userId');
-      const paymentId = params.get('payment_id');
+      const uid = params.get('uid');
+      const paymentId = params.get('payment_id'); // Asegúrate de que Mercado Pago envíe este parámetro
 
-      if (!userId || !paymentId) {
+      if (!uid || !paymentId) {
         setStatus('Error: Información de pago incompleta');
         return;
       }
@@ -21,14 +22,19 @@ const Success = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Asegúrate de almacenar y enviar el token de autenticación
           },
-          body: JSON.stringify({ userId, paymentId }),
+          body: JSON.stringify({ uid, paymentId }),
         });
 
         const data = await response.json();
 
         if (data.success) {
           setStatus('¡Pago exitoso! Tu saldo ha sido actualizado.');
+          // Redirigir después de unos segundos si lo deseas
+          setTimeout(() => {
+            navigate('/dashboard'); // Cambia '/dashboard' por la ruta que prefieras
+          }, 3000);
         } else {
           setStatus('El pago no ha sido aprobado. Por favor, contacta a soporte.');
         }
@@ -39,10 +45,10 @@ const Success = () => {
     };
 
     verifyPayment();
-  }, [location]);
+  }, [location, navigate]);
 
   return (
-    <div>
+    <div className="payment-status-container">
       <h1>Estado del Pago</h1>
       <p>{status}</p>
     </div>

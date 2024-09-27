@@ -1,6 +1,4 @@
-// LeftSideBar.js
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from './LeftSideBar.module.css';
 
 const SFW_CATEGORIES = [
@@ -20,81 +18,88 @@ const NSFW_CATEGORIES = [
 function LeftSideBar({ onFilterChange }) {
   const [showNSFW, setShowNSFW] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilters, setActiveFilters] = useState([]);
+  const [activeFilter, setActiveFilter] = useState(null);
+
+  const handleFilterChange = useCallback(() => {
+    onFilterChange({ showNSFW, activeFilter, searchTerm });
+  }, [showNSFW, activeFilter, searchTerm, onFilterChange]);
 
   useEffect(() => {
-    onFilterChange({ showNSFW, activeFilters, searchTerm });
-  }, [showNSFW, activeFilters, searchTerm, onFilterChange]);
+    handleFilterChange();
+  }, [handleFilterChange]);
 
-  const handleNSFWToggle = () => {
-    setShowNSFW(prevShowNSFW => !prevShowNSFW);
-    if (showNSFW) {
-      setActiveFilters(prevFilters => prevFilters.filter(filter => !NSFW_CATEGORIES.includes(filter)));
+  const toggleNSFW = () => {
+    setShowNSFW(prev => !prev);
+    if (showNSFW && NSFW_CATEGORIES.includes(activeFilter)) {
+      setActiveFilter(null);
     }
   };
 
-  const handleFilterChange = (filter) => {
-    setActiveFilters(prevFilters => {
-      if (prevFilters.includes(filter)) {
-        return prevFilters.filter(f => f !== filter);
-      } else {
-        return [...prevFilters, filter];
-      }
-    });
+  const toggleFilter = (filter) => {
+    setActiveFilter(prev => prev === filter ? null : filter);
   };
 
-  const filterCategories = (categories) => {
-    return categories.filter(category =>
+  const filterCategories = (categories) => 
+    categories.filter(category => 
       category.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  };
 
   return (
-    <div className={styles.leftSidebar}>
+    <aside className={styles.leftSidebar} aria-label="Filtros de categorías">
       <div className={styles.sidebarContent}>
-        <input
-          type="text"
-          placeholder="Buscar categorías..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-        />
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Buscar categorías..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+            aria-label="Buscar categorías"
+          />
+        </div>
         <button
-          className={styles.nsfwToggle}
-          onClick={handleNSFWToggle}
+          className={`${styles.nsfwToggle} ${showNSFW ? styles.active : ''}`}
+          onClick={toggleNSFW}
+          aria-pressed={showNSFW}
+          aria-label={showNSFW ? "Ocultar categorías NSFW" : "Mostrar categorías NSFW"}
         >
           {showNSFW ? 'Ocultar NSFW' : 'Mostrar NSFW'}
         </button>
-        <div className={styles.categorySection}>
-          <h3 className={styles.categoryTitle}>Categorías SFW</h3>
-          <div className={styles.categoryList}>
-            {filterCategories(SFW_CATEGORIES).map(category => (
-              <button
-                key={category}
-                className={`${styles.categoryButton} ${activeFilters.includes(category) ? styles.active : ''}`}
-                onClick={() => handleFilterChange(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
+        <CategorySection 
+          title="Categorías SFW" 
+          categories={filterCategories(SFW_CATEGORIES)} 
+          activeFilter={activeFilter} 
+          onToggle={toggleFilter} 
+        />
         {showNSFW && (
-          <div className={styles.categorySection}>
-            <h3 className={styles.categoryTitle}>Categorías NSFW</h3>
-            <div className={styles.categoryList}>
-              {filterCategories(NSFW_CATEGORIES).map(category => (
-                <button
-                  key={category}
-                  className={`${styles.categoryButton} ${activeFilters.includes(category) ? styles.active : ''}`}
-                  onClick={() => handleFilterChange(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
+          <CategorySection 
+            title="Categorías NSFW" 
+            categories={filterCategories(NSFW_CATEGORIES)} 
+            activeFilter={activeFilter} 
+            onToggle={toggleFilter} 
+          />
         )}
+      </div>
+    </aside>
+  );
+}
+
+function CategorySection({ title, categories, activeFilter, onToggle }) {
+  return (
+    <div className={styles.categorySection}>
+      <h3 className={styles.categoryTitle}>{title}</h3>
+      <div className={styles.categoryList}>
+        {categories.map(category => (
+          <button
+            key={category}
+            className={`${styles.categoryButton} ${activeFilter === category ? styles.active : ''}`}
+            onClick={() => onToggle(category)}
+            aria-pressed={activeFilter === category}
+            aria-label={`Filtrar por ${category}`}
+          >
+            {category}
+          </button>
+        ))}
       </div>
     </div>
   );
